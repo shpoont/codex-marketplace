@@ -1,7 +1,7 @@
 {
   "name": "public-release-test",
-  "version": "0.1.0",
-  "description": "Permanent verification plugin for Shpoont public marketplace releases.",
+  "version": "0.1.1",
+  "description": "Read the installed version and marker of the Shpoont Public Release Test plugin.",
   "author": {
     "name": "Shpoont",
     "url": "https://github.com/shpoont"
@@ -9,8 +9,8 @@
   "skills": "./skills/",
   "interface": {
     "displayName": "Shpoont Public Release Test",
-    "shortDescription": "Verify public plugin installation and updates.",
-    "longDescription": "A small, permanent test plugin for checking the Shpoont public release process. Run its release check to read the version and marker from the installed package.",
+    "shortDescription": "Read the installed public test version and marker.",
+    "longDescription": "Read the version and marker from this installed test package to help verify an installation or update. The check performs no writes or network requests; marketplace identity and release success must be verified separately.",
     "developerName": "Shpoont",
     "category": "Productivity",
     "capabilities": [],
