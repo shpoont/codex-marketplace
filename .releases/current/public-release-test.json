@@ -1,0 +1,7 @@
+{
+  "schema": 1,
+  "plugin": "public-release-test",
+  "version": "0.1.0",
+  "digest": "5659fd5090019181045e74439ce5a0a377c0e3c7a2579ba5aac51a7a7b50f601",
+  "action": "release"
+}
