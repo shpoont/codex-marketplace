@@ -1,0 +1,7 @@
+{
+  "name": "shpoont-public",
+  "interface": {
+    "displayName": "Shpoont Plugins"
+  },
+  "plugins": []
+}
