@@ -1,7 +1,0 @@
-{
-  "schema": 1,
-  "plugin": "public-release-test",
-  "version": "0.1.1",
-  "digest": "37d4216d12a3bf7f9bacf9d3143f373dd435a3e247b7fcf15c3456009ae790d0",
-  "action": "release"
-}

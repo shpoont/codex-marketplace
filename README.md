@@ -1,68 +1,61 @@
 # Shpoont Plugins
 
-Public marketplace for released Codex plugins maintained by shpoont.
+Public production marketplace for Shpoont Codex plugins.
 
 ## Catalog
 
-The marketplace is defined in [.agents/plugins/marketplace.json](.agents/plugins/marketplace.json).
-Its identifier is `shpoont-public`, and its display name is
-**Shpoont Plugins**.
+[marketplace.json](.agents/plugins/marketplace.json) lists available plugins.
+The marketplace identity remains `shpoont-public`; its display name is **Shpoont Plugins**.
+The catalog is currently empty and ready for the next plugin release.
 
-The catalog is active and includes the permanent
-[public release-test plugin](plugins/public-release-test/README.md). Its
-[current release receipt](.releases/current/public-release-test.json) identifies
-the selected version and package checksum. The catalog is the complete list of
-available plugins.
+The original release-test plugins were retired on 2026-09-17. Their packages and
+current-release pointers have been removed. Immutable version receipts and Git
+history remain as historical records, not installable catalog entries.
 
-Each plugin is developed in its own private source repository. This public
-repository contains the shipped files, including skill instructions, under
-`plugins/<plugin-name>/`. Catalog entries use local paths within this repository;
-installation requires no access to private source or operations repositories.
+Each plugin is developed in a private source repository. Only selected package
+files are distributed under `plugins/<plugin-id>/`; catalog entries point to
+those local paths. Installation does not require access to private source or
+operations repositories.
 
-## Register the marketplace
-
-Add the marketplace and install its release-test plugin:
+## Register, install and update
 
 ```sh
-codex plugin marketplace add https://github.com/shpoont/codex-marketplace-public.git --ref main
-codex plugin add public-release-test@shpoont-public
+codex plugin marketplace add https://github.com/shpoont/codex-marketplace.git --ref main
 codex plugin list --marketplace shpoont-public
 ```
 
-Start a fresh Codex task and ask **Run the public release check.** Follow the
-plugin's README for its expected output, troubleshooting and supported clients.
-Installation and updates have been verified with Codex CLI on macOS; desktop
-presentation has not been separately verified.
-
-## Refresh and update
+Choose a plugin from the catalog and replace `PLUGIN_ID` below with its name:
 
 ```sh
+codex plugin add PLUGIN_ID@shpoont-public
 codex plugin marketplace upgrade shpoont-public
-codex plugin add public-release-test@shpoont-public
-codex plugin list --marketplace shpoont-public
+codex plugin add PLUGIN_ID@shpoont-public
 ```
 
-Refreshing the catalog and updating an installed plugin are separate steps.
-Start a fresh task after updating. Use the fully qualified plugin name to select
-the intended marketplace when testing development and public versions.
+Refreshing the catalog and updating an installed plugin are separate operations.
+Start a fresh Codex task after installation or update and follow the selected
+plugin's README for prerequisites, prompts, supported clients and verification.
+Use the qualified identity to distinguish copies from different marketplaces.
 
-## Publication and access
+To uninstall a selected plugin:
 
-Test public release candidates in the private `shpoont-public-development`
-marketplace, hosted in `codex-marketplace-public-development`. The matching stable source
-tag requests promotion of that exact tested package. Package files and the
-catalog are published together; private source history is not exported.
+```sh
+codex plugin remove PLUGIN_ID@shpoont-public
+```
 
-Plugins intended to remain private are released through `shpoont-private`,
-hosted in `codex-marketplace-private`.
+## Publication and support
 
-Release procedures and tooling belong in the separate private
-`codex-marketplace-operations` repository. Tag-based publication is active. Only the
-selected deployable files and public version receipts are published here;
-source history, test evidence and full publication records stay private.
+Public releases promote the exact tested package from `shpoont-public-development`
+using a stable source tag at the candidate commit.
 
-Report installation or plugin problems in this repository's
-[issue tracker](https://github.com/shpoont/codex-marketplace-public/issues).
+The repository names and marketplace identities are separate:
 
-See the [OpenAI marketplace documentation](https://developers.openai.com/plugins/build/plugins#marketplace-metadata)
-for the catalog format.
+| Marketplace | Repository | Visibility |
+| --- | --- | --- |
+| `shpoont-public` | `codex-marketplace` | Public |
+| `shpoont-public-development` | `codex-marketplace-public-development` | Private |
+| `shpoont-private` | `codex-marketplace-private` | Private |
+
+Shared release tooling and private evidence belong in `codex-marketplace-operations`.
+Source history and internal test evidence are not published with public packages.
+Report problems in [marketplace Issues](https://github.com/shpoont/codex-marketplace/issues).
