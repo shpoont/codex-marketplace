@@ -57,7 +57,7 @@ Plugins intended to remain private are released through `shpoont-private`,
 hosted in `codex-marketplace-private`.
 
 Release procedures and tooling belong in the separate private
-`codex-plugins-operations` repository. Tag-based publication is active. Only the
+`codex-marketplace-operations` repository. Tag-based publication is active. Only the
 selected deployable files and public version receipts are published here;
 source history, test evidence and full publication records stay private.
 
