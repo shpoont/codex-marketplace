@@ -53,7 +53,7 @@ The repository names and marketplace identities are separate:
 | Marketplace | Repository | Visibility |
 | --- | --- | --- |
 | `shpoont-public` | `codex-marketplace` | Public |
-| `shpoont-public-development` | `codex-marketplace-public-development` | Private |
+| `shpoont-public-development` | `codex-marketplace-development` | Private |
 | `shpoont-private` | `codex-marketplace-private` | Private |
 
 Shared release tooling and private evidence belong in `codex-marketplace-operations`.
