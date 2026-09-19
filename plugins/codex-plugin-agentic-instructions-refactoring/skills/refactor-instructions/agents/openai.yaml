@@ -1,4 +1,0 @@
-interface:
-  display_name: "Refactor Instructions"
-  short_description: "Apply selected discovery findings"
-  default_prompt: "Use $refactor-instructions to implement the changes I selected from the discovery above."

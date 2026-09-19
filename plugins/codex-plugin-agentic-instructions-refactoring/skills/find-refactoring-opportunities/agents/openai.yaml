@@ -1,4 +1,0 @@
-interface:
-  display_name: "Find Refactoring Opportunities"
-  short_description: "Find instruction refactoring opportunities"
-  default_prompt: "Use $find-refactoring-opportunities to propose refactoring changes for the target I identify."
