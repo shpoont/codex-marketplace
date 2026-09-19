@@ -1,0 +1,25 @@
+{
+  "name": "agents-md-self-improvement",
+  "version": "0.1.5",
+  "description": "Manage AGENTS.md review schedules that load the enabled plugin policy at each run.",
+  "author": {
+    "name": "Shpoont"
+  },
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "AGENTS.md Self-Improvement",
+    "shortDescription": "Maintain project instruction-review schedules.",
+    "longDescription": "Manage bounded AGENTS.md reviewers that load current plugin policy at each run; audit task bindings and migrate copied prompts.",
+    "developerName": "Shpoont",
+    "category": "Productivity",
+    "capabilities": [
+      "Interactive",
+      "Write"
+    ],
+    "defaultPrompt": [
+      "Audit my AGENTS.md review schedules.",
+      "Add a project to AGENTS.md self-improvement."
+    ],
+    "websiteURL": "https://github.com/shpoont/codex-marketplace/tree/main/plugins/agents-md-self-improvement"
+  }
+}
