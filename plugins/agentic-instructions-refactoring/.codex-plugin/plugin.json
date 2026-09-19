@@ -1,0 +1,23 @@
+{
+  "name": "agentic-instructions-refactoring",
+  "version": "0.1.3",
+  "description": "Discover refactoring opportunities in agent instructions, then implement selected findings while preserving intended behavior and requirements.",
+  "author": {
+    "name": "shpoont"
+  },
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Agentic Instructions Refactoring",
+    "shortDescription": "Find opportunities and refactor instructions.",
+    "longDescription": "Discover worthwhile refactoring opportunities, then implement selected findings using the established context. Two skills cover custom agents and local assistant setups while preserving intended behavior, requirements, and useful context.",
+    "developerName": "shpoont",
+    "category": "Productivity",
+    "websiteURL": "https://github.com/shpoont/codex-marketplace/tree/main/plugins/agentic-instructions-refactoring",
+    "capabilities": [],
+    "defaultPrompt": [
+      "Find refactoring opportunities in the instructions for my local Codex setup.",
+      "Implement the refactoring changes I selected from the review of my local Codex setup.",
+      "Find refactoring opportunities in the instructions for the agent in this repository."
+    ]
+  }
+}
