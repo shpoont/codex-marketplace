@@ -1,0 +1,7 @@
+{
+  "schema": 1,
+  "plugin": "codex-plugin-agentic-instructions-refactoring",
+  "version": "0.1.2",
+  "digest": "bd0e547d6c6357746059b9c7889c4dd4c5a578af056be726d25ce158d33b2b84",
+  "action": "release"
+}
