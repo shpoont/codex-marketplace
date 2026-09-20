@@ -1,23 +1,33 @@
 {
   "name": "agentic-instructions-refactoring",
-  "version": "0.1.3",
-  "description": "Discover refactoring opportunities in agent instructions, then implement selected findings while preserving intended behavior and requirements.",
+  "version": "0.1.6",
+  "description": "Review AI agent instructions for maintainability problems, then apply only the refactoring changes the user selects.",
   "author": {
-    "name": "shpoont"
+    "name": "Shpoont"
   },
   "skills": "./skills/",
   "interface": {
-    "displayName": "Agentic Instructions Refactoring",
-    "shortDescription": "Find opportunities and refactor instructions.",
-    "longDescription": "Discover worthwhile refactoring opportunities, then implement selected findings using the established context. Two skills cover custom agents and local assistant setups while preserving intended behavior, requirements, and useful context.",
-    "developerName": "shpoont",
+    "displayName": "Instruction Refactoring",
+    "shortDescription": "Refactor AI agent instructions",
+    "longDescription": "Make AI agent instructions clearer and easier to maintain. Review AGENTS.md, skills, plugin guidance, and related files for duplication, contradictions, stale details, and unclear boundaries. Then apply only the changes you select in the same task.\n\nThe plugin needs access to the instruction sources. Refactoring aims to preserve intended behavior, but you should review the resulting diff and test important workflows.",
+    "developerName": "Shpoont",
     "category": "Productivity",
     "websiteURL": "https://github.com/shpoont/codex-marketplace/tree/main/plugins/agentic-instructions-refactoring",
-    "capabilities": [],
+    "supportURL": "https://github.com/shpoont/codex-marketplace/issues",
+    "capabilities": [
+      "Review agent instructions",
+      "Find duplication and contradictions",
+      "Flag policy decisions",
+      "Apply selected refactors"
+    ],
     "defaultPrompt": [
-      "Find refactoring opportunities in the instructions for my local Codex setup.",
-      "Implement the refactoring changes I selected from the review of my local Codex setup.",
-      "Find refactoring opportunities in the instructions for the agent in this repository."
-    ]
+      "Find refactoring opportunities in my local Codex instructions and skills.",
+      "Review this repository's agent instructions for duplication and conflicts.",
+      "Apply only the instruction refactoring changes I selected above."
+    ],
+    "brandColor": "#4F46E5",
+    "brandColorDark": "#A5B4FC",
+    "composerIcon": "./assets/logo.svg",
+    "logo": "./assets/logo.svg"
   }
 }

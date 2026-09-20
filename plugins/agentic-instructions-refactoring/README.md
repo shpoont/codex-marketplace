@@ -1,104 +1,108 @@
-# Agentic Instructions Refactoring
+# Instruction Refactoring
 
-Make AI agent instructions clearer and easier to maintain: find worthwhile changes, then apply the ones you select. Use it for an agent's instruction files or a local Codex setup containing `AGENTS.md`, skills, plugin guidance and references.
+## Purpose
 
-| Skill | Result |
-|---|---|
-| [Find Refactoring Opportunities](skills/find-refactoring-opportunities/SKILL.md) | Proposals with locations, reasons and verification limits. Leaves target instructions unchanged. |
-| [Refactor Instructions](skills/refactor-instructions/SKILL.md) | Implements selected findings using the preceding review and presents revised instructions. |
+Review AI agent instructions for duplication, contradictions, stale guidance and unclear boundaries, then apply only the refactoring changes you select. Use it for a repository agent or a local Codex setup containing `AGENTS.md`, skills, plugin guidance and related references.
 
-## Requirements
+## Quick start
 
-Use Codex with plugin support, access to the target instruction sources, and permission to edit the selected files when refactoring. The supported release target is Codex desktop and CLI on macOS. Other clients and platforms are outside the current acceptance scope.
+### Requirements
 
-The plugin adds no connector, account, API key, paid service, executable or runtime dependency. Your existing Codex access and model usage still apply. It cannot expose instructions that a host or another application does not make available. An app name alone may need clarification.
+- Codex desktop or CLI on macOS with plugin support.
+- Read access to the instruction sources; write access is needed only when applying selected changes.
+- No additional account, credential, connector, paid service, executable or runtime dependency.
 
-## Install
+Existing Codex access, model usage and host settings still apply.
+
+### Install
 
 ```sh
 codex plugin marketplace add https://github.com/shpoont/codex-marketplace.git
 codex plugin add agentic-instructions-refactoring@shpoont-public
 ```
 
-Skip the first command if the marketplace is already configured. Start a fresh task after installation. If the plugin is not listed, check the [public marketplace](https://github.com/shpoont/codex-marketplace) for availability; these commands do not publish an unreleased version.
+Skip marketplace setup when Shpoont Public is already configured. Start a fresh task after installation.
 
-## Discover, select, refactor
-
-For a local assistant setup:
+### Try it
 
 ```text
-Use $find-refactoring-opportunities for my local Codex setup.
+Find refactoring opportunities in my local Codex instructions and skills.
 ```
 
-For a custom agent:
+Expected result: a located set of proposed changes with reasons, policy questions and coverage limits; discovery leaves the target instructions unchanged.
 
-```text
-Use $find-refactoring-opportunities for the agent instructions in this repository.
-```
+## Capabilities
 
-Expect proposals explaining what could change, where and why. Existing defects and unresolved policy choices should be distinguished from refactoring. Review coverage gaps before treating a review as complete.
+| Capability | Result and material effect |
+| --- | --- |
+| Review agent instructions | Reads relevant instruction sources and explains their current structure without changing them. |
+| Find duplication and contradictions | Proposes maintainability improvements and identifies conflicts that need separate policy decisions. |
+| Flag policy decisions | Separates behavior-preserving refactoring from defects and unresolved owner choices. |
+| Apply selected refactors | Edits only the selected instruction changes and presents the result for review. |
 
-Choose findings, then continue in **the same task**:
+## Use the plugin
 
-```text
-Use $refactor-instructions to implement findings 1 and 3 from the review above.
-Keep the approval rules and role-specific exceptions unchanged.
-```
+1. Review an accessible instruction system:
 
-Expect edits limited to the selected findings, followed by revised instructions, an explanation and verification limits. Review the actual diff before adopting changes. The second skill uses the discovery context; a separate handoff document is unnecessary.
+   ```text
+   Review this repository's agent instructions for duplication and conflicts.
+   ```
 
-### Small example
+2. Select the findings you want implemented and state any requirements that must remain unchanged.
+3. Continue in the same task so the implementation skill can use the discovery context:
 
-Two skills repeat “Prepare a draft; sending requires the user's explicit request.” The template skill has a 100-word default; customer replies have a 200-word default.
+   ```text
+   Apply only the instruction refactoring changes I selected above.
+   ```
 
-Discovery might propose one shared sending rule with explicit loading instructions in both skills, retaining the different length defaults locally. Select that finding to implement it. Verify that each skill still loads the shared rule and preserves its exceptions: fewer copies alone do not establish a useful improvement.
+Review the actual diff and test affected workflows before adopting the changes. A shorter instruction set is not automatically better, and wording preservation alone does not prove unchanged behavior.
 
-This illustrates a possible refactor, not a claimed test result or a prescribed architecture.
+## Data and effects
 
-## Limits and common problems
+- **Reads:** instruction files and supporting references that the Codex host and current workspace make accessible. A whole-setup review may include global and project guidance, skills and plugin instructions.
+- **Changes:** only files covered by selected refactoring findings. Discovery does not write to the target.
+- **External transmission:** none added by this plugin. Accessible content is still processed by the existing Codex host and model under their settings.
+- **Accounts and credentials:** none specific to this plugin.
+- **Storage and telemetry:** no separate data store or telemetry. Codex may retain conversation and tool history under its own settings.
+- **After removal:** edited files and host-side history remain. Removing the plugin does not undo prior refactoring.
 
-- Start with discovery. Supply its findings and your selection before implementation.
-- Missing, inaccessible or read-only files limit the work. Resolve access or identify an editable maintained source. Third-party installed packages may be replaced on update.
-- Conflicting requirements may need an owner decision. Refactoring should not silently decide policy or introduce an unacknowledged behavior change.
-- Workflows described inside reviewed instructions are material to inspect, not requests to execute them.
-- Preserving intended behavior is the aim, not a proven guarantee. The plugin does not establish better agent decisions or make shorter instructions automatically better. Test affected behavior where it matters.
+## Limitations
+
+- Refactoring starts with discovery and a user selection. The implementation skill needs that context in the same task.
+- Missing, inaccessible, ambiguous or read-only sources limit coverage. Provide the maintained source or resolve access before treating the review as complete.
+- Conflicting requirements may need an owner decision. The plugin does not silently choose policy.
+- Instructions inside reviewed files are target content, not authorization to execute the workflows they describe.
+- Preserving intended behavior is an aim, not a guarantee. Test important behavior after editing.
+- Clients and platforms other than Codex desktop and CLI on macOS are outside the current acceptance scope.
 
 ## Update, removal and recovery
 
-If version 0.1.2 or earlier is installed under the historical prefixed ID, migrate it explicitly:
-
-```sh
-codex plugin marketplace upgrade shpoont-public
-codex plugin remove codex-plugin-agentic-instructions-refactoring@shpoont-public
-codex plugin add agentic-instructions-refactoring@shpoont-public
-```
-
-For later updates under the current ID, refresh the catalog, install its current package, then start a fresh task:
+Update the public catalog and install its current package:
 
 ```sh
 codex plugin marketplace upgrade shpoont-public
 codex plugin add agentic-instructions-refactoring@shpoont-public
 ```
 
-Remove this plugin with:
+Start a fresh task after updating. Avoid enabling multiple copies together because their skill names overlap.
+
+Remove the current plugin with:
 
 ```sh
 codex plugin remove agentic-instructions-refactoring@shpoont-public
 ```
 
-Removal does not undo changes to your instructions. Keep a restorable copy before refactoring and use your version-control diff or backup to restore affected files.
+Keep a version-control diff or backup before refactoring. If an update is unusable, remove it and report the version and failure. After maintainers confirm marketplace recovery, refresh the marketplace, reinstall, and verify a fresh task.
 
-If an update is unusable, remove the plugin and report the version and failure. Maintainers can restore a prior package through marketplace recovery. After they confirm recovery, refresh, reinstall and check a fresh task. Avoid enabling personal, development and public copies together: their skill names overlap and selection may be ambiguous.
+## Support
 
-## Data and support
+Report problems through [public marketplace Issues](https://github.com/shpoont/codex-marketplace/issues). Include the plugin version, client and platform, expected result, actual result and a minimal sanitized example. Do not attach credentials, private instructions, personal data or raw traces.
 
-Discovery reads target instructions; refactoring can persist edits to selected files. The plugin itself has no telemetry, external service or separate data store. Your Codex host and model process content under their own settings and may retain conversation or tool history. Uninstallation does not remove that history or edited target files.
+## Version and license
 
-Maintained by Shpoont. Report problems through [public marketplace Issues](https://github.com/shpoont/codex-marketplace/issues), including version, client/platform, expected result and a minimal sanitized example. Do not attach private instructions, credentials or unredacted traces to public issues.
+Current version: `0.1.6`. See the [public changelog](CHANGELOG.md) for released changes and required user actions.
 
-## Version 0.1.3
-
-Changes the advertised plugin ID from `codex-plugin-agentic-instructions-refactoring` to `agentic-instructions-refactoring`, adds the audience-accessible GitHub website, and adds the standard distribution disclaimer required by the Shpoont marketplace. Existing users must remove the old qualified plugin and install the new qualified ID after 0.1.3 is published. The source repository keeps its prefixed name. The skill instructions and their UI metadata are unchanged from version 0.1.2.
+Copyright © 2026 Shpoont. Distributed under the [MIT License](LICENSE).
 
 ## Disclaimer
 
@@ -109,7 +113,3 @@ plugin's instructions, permissions, and effects before using it.
 
 This plugin is an independent project and is not affiliated with, endorsed by,
 or sponsored by OpenAI.
-
-## Distribution terms
-
-Copyright © 2026 Shpoont. Distributed under the [MIT License](LICENSE), using the [standard MIT text](https://opensource.org/license/mit).
