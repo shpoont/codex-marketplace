@@ -6,16 +6,9 @@ Public production marketplace for Shpoont Codex plugins.
 
 [marketplace.json](.agents/plugins/marketplace.json) lists available plugins.
 The marketplace identity remains `shpoont-public`; its display name is **Shpoont Plugins**.
-The catalog is currently empty and ready for the next plugin release.
-
-The original release-test plugins were retired on 2026-09-17. Their packages and
-current-release pointers have been removed. Immutable version receipts and Git
-history remain as historical records, not installable catalog entries.
-
-Each plugin is developed in a private source repository. Only selected package
-files are distributed under `plugins/<plugin-id>/`; catalog entries point to
-those local paths. Installation does not require access to private source or
-operations repositories.
+Each catalog entry points to a complete installable package under
+`plugins/<plugin-id>/`. Everything an end user needs to understand, install,
+use, update and remove a listed plugin is published in this repository.
 
 ## Register, install and update
 
@@ -43,19 +36,6 @@ To uninstall a selected plugin:
 codex plugin remove PLUGIN_ID@shpoont-public
 ```
 
-## Publication and support
+## Support
 
-Public releases promote the exact tested package from `shpoont-public-development`
-using a stable source tag at the candidate commit.
-
-The repository names and marketplace identities are separate:
-
-| Marketplace | Repository | Visibility |
-| --- | --- | --- |
-| `shpoont-public` | `codex-marketplace` | Public |
-| `shpoont-public-development` | `codex-marketplace-development` | Private |
-| `shpoont-private` | `codex-marketplace-private` | Private |
-
-Shared release tooling and private evidence belong in `codex-marketplace-operations`.
-Source history and internal test evidence are not published with public packages.
 Report problems in [marketplace Issues](https://github.com/shpoont/codex-marketplace/issues).
