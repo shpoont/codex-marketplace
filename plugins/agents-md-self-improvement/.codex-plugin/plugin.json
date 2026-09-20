@@ -1,25 +1,33 @@
 {
   "name": "agents-md-self-improvement",
-  "version": "0.1.5",
-  "description": "Manage AGENTS.md review schedules that load the enabled plugin policy at each run.",
+  "version": "0.1.7",
+  "description": "Keep project AGENTS.md guidance useful through recurring, evidence-based reviews.",
   "author": {
     "name": "Shpoont"
   },
   "skills": "./skills/",
   "interface": {
     "displayName": "AGENTS.md Self-Improvement",
-    "shortDescription": "Maintain project instruction-review schedules.",
-    "longDescription": "Manage bounded AGENTS.md reviewers that load current plugin policy at each run; audit task bindings and migrate copied prompts.",
+    "shortDescription": "Keep AGENTS.md reviews current",
+    "longDescription": "Keep project instructions useful through recurring, evidence-based AGENTS.md reviews.\n\nAdd projects to a private local registry, audit or migrate their saved review tasks, and run bounded reviews that can update only the selected root AGENTS.md. Reviews require accessible source tasks, Codex desktop scheduling tools, and exactly one enabled copy of this plugin.",
     "developerName": "Shpoont",
     "category": "Productivity",
     "capabilities": [
-      "Interactive",
-      "Write"
+      "Audit AGENTS.md schedules",
+      "Add review schedules",
+      "Migrate saved tasks",
+      "Run bounded reviews"
     ],
     "defaultPrompt": [
-      "Audit my AGENTS.md review schedules.",
-      "Add a project to AGENTS.md self-improvement."
+      "Audit all of my AGENTS.md review schedules and report any drift.",
+      "Add this project to recurring AGENTS.md self-improvement reviews.",
+      "Migrate my existing AGENTS.md review tasks to the current plugin policy."
     ],
-    "websiteURL": "https://github.com/shpoont/codex-marketplace/tree/main/plugins/agents-md-self-improvement"
+    "websiteURL": "https://github.com/shpoont/codex-marketplace/tree/main/plugins/agents-md-self-improvement",
+    "supportURL": "https://github.com/shpoont/codex-marketplace/issues",
+    "brandColor": "#16324F",
+    "brandColorDark": "#5EEAD4",
+    "composerIcon": "./assets/agents-md-self-improvement.svg",
+    "logo": "./assets/agents-md-self-improvement.svg"
   }
 }

@@ -1,0 +1,7 @@
+interface:
+  display_name: "Run AGENTS.md Review"
+  short_description: "Review one project and update only its root AGENTS.md"
+  icon_small: "./assets/icon.svg"
+  icon_large: "./assets/icon.svg"
+  brand_color: "#16324F"
+  default_prompt: "Run this configured AGENTS.md review and report the evidence used."

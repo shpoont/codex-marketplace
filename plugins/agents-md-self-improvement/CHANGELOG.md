@@ -1,0 +1,92 @@
+# Changelog
+
+## Purpose
+
+Explain user-visible changes to AGENTS.md Self-Improvement and any action users
+must take when installing or updating it.
+
+## Rationale
+
+Users should be able to understand how a release affects capabilities,
+compatibility, setup, data and safe use without reading development records.
+
+## 0.1.7 — 2026-09-20
+
+### Added
+
+- Adds a complete consumer guide, public changelog, marketplace logo and
+  deliberate presentation metadata for both bundled skills.
+- Adds three distinct starter requests and clearer marketplace capabilities for
+  auditing schedules, adding reviews and migrating saved tasks.
+
+### Changed
+
+- Rewrites listing and README copy around user results, effects, limitations,
+  recovery and support.
+- Links the plugin website to its public marketplace package and support to the
+  public marketplace issue tracker.
+
+No schedule migration is required. Review policy 1.0.0, task wrappers, runtime
+selection and the root-AGENTS.md-only write boundary are unchanged.
+
+## 0.1.5 — 2026-09-19
+
+### Changed
+
+- Linked the public marketplace package and added the standard distribution
+  disclaimer.
+
+Runtime policy and review behavior were unchanged.
+
+## 0.1.4 — 2026-09-18
+
+### Fixed
+
+- Resolved the enabled installed package from fresh Codex CLI inventory even
+  when an existing task's skill catalog still described an older version.
+- Rejected stale helpers, mismatched manifests, symlinked resources and unknown
+  installation layouts before review.
+
+Existing 0.1.3 reference wrappers required one synchronization to adopt the
+live-inventory discovery contract.
+
+## 0.1.3 — 2026-09-18
+
+### Added
+
+- Added the stable `agents-md-review` execution entry point and
+  `plugin-reference/v1` task contract.
+- Added live policy loading with installed version, policy version and SHA-256
+  provenance.
+
+### Changed
+
+- Scheduled tasks retain project bindings and fixed authority while loading
+  shared policy from the enabled plugin. Legacy copied-policy schedules require
+  a one-time migration.
+
+## 0.1.2 — 2026-09-18
+
+### Added
+
+- Added consumer documentation, the MIT license, data-handling details and a
+  public support route.
+
+### Changed
+
+- Documented installed use, support, data handling and failure boundaries.
+
+## 0.1.1 — 2026-09-17
+
+### Changed
+
+- Standardized scheduled task names as `Improve <project> AGENTS.md`.
+
+## 0.1.0 — 2026-09-11
+
+### Added
+
+- Added the external project registry, deterministic task rendering and
+  read-only schedule drift audit.
+- Added bounded review policy with a root-AGENTS.md-only write boundary and
+  byte-for-byte no-op behavior when evidence does not support a change.

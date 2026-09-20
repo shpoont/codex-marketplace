@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "plugin": "agents-md-self-improvement",
-  "version": "0.1.5",
-  "digest": "c45bb6c51b299d03451d9b2e8bb9332f4851e4897bb84ee206b5d35a53709c2c",
+  "version": "0.1.7",
+  "digest": "fae970cbf8cba315274e71b39fdf66e469757197a7ca3f356debc1bb92dba091",
   "action": "release"
 }
