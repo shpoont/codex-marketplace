@@ -1,7 +1,0 @@
-interface:
-  display_name: "Apply Instruction Refactors"
-  short_description: "Apply the instruction changes you selected"
-  icon_small: "./assets/icon.svg"
-  icon_large: "./assets/icon.svg"
-  brand_color: "#7C3AED"
-  default_prompt: "Use $refactor-instructions to apply only the changes I selected above."
