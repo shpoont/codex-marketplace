@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256" role="img" aria-labelledby="title desc">
+  <title id="title">Apply Instruction Refactors</title>
+  <desc id="desc">A pencil editing an instruction document.</desc>
+  <rect width="256" height="256" rx="52" fill="#7C3AED"/>
+  <path d="M58 38h90l36 36v134H58z" fill="#FFFFFF"/>
+  <path d="M148 38v36h36" fill="#EDE9FE"/>
+  <path d="M83 101h70M83 128h58M83 155h40" fill="none" stroke="#7C3AED" stroke-width="11" stroke-linecap="round"/>
+  <path d="M125 191l11-38 55-55 27 27-55 55z" fill="#F5F3FF" stroke="#4C1D95" stroke-width="9" stroke-linejoin="round"/>
+  <path d="M187 102l27 27M125 191l38-11" fill="none" stroke="#4C1D95" stroke-width="9" stroke-linecap="round"/>
+</svg>

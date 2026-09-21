@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256" role="img" aria-labelledby="title desc">
+  <title id="title">Refactor Agentic Instructions</title>
+  <desc id="desc">A document with two opposing arrows that represent a careful rewrite.</desc>
+  <rect width="256" height="256" rx="52" fill="#4F46E5"/>
+  <path d="M66 38h80l44 44v136H66z" fill="#FFFFFF"/>
+  <path d="M146 38v44h44" fill="#C7D2FE"/>
+  <path d="M91 112h74M91 137h74" fill="none" stroke="#4F46E5" stroke-width="12" stroke-linecap="round"/>
+  <path d="M91 168h71l-14-14M165 191H94l14 14" fill="none" stroke="#0F766E" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
