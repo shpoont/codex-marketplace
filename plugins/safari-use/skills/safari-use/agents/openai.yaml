@@ -1,0 +1,7 @@
+interface:
+  display_name: "Safari Use"
+  short_description: "Carry out web tasks in Safari"
+  default_prompt: "Use $safari-use to inspect this page in Safari and help me complete the next web task."
+  icon_small: "./assets/icon.svg"
+  icon_large: "./assets/icon.svg"
+  brand_color: "#2563EB"

@@ -1,0 +1,36 @@
+{
+  "name": "safari-use",
+  "version": "0.1.1",
+  "description": "Let an agent use Safari for web tasks in your existing browser session while keeping each action tied to an explicit window.",
+  "author": {
+    "name": "Shpoont"
+  },
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Safari Use",
+    "shortDescription": "Let your agent use Safari",
+    "longDescription": "Let your agent use Safari to carry out web tasks in your existing browser session. Ask it to inspect pages and tabs, read visible content, click visible controls, and verify what changed after each action. It works in one explicit Safari window at a time and can use sites where you are already signed in. It will not bring Safari forward or switch to another existing window without your approval.",
+    "developerName": "Shpoont",
+    "category": "Productivity",
+    "websiteURL": "https://github.com/shpoont/codex-marketplace/tree/main/plugins/safari-use",
+    "supportURL": "https://github.com/shpoont/codex-marketplace/issues",
+    "privacyPolicyURL": "https://github.com/shpoont/codex-marketplace/blob/main/plugins/safari-use/README.md#data-and-effects",
+    "termsOfServiceURL": "https://github.com/shpoont/codex-marketplace/blob/main/plugins/safari-use/README.md#version-and-license",
+    "capabilities": [
+      "Inspect pages and tabs",
+      "Read visible content",
+      "Click visible controls",
+      "Verify page changes",
+      "Use signed-in sessions"
+    ],
+    "defaultPrompt": [
+      "Use Safari to inspect this webpage and summarize its visible content.",
+      "Use Safari to click the visible Continue button and verify the result.",
+      "Use my Safari session to check this signed-in page without bringing Safari forward."
+    ],
+    "brandColor": "#2563EB",
+    "brandColorDark": "#60A5FA",
+    "composerIcon": "./assets/logo.svg",
+    "logo": "./assets/logo.svg"
+  }
+}
