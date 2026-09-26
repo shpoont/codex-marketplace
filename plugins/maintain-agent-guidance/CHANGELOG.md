@@ -10,6 +10,19 @@ must take when installing or updating it.
 Users should be able to understand how a release affects capabilities,
 compatibility, setup, data and safe use without reading development records.
 
+## 0.2.1 — 2026-09-26
+
+### Changed
+
+- Shows `Leon.id Komarovsky` as both author and developer on the plugin card.
+- Uses the `b2a48b-public` marketplace name in installation and recovery
+  instructions. The public GitHub repository and support URLs are unchanged.
+
+Users with an existing installation should follow the marketplace migration
+instructions before updating. Review policy, saved task references, project
+registry and root-AGENTS.md-only authority are unchanged; no schedule rewrite
+is required for this release.
+
 ## 0.2.0 — 2026-09-20
 
 ### Changed

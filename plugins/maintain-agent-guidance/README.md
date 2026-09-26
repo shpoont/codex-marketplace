@@ -25,11 +25,13 @@ available.
 
 ```sh
 codex plugin marketplace add https://github.com/shpoont/codex-marketplace.git --ref main
-codex plugin add maintain-agent-guidance@shpoont-public --json
+codex plugin add maintain-agent-guidance@b2a48b-public --json
 ```
 
 Skip marketplace setup when it is already configured. Start a fresh task after
-installation.
+installation. If an older marketplace copy is installed, keep only the new
+copy enabled, audit existing review schedules, then remove the older copy once
+the audit passes.
 
 ### Try it
 
@@ -129,9 +131,9 @@ excerpts or credentials in public support reports.
 ## Update, removal and recovery
 
 ```sh
-codex plugin marketplace upgrade shpoont-public
-codex plugin add maintain-agent-guidance@shpoont-public --json
-codex plugin remove maintain-agent-guidance@shpoont-public
+codex plugin marketplace upgrade b2a48b-public
+codex plugin add maintain-agent-guidance@b2a48b-public --json
+codex plugin remove maintain-agent-guidance@b2a48b-public
 ```
 
 Keep only one marketplace copy enabled and start a fresh task after installing
@@ -143,20 +145,20 @@ Removing the plugin does not remove schedules. Reference-based reviews stop
 without editing until a valid copy is enabled again; legacy copied-policy tasks
 remain self-contained. Pause or remove schedules through Codex when intended,
 then verify the saved state before deleting registry records. For a broken
-installation, reinstall from `shpoont-public`, disable competing copies and
+installation, reinstall from `b2a48b-public`, disable competing copies and
 audit before creating any replacement task.
 
 ## Support
 
 Report problems at
-[Shpoont marketplace support](https://github.com/shpoont/codex-marketplace/issues).
+[b2a48b marketplace support](https://github.com/shpoont/codex-marketplace/issues).
 Include the plugin version, Codex client and macOS version, Python version,
 expected result, actual result and a minimal sanitized example. Do not attach
 credentials, private instructions, personal data or raw traces.
 
 ## Version and license
 
-Current version: `0.2.0`. See the [public changelog](CHANGELOG.md) for released
+Current version: `0.2.1`. See the [public changelog](CHANGELOG.md) for released
 changes and required user actions. Distributed under the [MIT License](LICENSE).
 Python and Codex are prerequisites with their own terms; no third-party runtime
 libraries are vendored.

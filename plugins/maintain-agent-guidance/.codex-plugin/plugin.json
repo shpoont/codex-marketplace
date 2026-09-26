@@ -1,16 +1,16 @@
 {
   "name": "maintain-agent-guidance",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Keep project AGENTS.md guidance useful through recurring, evidence-based reviews.",
   "author": {
-    "name": "Shpoont"
+    "name": "Leon.id Komarovsky"
   },
   "skills": "./skills/",
   "interface": {
     "displayName": "Maintain Agent Guidance",
     "shortDescription": "Keep agent guidance current",
     "longDescription": "Keep project agent guidance useful through recurring, evidence-based AGENTS.md reviews.\n\nRegister projects in a private local registry, audit or migrate their saved review tasks, and run bounded reviews that can update only the selected root AGENTS.md. Reviews require accessible source tasks, Codex desktop scheduling tools, and exactly one enabled copy of this plugin.",
-    "developerName": "Shpoont",
+    "developerName": "Leon.id Komarovsky",
     "category": "Productivity",
     "capabilities": [
       "Audit AGENTS.md schedules",
