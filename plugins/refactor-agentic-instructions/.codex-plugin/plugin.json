@@ -1,16 +1,16 @@
 {
   "name": "refactor-agentic-instructions",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Review AI agent instructions for maintainability problems, then apply only the refactoring changes the user selects.",
   "author": {
-    "name": "Shpoont"
+    "name": "Leon.id Komarovsky"
   },
   "skills": "./skills/",
   "interface": {
     "displayName": "Refactor Agentic Instructions",
     "shortDescription": "Refactor AI agent instructions",
     "longDescription": "Make AI agent instructions clearer and easier to maintain. Review AGENTS.md, skills, plugin guidance, and related files for duplication, contradictions, stale details, and unclear boundaries. Then apply only the changes you select in the same task.\n\nThe plugin needs access to the instruction sources. Refactoring aims to preserve intended behavior, but you should review the resulting diff and test important workflows.",
-    "developerName": "Shpoont",
+    "developerName": "Leon.id Komarovsky",
     "category": "Productivity",
     "websiteURL": "https://github.com/shpoont/codex-marketplace/tree/main/plugins/refactor-agentic-instructions",
     "supportURL": "https://github.com/shpoont/codex-marketplace/issues",

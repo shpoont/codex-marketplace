@@ -2,6 +2,18 @@
 
 User-visible changes to Refactor Agentic Instructions and any action required when installing or updating it.
 
+## 0.2.1 — 2026-09-26
+
+### Changed
+
+- Show **Leon.id Komarovsky** as the plugin author and developer.
+- Use **b2a48b Public** as the marketplace name in current installation and maintenance instructions.
+- Keep both skills and their discovery-before-refactoring behavior unchanged.
+
+### Action required
+
+- Install `refactor-agentic-instructions@b2a48b-public` and start a fresh task. Remove the former `@shpoont-public` installation after confirming the new one works.
+
 ## 0.2.0 — 2026-09-20
 
 ### Changed

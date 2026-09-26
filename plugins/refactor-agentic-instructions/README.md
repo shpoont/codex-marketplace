@@ -18,10 +18,10 @@ Existing Codex access, model usage and host settings still apply.
 
 ```sh
 codex plugin marketplace add https://github.com/shpoont/codex-marketplace.git
-codex plugin add refactor-agentic-instructions@shpoont-public
+codex plugin add refactor-agentic-instructions@b2a48b-public
 ```
 
-Skip marketplace setup when Shpoont Public is already configured. Start a fresh task after installation.
+Skip marketplace setup when b2a48b Public is already configured. Start a fresh task after installation.
 
 ### Try it
 
@@ -80,8 +80,8 @@ Review the actual diff and test affected workflows before adopting the changes. 
 Update the public catalog and install its current package:
 
 ```sh
-codex plugin marketplace upgrade shpoont-public
-codex plugin add refactor-agentic-instructions@shpoont-public
+codex plugin marketplace upgrade b2a48b-public
+codex plugin add refactor-agentic-instructions@b2a48b-public
 ```
 
 Start a fresh task after updating. Avoid enabling multiple copies together because their skill names overlap.
@@ -89,7 +89,7 @@ Start a fresh task after updating. Avoid enabling multiple copies together becau
 Remove the current plugin with:
 
 ```sh
-codex plugin remove refactor-agentic-instructions@shpoont-public
+codex plugin remove refactor-agentic-instructions@b2a48b-public
 ```
 
 Keep a version-control diff or backup before refactoring. If an update is unusable, remove it and report the version and failure. After maintainers confirm marketplace recovery, refresh the marketplace, reinstall, and verify a fresh task.
@@ -100,9 +100,9 @@ Report problems through [public marketplace Issues](https://github.com/shpoont/c
 
 ## Version and license
 
-Current version: `0.2.0`. See the [public changelog](CHANGELOG.md) for released changes and required user actions.
+Current version: `0.2.1`. See the [public changelog](CHANGELOG.md) for released changes and required user actions.
 
-Copyright © 2026 Shpoont. Distributed under the [MIT License](LICENSE).
+Copyright © 2026 b2a48b. Distributed under the [MIT License](LICENSE).
 
 ## Disclaimer
 
