@@ -10,6 +10,51 @@ updating it.
 Users should be able to understand changes to Safari automation, compatibility,
 data access and safe-use boundaries without reading private development records.
 
+## 0.1.4 — 2026-09-26
+
+### Improved
+
+- Removed harmless zero-tab Safari window remnants from normal window listings.
+- Treat cleanup as successful when Safari retains an empty internal window
+  object, avoiding noisy warnings after otherwise successful tasks.
+- Kept an opt-in `--include-empty` listing mode for relevant low-level
+  diagnostics without exposing empty remnants during ordinary use.
+
+### Required action
+
+- Start a fresh task after updating so it loads the quieter cleanup behavior.
+
+## 0.1.3 — 2026-09-26
+
+### Fixed
+
+- Prevented the visible-text click helper from choosing one control arbitrarily
+  when multiple visible controls are tied for the best match.
+- Added a structured `ambiguous-visible-match` result that reports the tied
+  candidates without scrolling, focusing or clicking any of them.
+- Preserved clicks when one candidate is uniquely best, even if lower-ranked
+  partial matches are also present.
+
+### Required action
+
+- Start a fresh task after updating so it loads the corrected helper.
+
+## 0.1.2 — 2026-09-26
+
+### Changed
+
+- Identified the card author and developer as `Leon.id Komarovsky`.
+- Updated the active public marketplace identity and installation examples to
+  `b2a48b-public`.
+- Updated current public branding and copyright text to `b2a48b` without
+  changing Safari behavior, permissions or helper scripts.
+
+### Required action
+
+- After the marketplace migration is published, replace the previous public
+  marketplace registration with `b2a48b-public` and install this version from
+  that identity.
+
 ## 0.1.1 — 2026-09-24
 
 ### Changed

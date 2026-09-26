@@ -21,11 +21,11 @@ window.
 
 ```sh
 codex plugin marketplace add https://github.com/shpoont/codex-marketplace.git
-codex plugin add safari-use@shpoont-public
+codex plugin add safari-use@b2a48b-public
 ```
 
-Skip marketplace setup when Shpoont Public is already configured. Start a fresh
-task after installation.
+Skip marketplace setup when `b2a48b-public` is already configured. Start a
+fresh task after installation.
 
 ### Try it
 
@@ -43,7 +43,7 @@ window without intentionally bringing Safari forward.
 | --- | --- |
 | Inspect pages and tabs | Reads live window IDs, tab indexes, URLs and titles without choosing a window by frontmost position. |
 | Read visible content | Runs page-local JavaScript in the current tab of one explicit window and returns structured observations. |
-| Click visible controls | Finds a visible matching control, clicks one best candidate and reports what was acted on. This changes the page. |
+| Click visible controls | Clicks a uniquely best visible match and reports what was acted on. It stops without clicking when equally ranked matches make the target ambiguous. |
 | Verify page changes | Re-observes the targeted page or window after each action and reports the actual state. |
 | Use signed-in sessions | Uses the browser session already available to Safari without copying or storing its credentials. |
 | Inspect Tab Groups | Reads Safari's private tab metadata only as advisory state and cross-checks it with live windows. |
@@ -102,10 +102,9 @@ sensitive page content in its output.
 - JavaScript probing needs Safari's Apple Events setting and macOS Automation
   permission. Resolve a denied permission instead of treating it as page
   success.
-- A JavaScript helper cannot run in a real zero-tab Safari window. Window listing
-  remains valid and reports that state explicitly.
-- Safari can keep a zero-tab window object after close. The
-  `empty_window_persisted` classification is a cleanup blocker, not success.
+- JavaScript execution still requires a target with a real tab. Window listings
+  omit Safari's empty implementation objects by default, and successful cleanup
+  does not surface those harmless remnants as warnings.
 - Named Tab Group identity comes from a private Safari database that may lag or
   change. It is never modified and ambiguous mappings remain uncertain.
 - Page structure can change. A missing or ambiguous visible control requires a
@@ -116,9 +115,9 @@ sensitive page content in its output.
 ## Update, removal and recovery
 
 ```sh
-codex plugin marketplace upgrade shpoont-public
-codex plugin add safari-use@shpoont-public
-codex plugin remove safari-use@shpoont-public
+codex plugin marketplace upgrade b2a48b-public
+codex plugin add safari-use@b2a48b-public
+codex plugin remove safari-use@b2a48b-public
 ```
 
 Start a fresh task after updating. Do not enable multiple copies of Safari Use
@@ -139,10 +138,10 @@ credentials, personal page data, private instructions or raw traces.
 
 ## Version and license
 
-Current version: `0.1.1`. See the [public changelog](CHANGELOG.md) for user-visible
+Current version: `0.1.4`. See the [public changelog](CHANGELOG.md) for user-visible
 changes and required actions.
 
-Copyright © 2026 Shpoont. Distributed under the [MIT License](LICENSE).
+Copyright © 2026 b2a48b. Distributed under the [MIT License](LICENSE).
 
 ## Disclaimer
 

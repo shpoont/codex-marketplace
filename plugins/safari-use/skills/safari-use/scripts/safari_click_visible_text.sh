@@ -6,7 +6,7 @@ usage() {
 Usage:
   safari_click_visible_text.sh --window-id <id> --text <visible text> [--exact]
 
-Click the best visible element matching text in the current tab of a Safari window.
+Click the uniquely best visible element matching text in the current tab of a Safari window.
 
 Options:
   --window-id <id>   Target Safari window id (required)
@@ -170,7 +170,39 @@ cat >"$tmp_js" <<EOF
       return a.label.length - b.label.length;
     });
 
-    const chosen = candidates[0];
+    const best = candidates[0];
+    const topCandidates = candidates.filter(
+      (candidate) => candidate.score === best.score && candidate.label.length === best.label.length
+    );
+
+    if (topCandidates.length > 1) {
+      return JSON.stringify({
+        clicked: false,
+        reason: 'ambiguous-visible-match',
+        target_text: targetText,
+        exact: exactMatch,
+        match_count: candidates.length,
+        top_match_count: topCandidates.length,
+        top_matches: topCandidates.map((candidate) => {
+          const rect = candidate.el.getBoundingClientRect();
+          return {
+            matched_text: candidate.label,
+            descriptor: candidate.id ? \`\${candidate.tag}#\${candidate.id}\` : candidate.tag,
+            bbox: {
+              x: Math.round(rect.x),
+              y: Math.round(rect.y),
+              width: Math.round(rect.width),
+              height: Math.round(rect.height),
+            },
+          };
+        }),
+        scanned_nodes: nodes.length,
+        url: location.href,
+        title: document.title,
+      });
+    }
+
+    const chosen = best;
     chosen.el.scrollIntoView({ block: 'center', inline: 'center' });
     if (typeof chosen.el.focus === 'function') {
       chosen.el.focus({ preventScroll: true });
@@ -186,6 +218,7 @@ cat >"$tmp_js" <<EOF
       matched_text: chosen.label,
       descriptor,
       match_count: candidates.length,
+      top_match_count: 1,
       scanned_nodes: nodes.length,
       bbox: {
         x: Math.round(rect.x),

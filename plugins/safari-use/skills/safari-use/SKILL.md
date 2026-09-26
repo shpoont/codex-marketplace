@@ -15,12 +15,16 @@ List Safari windows/tabs as JSON.
 ```bash
 ./scripts/safari_list_windows.sh
 ./scripts/safari_list_windows.sh --current-only
+./scripts/safari_list_windows.sh --include-empty
 ```
 
 Returns per-window:
 - `index`, `id`, `tab_count`, `current_tab_index`
 - tab entries with `index`, `current`, `url`, `title`
-- `tab_count` may be `0`; this helper remains valid for real Safari 0-tab windows and is the canonical way to inspect them.
+- omits Safari's empty window objects by default so they do not become task
+  targets or user-facing cleanup noise
+- `--include-empty` is diagnostic-only when an explicit window ID or low-level
+  Safari issue requires inspecting those objects
 
 ---
 
@@ -39,7 +43,8 @@ Preferred pattern (quote-safe): write JS to file, then run with `--js-file`.
 ---
 
 ### 3) `safari_click_visible_text.sh`
-Convenience click helper: finds the best **visible** element by text and clicks it.
+Convenience click helper: finds the uniquely best **visible** element by text and
+clicks it.
 
 ```bash
 ./scripts/safari_click_visible_text.sh --window-id 123 --text "Continue"
@@ -49,7 +54,11 @@ Convenience click helper: finds the best **visible** element by text and clicks 
 Behavior:
 - scans common interactive elements (`a`, `button`, `[role=button]`, etc.)
 - filters by visibility (`display`, `visibility`, `opacity`, bounds)
-- chooses best text match and returns JSON result
+- ranks exact, starts-with and contains matches, preferring interactive elements
+  and then shorter labels
+- clicks only when one candidate has the best rank
+- refuses to click when multiple candidates are tied for the best match, returning
+  `clicked: false`, `reason: ambiguous-visible-match` and structured match details
 
 ---
 
@@ -62,8 +71,9 @@ Attempt to close a specific Safari `window id` and report the resulting state as
 
 Behavior:
 - closes the targeted Safari window without assuming it disappears immediately
-- distinguishes `already_absent`, `closed`, `empty_window_persisted`, `window_still_open`, and `close_error`
-- treats Safari's real **0-tab window** state as an explicit cleanup blocker; if the result is `empty_window_persisted`, report that as the canonical blocker under current non-focus-stealing constraints instead of silently retrying or claiming success
+- distinguishes `already_absent`, `closed`, `window_still_open`, and `close_error`
+- treats a remaining empty Safari window object as `closed`; do not retry,
+  foreground Safari, or mention that implementation detail in the normal result
 
 ---
 
@@ -99,10 +109,10 @@ Tab Group identification pattern:
 ## Standard workflow (observe → act → observe)
 
 1. If the user did not explicitly ask to reuse an existing Safari window, create a new Safari window for the task. Then enumerate windows/tabs, record the new target `window id` (`safari_list_windows.sh`), and keep all later operations pinned to that `window id` rather than whichever Safari window is frontmost.
-2. Observe state with a JS probe (`safari_eval_js_window.sh` + JSON.stringify in JS) when the target window has at least one tab; if `tab_count` is `0`, use `safari_list_windows.sh` and treat that state explicitly.
+2. Observe state with a JS probe (`safari_eval_js_window.sh` + JSON.stringify in JS). If an explicitly supplied target has no tab, stop because that target is unusable; do not turn unrelated empty Safari window objects into task status.
 3. Perform one action (`safari_click_visible_text.sh` or custom JS).
 4. Re-probe and verify concrete state change.
-5. When cleaning up a dedicated Safari window, use `safari_close_window.sh` and inspect its classification instead of assuming `close` removed the window; if it returns `empty_window_persisted`, stop and report the canonical cleanup blocker.
+5. When cleaning up a dedicated Safari window, use `safari_close_window.sh` and inspect its classification. Report only a real cleanup failure such as `window_still_open` or `close_error`; an empty remnant is normalized to `closed` and needs no user-facing note.
 
 ## Guardrails
 
@@ -112,7 +122,9 @@ Tab Group identification pattern:
 - If page-local state in another Safari window/tab seems necessary, stop and ask the user before reusing it.
 - Do not intentionally `activate` Safari, bring it to front, or steal focus unless the user explicitly asks.
 - If any step appears to require Safari to become frontmost or to steal focus, stop and ask the user before proceeding.
-- Safari may keep a real 0-tab window alive after closing the last tab or window. `safari_list_windows.sh` can still inspect that window, but `safari_eval_js_window.sh` cannot run in it. No verified non-focus-stealing method currently exists to fully remove that window, so treat `empty_window_persisted` from `safari_close_window.sh` as the canonical cleanup blocker and report it explicitly.
+- Ignore unrelated empty Safari window objects. The listing helper omits them by
+  default, and successful cleanup stays successful when Safari retains an empty
+  implementation object. Use `--include-empty` only for relevant diagnostics.
 - Prefer JS temp files (`/tmp/*.js`) over long inline snippets to avoid quoting failures.
 - Keep outputs structured (JSON) and evidence-based (`url`, `title`, changed state).
 - Avoid printing sensitive data from page context.

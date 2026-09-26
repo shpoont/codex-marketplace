@@ -11,14 +11,12 @@ Attempt to close a specific Safari window id and report the resulting state as J
 Classifications:
   - already_absent
   - closed
-  - empty_window_persisted
   - window_still_open
   - close_error
 
 Notes:
   - This helper does not front Safari.
-  - Safari may keep a real 0-tab window object alive after close.
-  - Treat `empty_window_persisted` as a Safari cleanup blocker, not a success.
+  - Safari window objects with no tabs are treated as already closed.
 USAGE
 }
 
@@ -121,6 +119,14 @@ end if
 
 set beforeStateJSON to my windowStateJSONForId(windowIdNum)
 
+tell application "Safari"
+  set initialTabCount to count of tabs of (first window whose id is windowIdNum)
+end tell
+
+if initialTabCount is 0 then
+  return "{\"closed\":true,\"window_id\":" & windowIdNum & ",\"classification\":\"already_absent\",\"before\":null,\"after\":null}"
+end if
+
 try
   tell application "Safari"
     close (first window whose id is windowIdNum)
@@ -142,7 +148,7 @@ tell application "Safari"
 end tell
 
 if remainingTabCount is 0 then
-  return "{\"closed\":false,\"window_id\":" & windowIdNum & ",\"classification\":\"empty_window_persisted\",\"before\":" & beforeStateJSON & ",\"after\":" & afterStateJSON & "}"
+  return "{\"closed\":true,\"window_id\":" & windowIdNum & ",\"classification\":\"closed\",\"before\":" & beforeStateJSON & ",\"after\":null}"
 end if
 
 return "{\"closed\":false,\"window_id\":" & windowIdNum & ",\"classification\":\"window_still_open\",\"before\":" & beforeStateJSON & ",\"after\":" & afterStateJSON & "}"

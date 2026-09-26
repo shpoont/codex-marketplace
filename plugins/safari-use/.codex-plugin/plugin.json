@@ -1,16 +1,16 @@
 {
   "name": "safari-use",
-  "version": "0.1.1",
+  "version": "0.1.4",
   "description": "Let an agent use Safari for web tasks in your existing browser session while keeping each action tied to an explicit window.",
   "author": {
-    "name": "Shpoont"
+    "name": "Leon.id Komarovsky"
   },
   "skills": "./skills/",
   "interface": {
     "displayName": "Safari Use",
     "shortDescription": "Let your agent use Safari",
     "longDescription": "Let your agent use Safari to carry out web tasks in your existing browser session. Ask it to inspect pages and tabs, read visible content, click visible controls, and verify what changed after each action. It works in one explicit Safari window at a time and can use sites where you are already signed in. It will not bring Safari forward or switch to another existing window without your approval.",
-    "developerName": "Shpoont",
+    "developerName": "Leon.id Komarovsky",
     "category": "Productivity",
     "websiteURL": "https://github.com/shpoont/codex-marketplace/tree/main/plugins/safari-use",
     "supportURL": "https://github.com/shpoont/codex-marketplace/issues",
