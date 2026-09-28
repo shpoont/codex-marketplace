@@ -12,6 +12,10 @@ use, update and remove a listed plugin is published in this repository.
 
 ## Register, install and update
 
+If this repository is already registered under another marketplace name, remove
+its installed plugin copies and that registration before adding it again. Use
+`codex plugin list` and `codex plugin marketplace list` to identify those names.
+
 ```sh
 codex plugin marketplace add https://github.com/shpoont/codex-marketplace.git --ref main
 codex plugin list --marketplace b2a48b
