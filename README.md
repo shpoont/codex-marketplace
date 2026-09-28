@@ -16,6 +16,15 @@ If this repository is already registered under another marketplace name, remove
 its installed plugin copies and that registration before adding it again. Use
 `codex plugin list` and `codex plugin marketplace list` to identify those names.
 
+Remove each old copy, then remove the old registration once:
+
+```sh
+codex plugin remove PLUGIN_ID@OLD_MARKETPLACE_ID
+codex plugin marketplace remove OLD_MARKETPLACE_ID
+```
+
+Use the commands below to register the current name and reinstall each plugin.
+
 ```sh
 codex plugin marketplace add https://github.com/shpoont/codex-marketplace.git --ref main
 codex plugin list --marketplace b2a48b
