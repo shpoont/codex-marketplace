@@ -1,6 +1,6 @@
 {
   "name": "refactor-agentic-instructions",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "Review AI agent instructions for maintainability problems, then apply only the refactoring changes the user selects.",
   "author": {
     "name": "Leon.id Komarovsky"

@@ -2,17 +2,29 @@
 
 User-visible changes to Refactor Agentic Instructions and any action required when installing or updating it.
 
+## 0.2.2 — 2026-09-28
+
+### Changed
+
+- Use **b2a48b** as the marketplace name and `refactor-agentic-instructions@b2a48b` in installation, update and removal commands.
+- Describe earlier marketplace naming changes generically in this changelog. Repository and support URLs remain unchanged.
+- Keep both skills and their discovery-before-refactoring behavior unchanged.
+
+### Action required
+
+- If upgrading from a former marketplace name, migrate its registration and remove the earlier qualified plugin copy before enabling the current installation. Follow the [README installation commands](README.md) and start a fresh task.
+
 ## 0.2.1 — 2026-09-26
 
 ### Changed
 
 - Show **Leon.id Komarovsky** as the plugin author and developer.
-- Use **b2a48b Public** as the marketplace name in current installation and maintenance instructions.
+- Updated marketplace branding in installation and maintenance instructions.
 - Keep both skills and their discovery-before-refactoring behavior unchanged.
 
 ### Action required
 
-- Install `refactor-agentic-instructions@b2a48b-public` and start a fresh task. Remove the former `@shpoont-public` installation after confirming the new one works.
+- This version changed the qualified marketplace identity. Users needed to replace the earlier installation and start a fresh task.
 
 ## 0.2.0 — 2026-09-20
 
@@ -23,7 +35,7 @@ User-visible changes to Refactor Agentic Instructions and any action required wh
 
 ### Action required
 
-- This version uses a new installation identity. Remove `agentic-instructions-refactoring@shpoont-public` if it is installed, then install `refactor-agentic-instructions@shpoont-public` and start a fresh task.
+- This version changed the plugin installation identity. Users needed to replace the earlier `agentic-instructions-refactoring` installation and start a fresh task.
 
 ## 0.1.7 — 2026-09-20
 
@@ -72,7 +84,7 @@ User-visible changes to Refactor Agentic Instructions and any action required wh
 
 - Standardized the advertised plugin ID.
 - Added an audience-accessible public package page and the standard distribution disclaimer.
-- Earlier installations may need to remove the old qualified plugin before installing `agentic-instructions-refactoring@shpoont-public`.
+- Earlier installations needed to replace the old qualified plugin installation with the standardized plugin identity.
 
 ## 0.1.2 — 2026-09-19
 
