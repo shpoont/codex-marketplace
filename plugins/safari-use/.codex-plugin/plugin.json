@@ -1,6 +1,6 @@
 {
   "name": "safari-use",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "Let an agent use Safari for web tasks in your existing browser session while keeping each action tied to an explicit window.",
   "author": {
     "name": "Leon.id Komarovsky"

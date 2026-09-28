@@ -21,10 +21,10 @@ window.
 
 ```sh
 codex plugin marketplace add https://github.com/shpoont/codex-marketplace.git
-codex plugin add safari-use@b2a48b-public
+codex plugin add safari-use@b2a48b
 ```
 
-Skip marketplace setup when `b2a48b-public` is already configured. Start a
+Skip marketplace setup when `b2a48b` is already configured. Start a
 fresh task after installation.
 
 ### Try it
@@ -115,9 +115,9 @@ sensitive page content in its output.
 ## Update, removal and recovery
 
 ```sh
-codex plugin marketplace upgrade b2a48b-public
-codex plugin add safari-use@b2a48b-public
-codex plugin remove safari-use@b2a48b-public
+codex plugin marketplace upgrade b2a48b
+codex plugin add safari-use@b2a48b
+codex plugin remove safari-use@b2a48b
 ```
 
 Start a fresh task after updating. Do not enable multiple copies of Safari Use
@@ -138,8 +138,8 @@ credentials, personal page data, private instructions or raw traces.
 
 ## Version and license
 
-Current version: `0.1.4`. See the [public changelog](CHANGELOG.md) for user-visible
-changes and required actions.
+Current version: `0.1.5`. See the [public changelog](CHANGELOG.md) for
+user-visible changes and required actions.
 
 Copyright © 2026 b2a48b. Distributed under the [MIT License](LICENSE).
 

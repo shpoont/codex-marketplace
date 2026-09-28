@@ -10,6 +10,23 @@ updating it.
 Users should be able to understand changes to Safari automation, compatibility,
 data access and safe-use boundaries without reading private development records.
 
+## 0.1.5 — 2026-09-28
+
+### Changed
+
+- Updated production installation, update and removal commands to use the
+  simplified `b2a48b` marketplace identity.
+- Aligned distributed documentation and historical naming notes with the
+  current marketplace name without changing Safari behavior, permissions or
+  helper scripts.
+
+### Required action
+
+- Use `safari-use@b2a48b` for installation, updates and removal. If the
+  marketplace is still registered under a retired name, remove that
+  registration, add the same marketplace repository again, and start a fresh
+  task after installing 0.1.5.
+
 ## 0.1.4 — 2026-09-26
 
 ### Improved
@@ -44,16 +61,16 @@ data access and safe-use boundaries without reading private development records.
 ### Changed
 
 - Identified the card author and developer as `Leon.id Komarovsky`.
-- Updated the active public marketplace identity and installation examples to
-  `b2a48b-public`.
+- Updated the active production marketplace identity and installation examples
+  to the then-current b2a48b naming.
 - Updated current public branding and copyright text to `b2a48b` without
   changing Safari behavior, permissions or helper scripts.
 
 ### Required action
 
-- After the marketplace migration is published, replace the previous public
-  marketplace registration with `b2a48b-public` and install this version from
-  that identity.
+- After that marketplace migration is published, replace the preceding
+  marketplace registration and install this version from the then-current
+  production identity.
 
 ## 0.1.1 — 2026-09-24
 
