@@ -10,13 +10,27 @@ must take when installing or updating it.
 Users should be able to understand how a release affects capabilities,
 compatibility, setup, data and safe use without reading development records.
 
+## 0.2.2 — 2026-09-28
+
+### Changed
+
+- Uses `b2a48b` as the marketplace ID in installation, update, removal and
+  recovery instructions. GitHub repository and support URLs are unchanged.
+- Describes earlier marketplace naming changes without retired identifiers.
+
+Users with an older qualified installation should configure the current
+marketplace, install the new copy, keep only that copy enabled and audit saved
+review schedules before removing the older copy. Review policy, saved task
+references, project registry and root-AGENTS.md-only authority are unchanged;
+no schedule rewrite is required.
+
 ## 0.2.1 — 2026-09-26
 
 ### Changed
 
 - Shows `Leon.id Komarovsky` as both author and developer on the plugin card.
-- Uses the `b2a48b-public` marketplace name in installation and recovery
-  instructions. The public GitHub repository and support URLs are unchanged.
+- Updates marketplace branding in installation and recovery instructions.
+  GitHub repository and support URLs are unchanged.
 
 Users with an existing installation should follow the marketplace migration
 instructions before updating. Review policy, saved task references, project
@@ -54,8 +68,8 @@ registry path.
 
 - Rewrites listing and README copy around user results, effects, limitations,
   recovery and support.
-- Links the plugin website to its public marketplace package and support to the
-  public marketplace issue tracker.
+- Links the plugin website to its marketplace package and support to the
+  marketplace issue tracker.
 
 No schedule migration is required. Review policy 1.0.0, task wrappers, runtime
 selection and the root-AGENTS.md-only write boundary are unchanged.
@@ -64,7 +78,7 @@ selection and the root-AGENTS.md-only write boundary are unchanged.
 
 ### Changed
 
-- Linked the public marketplace package and added the standard distribution
+- Linked the marketplace package and added the standard distribution
   disclaimer.
 
 Runtime policy and review behavior were unchanged.

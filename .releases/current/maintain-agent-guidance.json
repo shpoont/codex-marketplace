@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "plugin": "maintain-agent-guidance",
-  "version": "0.2.1",
-  "digest": "4013406465791d6a07311e902a55e562210597a5d223dc05864d6aac2040547e",
+  "version": "0.2.2",
+  "digest": "f56a21c42d2f3c127260e8cb59782a9e2b6ff203124a228f11f7488edf4dcde0",
   "action": "release"
 }
