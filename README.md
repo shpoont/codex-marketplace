@@ -54,6 +54,7 @@ codex plugin remove PLUGIN_ID@b2a48b
 | Previous plugin ID | Current plugin ID |
 | --- | --- |
 | `refactor-agentic-instructions` | [`agent-instructions-refactoring`](plugins/agent-instructions-refactoring/README.md) |
+| `maintain-agent-guidance` | [`agent-instructions-improvement`](plugins/agent-instructions-improvement/README.md) |
 
 For an older installation, follow the current plugin README to install and
 select its replacement. Verify the new copy before removing the old one.
