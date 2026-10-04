@@ -49,6 +49,16 @@ To uninstall a selected plugin:
 codex plugin remove PLUGIN_ID@b2a48b
 ```
 
+## Renamed plugins
+
+| Previous plugin ID | Current plugin ID |
+| --- | --- |
+| `refactor-agentic-instructions` | [`agent-instructions-refactoring`](plugins/agent-instructions-refactoring/README.md) |
+
+For an older installation, follow the current plugin README to install and
+select its replacement. Verify the new copy before removing the old one.
+The replacement uses a new plugin ID; updating the old copy does not rename it.
+
 ## Support
 
 Report problems in [marketplace Issues](https://github.com/shpoont/codex-marketplace/issues).

@@ -1,7 +1,0 @@
-{
-  "schema": 1,
-  "plugin": "refactor-agentic-instructions",
-  "version": "0.2.2",
-  "digest": "7e0a8dc7591246b680e0eb5f9ab2de9add333ed24bb09e2a72609b24ecb0e782",
-  "action": "release"
-}
