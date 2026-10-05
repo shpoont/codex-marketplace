@@ -147,10 +147,13 @@ credentials, personal page data, private instructions or raw traces.
 
 ## Version and license
 
-Current version: `0.1.6`. See the [public changelog](CHANGELOG.md) for
+Current version: `0.1.7`. See the [public changelog](CHANGELOG.md) for
 user-visible changes and required actions.
 
-Copyright © 2026 b2a48b. Distributed under the [MIT License](LICENSE).
+Copyright © 2026 b2a48b. Plugin code and documentation are distributed under
+the [MIT License](LICENSE). The Apple Safari icon is excluded from that license;
+see the [Apple icon notice](assets/APPLE-ICON-NOTICE.md). The package does not
+grant rights to Apple's artwork or trademarks.
 
 ## Disclaimer
 

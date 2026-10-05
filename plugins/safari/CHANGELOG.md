@@ -10,6 +10,21 @@ updating it.
 Users should be able to understand changes to Safari automation, compatibility,
 data access and safe-use boundaries without reading private development records.
 
+## 0.1.7 — 2026-10-05
+
+### Changed
+
+- Replaced the custom compass with the official Safari application icon for
+  the plugin card, composer and skill row.
+- Kept the Safari skill, all helper scripts, permissions and behavior unchanged.
+- Documented Apple's ownership of the artwork and its exclusion from the
+  plugin's MIT License.
+
+### Required action
+
+- Start a fresh task after updating so it loads the updated icon metadata.
+  Safari behavior, setup and permission requirements are unchanged.
+
 ## 0.1.6 — 2026-10-04
 
 ### Changed

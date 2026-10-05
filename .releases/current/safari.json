@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "plugin": "safari",
-  "version": "0.1.6",
-  "digest": "0b1a28b9bf40ec53cdc794ffe7af6eff1360438843bd2a8530492812608141f9",
+  "version": "0.1.7",
+  "digest": "60aa2e99887ea435ab0c3d2ea369a2493edd94df45e04cb370fc1b4b4de360df",
   "action": "release"
 }
