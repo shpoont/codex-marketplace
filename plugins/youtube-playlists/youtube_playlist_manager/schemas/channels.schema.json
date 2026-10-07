@@ -1,0 +1,10 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Shared YouTube channel rules",
+  "description": "Edit the common rules used by both playlist targets. Field definitions live in settings.schema.json. Target identity and operational paths belong in development.yaml or watch-later.yaml.",
+  "allOf": [
+    {
+      "$ref": "settings.schema.json#/definitions/channelRules"
+    }
+  ]
+}

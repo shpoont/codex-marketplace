@@ -1,0 +1,273 @@
+# yaml-language-server: $schema=../youtube_playlist_manager/schemas/settings.schema.json
+# ILLUSTRATIVE CONFIGURATION — all account, playlist, channel and video IDs below
+# are fictional placeholders. Replace them and choose the scenarios you want.
+# This is a complete standalone file; validate it with:
+#   Ask the agent to create your external settings and validate the result.
+# Validation checks the format; it does not check the YouTube identities.
+# Personal settings belong outside this repo. See configuration-examples.md in this folder.
+
+version: 3
+
+# development requires a separate test playlist. For Watch Later, use production,
+# playlist_id: WL and a separate .../playlists/WL data directory together.
+# production also supports an ordinary playlist; it does not imply Watch Later.
+environment: development
+# Your signed-in YouTube channel that OWNS this playlist, not a source channel
+# below. Select that owner in your browser, then YouTube > Settings > Advanced settings:
+# copy Channel ID (UC...), not User ID, a Google login or an @handle.
+# Owner lookup: https://support.google.com/youtube/answer/3250431
+account_channel_id: UC0000000000000000000000
+playlist_id: PL_REPLACE_WITH_PLAYLIST_ID
+playlist_name: "Example viewing queue" # Local label; does not rename it on YouTube.
+
+execution:
+  trigger: manual # On demand; running again is allowed. This creates no schedule.
+
+transport:
+  access: in_page_internal_api # Uses the signed-in session; no credentials here.
+# The command supplies a JavaScript page runner. Default commands use Safari;
+# --javascript-bridge selects another capable browser controller. See setup docs.
+# Existing settings may retain browser: safari as a legacy hint; no migration needed.
+
+# include: eligible videos may have a warning; YouTube asks when you watch.
+# stop: halt collection for attention on a recognized viewer-discretion warning.
+# Omitting this field also means stop. Neither option accepts warnings for you.
+content_warnings: include
+
+# Cache freshness and request pacing, not viewing preferences.
+# These are the current defaults; each may be omitted independently.
+# Durations: positive whole numbers with s, m, h or d; 1d is 24 hours.
+# Use 90m, not 1.5h or 1h30m. Calendar-month windows are not supported.
+collection:
+  catalog_max_age: 7d              # Full listing audits; best-effort discovery, incremental reads between.
+  metadata_max_age: 30d           # Cached metadata of older uploads.
+  recent_metadata_max_age: 1d     # Cached metadata of recent uploads.
+  recent_video_age: 7d            # What counts as recent for metadata freshness.
+  restricted_metadata_max_age: 1d # Recheck recognized access restrictions.
+  player_request_interval: 5s     # Minimum spacing between metadata requests.
+  rate_limit_cooldown: 1h         # Pause after rate limiting; longer Retry-After wins.
+
+storage:
+  # Account-scoped cache may be shared by that account's different playlists.
+  # Replace UC000... here with the same owner as account_channel_id above.
+  # Omit this field to use metadata-cache inside data_directory instead.
+  metadata_cache_directory: "~/Library/Application Support/info.komarovsky.codex-plugin-youtube-playlist-management/accounts/UC0000000000000000000000"
+  # Each account/playlist pair needs its own history, outside the repo.
+  # Replace PL_REPLACE... here with playlist_id above (WL for Watch Later).
+  # For another account, choose different directories even if its target is WL.
+  # Do not point a new playlist at an existing playlist's directory. Moving an
+  # established directory needs an explicit migration, not just a YAML edit.
+  data_directory: "~/Library/Application Support/info.komarovsky.codex-plugin-youtube-playlist-management/playlists/PL_REPLACE_WITH_PLAYLIST_ID"
+
+# Existing and manually added videos:
+# - A managed video is one the manager added or adopted under a configured
+#   channel's rules. Existing matching videos are adopted when a refresh applies.
+# - An existing/new manual video that conflicts with those rules prompts a
+#   keep/remove decision. That channel pauses until answered; others can update.
+#   keep: make an exception, exempt from channel filters/retention/count slots,
+#         but still ordered and removed when fully watched.
+#   remove: remove it and remember a dismissal (do not automatically add it again).
+# - Count-only replacement removes the active stay without dismissal. Such
+#   videos remain candidates when a slot opens. Time expiry and other terminal
+#   removals still dismiss; an observed manual disappearance also dismisses.
+# - Manual videos from unconfigured channels have no channel retention. Global
+#   watched cleanup and unpinned ordering still apply. Excluded/unavailable videos
+#   and channels awaiting a decision retain their protections; see the footer.
+manual_actions:
+  # Addition time means when THIS stay in the playlist began. Manager additions
+  # use their recorded time. For manual/older entries without a known time:
+  # first_observed: use the first recorded appearance of this stay.
+  # retention_enabled: use the later of that appearance or the first run with
+  #                    time retention enabled for this channel.
+  # Once saved, that time survives rule edits and changes to this convention.
+  # deferred: stop when a decision is actually needed; never guess a timestamp.
+  unknown_addition_time: first_observed
+  # readmit: an observed return starts a new managed stay under ordinary rules.
+  # remove: retain the dismissal and remove the returned active managed entry.
+  # deferred: stop when an observed return needs this decision.
+  # Remove-and-readd entirely between observations cannot be detected.
+  dismissed_reappearance: readmit
+
+# Alternative file layout: replace BOTH inline sections below with:
+# channel_rules_file: channels.yaml
+# Move channel_defaults and channels into that sibling file. Never combine the
+# reference with either inline section. See configuration-examples.md for the two-target example.
+channel_defaults:
+  # Only supported value here: disabled. Channels absent from channels get no
+  # automatic additions. Per-channel additions instead accepts enabled | ignored.
+  unconfigured_additions: disabled
+  # These are illustrative defaults, not preferences imposed by the program.
+  # catch_up.start below sets an earliest publication boundary for both missing
+  # and queued videos. lookback adds a moving publication window ONLY for missing
+  # videos: both tests must pass before adding. Already queued videos do not
+  # expire just because their publication moves outside lookback.
+  lookback: 30d # Allow missing uploads published within the preceding 30 days.
+  retention:
+    maximum_age: 7d # Remove after 7 days since playlist addition, not publication.
+    maximum_count: 3 # Keep up to 3 eligible unwatched videos; not 3 per run.
+    selection: latest_eligible_unwatched
+
+# For optional channel limits:
+#   omitted  -> inherit the corresponding default above, field by field
+#   null     -> explicitly remove that limit
+#   deferred -> decision outstanding; not unlimited and not an ignore switch
+# Example unresolved choices (commented so the complete example is decided):
+#   lookback: deferred
+#   retention: {maximum_age: deferred, maximum_count: deferred}
+# Selection has no deferred value. Pin ranks must be unique positive integers.
+# Selection chooses WHICH videos; placement chooses their VIEWING order.
+# With a count limit, after the other filters:
+#   latest_eligible_unwatched: keep newest N; replace older queued choices.
+#   oldest_eligible_unwatched: keep oldest N; replace newer queued choices.
+#   keep_current_and_refill: keep eligible queued choices, then fill vacancies
+#     from newest eligible history. Reducing N below the queued count keeps the
+#     newest N of those queued choices and removes the excess.
+# Choices displaced solely by count remain eligible; increasing N or watching
+# a selected video can bring them back. Manual dismissals remain excluded.
+channels:
+  # 1. All eligible history, unlimited and pinned at the very top.
+  # Explicit nulls remove the otherwise inherited publication/time/count limits.
+  - id: UCaaaaaaaaaaaaaaaaaaaaaa
+    name: "Example: unlimited full backlog"
+    additions: enabled
+    catch_up: {start: all_history}
+    lookback: null
+    retention:
+      maximum_age: null
+      maximum_count: null
+      selection: oldest_eligible_unwatched
+    placement: {pinned_rank: 1, order: oldest_first}
+
+  # 2. Work through a backlog five at a time, starting with the oldest eligible.
+  # Watching or dismissing an item allows another eligible one to fill its slot.
+  - id: UCbbbbbbbbbbbbbbbbbbbbbb
+    name: "Example: oldest five from a backlog"
+    additions: enabled
+    catch_up: {start: all_history}
+    lookback: null
+    retention:
+      maximum_age: null
+      maximum_count: 5
+      selection: oldest_eligible_unwatched
+    placement: {pinned_rank: 2, order: oldest_first}
+
+  # 3. Only uploads from initial enablement onward; keep all eligible new uploads.
+  # The boundary is the channel's first complete enabled observation. It stays
+  # fixed on later runs, so missed uploads can still be caught up after a break.
+  # Switching an already used channel to new_only uses its ORIGINAL enablement;
+  # to start from a new date instead, use a published_after boundary (case 5).
+  - id: UCcccccccccccccccccccccc
+    name: "Example: new uploads only"
+    additions: enabled
+    catch_up: {start: new_only}
+    lookback: null
+    retention: {maximum_age: null, maximum_count: null}
+    placement: {pinned_rank: null, order: oldest_first}
+
+  # 4. News: published within seven days, newest three, kept for one day after
+  # addition. The three selected videos are viewed oldest first, mixed with
+  # other unpinned channels. Passing seven days since PUBLICATION does not remove
+  # a queued video; time since ADDITION or displacement by the count limit can.
+  - id: UCdddddddddddddddddddddd
+    name: "Example: recent news with age and count limits"
+    additions: enabled
+    catch_up: {start: all_history}
+    lookback: 7d
+    retention:
+      maximum_age: 1d
+      maximum_count: 3
+      selection: latest_eligible_unwatched
+    placement: {pinned_rank: null, order: oldest_first}
+
+  # 5. Start at a particular date; oldest one at a time, without expiry.
+  # Quote dates. A date alone is midnight UTC; a local boundary needs an offset,
+  # e.g. "2026-01-01T00:00:00+01:00". inclusive:false would exclude that instant.
+  - id: UCeeeeeeeeeeeeeeeeeeeeee
+    name: "Example: backlog beginning on a date"
+    additions: enabled
+    catch_up:
+      start: {published_after: "2026-01-01", inclusive: true}
+    lookback: null
+    retention: {maximum_age: null, maximum_count: 1, selection: oldest_eligible_unwatched}
+    placement: {pinned_rank: null, order: oldest_first}
+
+  # 6. Start strictly after a chosen video's publication time. The anchor is
+  # excluded here; inclusive:true includes its instant, subject to other rules.
+  # Pinned groups alone can reverse viewing order. Here both selection and
+  # viewing are newest first; those are independent settings.
+  - id: UCffffffffffffffffffffff
+    name: "Example: video boundary with reverse pinned viewing"
+    additions: enabled
+    catch_up:
+      start: {video_id: EXAMPLE0001, inclusive: false}
+    lookback: null
+    retention: {maximum_age: null, maximum_count: 5, selection: latest_eligible_unwatched}
+    placement: {pinned_rank: 3, order: newest_first}
+
+  # 7. Keep up to three eligible queued videos; newer uploads do not displace
+  # them merely because they are newer. Fill vacancies from NEWEST remaining
+  # eligible history. Use oldest_eligible_unwatched (case 2) to advance oldest first.
+  - id: UCgggggggggggggggggggggg
+    name: "Example: keep current choices and refill"
+    additions: enabled
+    catch_up: {start: all_history}
+    lookback: null
+    retention: {maximum_age: null, maximum_count: 3, selection: keep_current_and_refill}
+    placement: {pinned_rank: null, order: oldest_first}
+
+  # 8. A single newest eligible video from the last 180 days; no queued expiry.
+  # As with other count modes, watching it can allow an older eligible video in.
+  - id: UChhhhhhhhhhhhhhhhhhhhhh
+    name: "Example: latest one within a long publication window"
+    additions: enabled
+    catch_up: {start: all_history}
+    lookback: 180d
+    retention: {maximum_age: null, maximum_count: 1, selection: latest_eligible_unwatched}
+    placement: {pinned_rank: null, order: oldest_first}
+
+  # 9. Time-only retention: all eligible history may enter, and each queued stay
+  # expires after two days. Confirmed removals are dismissed, so expiry does not
+  # continuously re-add the same video. There is no duration or per-run quota.
+  - id: UCiiiiiiiiiiiiiiiiiiiiii
+    name: "Example: time retention without a count cap"
+    additions: enabled
+    catch_up: {start: all_history}
+    lookback: null
+    retention: {maximum_age: 2d, maximum_count: null}
+    placement: {pinned_rank: null, order: oldest_first}
+
+  # 10. Remain subscribed but stop automatic additions. Existing active entries
+  # still follow inherited retention and ordering; ignored does not mean unmanaged.
+  - id: UCjjjjjjjjjjjjjjjjjjjjjj
+    name: "Example: ignored for additions"
+    additions: ignored
+    catch_up: {start: all_history}
+    placement: {pinned_rank: null, order: oldest_first}
+
+  # 11. Inherit all defaults: publication within 30d, at most three newest
+  # eligible videos, expiry 7d after addition. No channel override is necessary.
+  - id: UCkkkkkkkkkkkkkkkkkkkkkk
+    name: "Example: use shared defaults"
+    additions: enabled
+    catch_up: {start: all_history}
+    placement: {pinned_rank: null, order: oldest_first}
+
+# After first use:
+# Editing YAML alone changes nothing on YouTube. Collect a fresh preview, then
+# apply the refresh. It reconciles in place: surviving videos keep addition times.
+# Narrowing catch_up.start can remove/dismiss managed videos. Reducing count
+# removes overflow without dismissal;
+# shortening/enabling maximum_age can expire them immediately at that refresh.
+# Widening limits can admit waiting videos, but never clears saved dismissals.
+# Changing lookback affects missing candidates only; it does not clear the queue.
+# Existing keep exceptions survive rule edits; revoke them explicitly to return
+# them to ordinary rules. Removing a channel or unsubscribing asks keep/remove:
+# keep releases its entries from channel management; remove dismisses them.
+# Changing owner/playlist or moving state requires separate setup/migration.
+# See configuration-examples.md in this folder for the rule-edit guidance.
+#
+# Common behavior has no per-channel switch: only normal Videos uploads are
+# selected; Shorts, Clips and live content are excluded. Fully watched playable
+# entries are removed on refresh, including manual videos and kept exceptions;
+# partial watches remain eligible. Unavailable entries, unwatched excluded formats
+# and channels awaiting a decision remain protected from ordinary cleanup.

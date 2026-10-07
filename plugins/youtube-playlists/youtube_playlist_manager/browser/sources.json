@@ -1,0 +1,8 @@
+[
+  "native.js",
+  "transport.js",
+  "playlist.js",
+  "catalog.js",
+  "collection.js",
+  "edits.js"
+]

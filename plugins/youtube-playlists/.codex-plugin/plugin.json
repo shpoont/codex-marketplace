@@ -1,0 +1,36 @@
+{
+  "name": "youtube-playlists",
+  "version": "0.3.2",
+  "description": "Build and manage a YouTube viewing queue with guided setup, readable channel rules and verified browser updates.",
+  "author": {
+    "name": "Leon.id Komarovsky"
+  },
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "YouTube Playlists",
+    "shortDescription": "Build a YouTube viewing queue",
+    "longDescription": "Build a viewing queue from channels you choose. Start with a separate playlist, preview the proposed videos, then apply readable channel rules. Keep backlogs or rolling windows, pin selected channels, remove watched videos and explain the results.\n\nRequires Codex desktop on macOS, Python 3.11+ and a signed-in English YouTube page with advanced JavaScript access. Video edits require an authorized apply. No scheduler is installed.",
+    "developerName": "Leon.id Komarovsky",
+    "category": "Productivity",
+    "websiteURL": "https://github.com/shpoont/codex-marketplace/tree/main/plugins/youtube-playlists",
+    "supportURL": "https://github.com/shpoont/codex-marketplace/issues",
+    "privacyPolicyURL": "https://github.com/shpoont/codex-marketplace/blob/main/plugins/youtube-playlists/README.md#data-and-effects",
+    "termsOfServiceURL": "https://github.com/shpoont/codex-marketplace/blob/main/plugins/youtube-playlists/LICENSE",
+    "capabilities": [
+      "Guided playlist setup",
+      "Preview playlist changes",
+      "Apply channel rules",
+      "Organize viewing order",
+      "Recover uncertain writes"
+    ],
+    "defaultPrompt": [
+      "Set up a separate viewing playlist with a few channels I choose.",
+      "Preview the changes for my configured YouTube playlist.",
+      "Refresh my configured YouTube playlist and verify the final order."
+    ],
+    "brandColor": "#7C3AED",
+    "brandColorDark": "#C4B5FD",
+    "composerIcon": "./assets/logo.svg",
+    "logo": "./assets/logo.svg"
+  }
+}

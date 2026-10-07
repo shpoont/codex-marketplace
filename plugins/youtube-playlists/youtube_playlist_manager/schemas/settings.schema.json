@@ -1,0 +1,466 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "YouTube playlist manager: configuration reference (v3)",
+  "description": "Defines supported channel rules, their meaning, interactions and examples. development.yaml and watch-later.yaml are target instances; channels.yaml holds their shared channel rules. Selected values are not schema defaults. Use either channel_rules_file or inline channel_defaults and channels, never both. Missing eligible videos are added subject to channel rules, regardless of total duration or previous runs. Required settings must be explicit. Optional channel lookback and retention fields inherit channel_defaults; null removes a supported limit, while deferred records an unresolved choice and blocks dependent execution. The bundled viewing-rules and configuration guides explain the process and policy decisions. Operational observations, membership and dismissals stay outside configuration. Rolling lookback controls entry by publication age; time retention expires queued videos from their saved addition time. Manual timing and dismissal-return conventions are explicit in manual_actions.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["version", "environment", "account_channel_id", "playlist_id", "playlist_name", "execution", "transport", "storage"],
+  "oneOf": [
+    {"required": ["channel_defaults", "channels"], "not": {"required": ["channel_rules_file"]}},
+    {"required": ["channel_rules_file"], "not": {"anyOf": [{"required": ["channel_defaults"]}, {"required": ["channels"]}]}}
+  ],
+  "properties": {
+    "channel_rules_file": {
+      "title": "Shared channel rules",
+      "description": "Local YAML path relative to this target file. The referenced file must contain exactly channel_defaults and channels. It cannot change target, account, storage or transport, and cannot include other files. Use this field OR both inline channel_defaults and channels, never a mixture. Both forms resolve to the same effective configuration; the reference path does not affect policy fingerprints. Missing, invalid or conflicting sources stop validation. See channels.schema.json for editor help in the shared file.",
+      "type": "string", "minLength": 1
+    },
+    "version": {
+      "title": "Configuration format",
+      "description": "Required configuration format, currently 3. Version 3 removes admission_budget and its related choices. To migrate an earlier instance, remove that mapping and set version: 3 while preserving account, playlist, channel rules and external data-directory location. Old saved plans need a fresh collection and preview. Use an integer.",
+      "type": "integer",
+      "const": 3
+    },
+    "environment": {
+      "title": "Operating environment",
+      "description": "development selects the testing context and forbids Watch Later (WL) as a target. production permits WL but does not select it automatically. Switching environment or target is an explicit configuration change; existing target history must be preserved. Development samples additionally require a private playlist.",
+      "type": "string",
+      "enum": ["development", "production"]
+    },
+    "account_channel_id": {
+      "title": "Signed-in YouTube owner",
+      "description": "Channel ID of the account that owns the target playlist. The shared YouTube client verifies it against the selected signed-in browser page and saved state before operating, preventing a run against a different account. This is separate from the source-channel IDs under channels.",
+      "allOf": [
+        {
+          "$ref": "#/definitions/channelId"
+        }
+      ]
+    },
+    "playlist_id": {
+      "title": "Playlist to manage",
+      "description": "Stable YouTube playlist ID; WL means Watch Later and is allowed only in production. All reads, writes and operational history are bound to this target and account. A different target needs its own data directory; changing this field does not migrate or clear a playlist.",
+      "type": "string",
+      "pattern": "^[A-Za-z0-9_-]+(?![\\s\\S])"
+    },
+    "playlist_name": {
+      "title": "Playlist label",
+      "description": "Readable label for this configuration. playlist_id controls identity. Editing this label does not rename the playlist on YouTube or trigger channel cleanup.",
+      "type": "string",
+      "examples": ["My viewing queue"]
+    },
+    "execution": {
+      "title": "When to run",
+      "description": "Controls how refreshes start. Currently only manual, on-demand execution is supported; no scheduler is created by configuration.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["trigger"],
+      "properties": {
+        "trigger": {
+          "title": "Refresh trigger",
+          "description": "manual refreshes the playlist when requested. Repeated runs reconcile the same desired inventory without duplicate additions. There is no scheduled run. Retention expiry is enforced during a run.",
+          "type": "string",
+          "const": "manual"
+        }
+      }
+    },
+    "transport": {
+      "title": "YouTube connection",
+      "description": "YouTube access method, independent of viewing rules and browser identity. The command selects its JavaScript runner; a capable runner must execute in the actual signed-in YouTube page. Default commands use the built-in Safari controller; --javascript-bridge explicitly supplies another browser controller.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["access"],
+      "properties": {
+        "browser": {
+          "title": "Legacy browser hint",
+          "description": "Optional compatibility field for existing v3 settings. safari documents the previous default controller; omit it in new settings. An explicitly selected --javascript-bridge uses its own browser page without changing this hint or channel rules. Browser selection and advanced permissions belong to the page controller, not YouTube policy. No implicit account or browser fallback is performed.",
+          "deprecated": true,
+          "type": "string",
+          "const": "safari"
+        },
+        "access": {
+          "title": "Request method",
+          "description": "in_page_internal_api sends requests through YouTube inside the authenticated browser page, using the same JavaScript and deterministic client for every runner. Credentials remain in the browser. Identity checks, complete pagination and verified readback are required because the private interface can change.",
+          "type": "string",
+          "const": "in_page_internal_api"
+        }
+      }
+    },
+    "collection": {
+      "title": "Metadata freshness and request pacing",
+      "description": "Technical collection settings, separate from viewing rules. Playlist membership and subscriptions are reread on every run. Channel catalogs are refreshed incrementally with periodic full audits; prospective additions require current watch evidence. Discovery uses best effort: retain known IDs across omissions, skip unverified candidates for one run, and pause a scoped failed channel while other channels update. Reports include warnings; complete target membership, identity and verified writes remain strict. Stable player metadata is cached locally. Omitted fields use the documented defaults below.",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "catalog_max_age": {
+          "description": "Maximum time between full fresh-root channel listing audits. Default 7d. Between audits, check newest pages until overlapping known uploads and reuse saved inventory. Candidates with stale watch progress trigger a full fresh-root channel scan before admission. Older late backfills and reset watched markers can take this long to discover. Browse omissions never delete known IDs; candidates still omitted are skipped for this run and retried later. A scoped catalog failure pauses that channel, with warnings. Playlist membership and progress are always fresh. Ignored channels need only queued entries classified.",
+          "$ref": "#/definitions/duration"
+        },
+        "metadata_max_age": {
+          "description": "Refresh older videos' player metadata after this age since its last successful check. Default 30d. Cached publication date, duration, owner and successful availability can be reused for missing candidates as well as queued videos. YouTube supplies current titles during listing scans and displays its current details during playback. A metadata refresh never resets retention clocks.",
+          "allOf": [{"$ref": "#/definitions/duration"}], "default": "30d"
+        },
+        "recent_metadata_max_age": {
+          "description": "Maximum cache age for videos younger than recent_video_age. Default 1d, so recent uploads are refreshed sooner. Fresh listing progress still overrides the cached metadata on every run.",
+          "allOf": [{"$ref": "#/definitions/duration"}], "default": "1d"
+        },
+        "recent_video_age": {
+          "description": "Publication age below which recent_metadata_max_age applies. Default 7d. At this boundary the ordinary metadata_max_age applies.",
+          "allOf": [{"$ref": "#/definitions/duration"}], "default": "7d"
+        },
+        "restricted_metadata_max_age": {
+          "description": "Recheck an explicitly recognized access restriction after this cache age. Default 1d, so changes in paid channel membership can take effect without waiting for the older-video metadata interval. Currently the supported restriction is YouTube's verified members-only response. Generic UNPLAYABLE and temporary failures are never cached as restrictions.",
+          "allOf": [{"$ref": "#/definitions/duration"}], "default": "1d"
+        },
+        "player_request_interval": {
+          "description": "Minimum interval between starts of player-metadata requests, including the next run using the same cache. Default 5s. Requests run one at a time. This is conservative pacing, not a guarantee about YouTube's changing limits. A cold full backlog can take hours; subsequent runs reuse successful cached reads.",
+          "allOf": [{"$ref": "#/definitions/duration"}], "default": "5s"
+        },
+        "rate_limit_cooldown": {
+          "description": "Minimum pause after HTTP 429 or an explicit temporary request-limit explanation. Default 1h. A longer Retry-After response takes precedence. The cooldown is persisted in the account cache; a new on-demand run resumes after it ends. No automatic background job, account switch or blind retry is created. Ambiguous UNPLAYABLE responses require attention and never count as unavailable videos.",
+          "allOf": [{"$ref": "#/definitions/duration"}], "default": "1h"
+        }
+      }
+    },
+    "content_warnings": {
+      "title": "Videos with a viewer-discretion warning",
+      "description": "include keeps videos reporting CONTENT_CHECK_REQUIRED eligible under ordinary channel rules. The manager records the warning but never accepts it or starts playback; YouTube asks the viewer to proceed when watching. stop halts collection for attention instead. Omission means stop, preserving existing configurations. Login challenges, missing metadata and unknown statuses still stop collection under either choice. Changing this setting requires a fresh collection and preview.",
+      "type": "string",
+      "enum": ["include", "stop"],
+      "examples": ["include"]
+    },
+    "storage": {
+      "title": "Operational history",
+      "description": "Stores evidence needed to recognize manual changes, remember pending videos and recover interrupted writes. Keeping it separate from editable rules preserves history across configuration changes.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["data_directory"],
+      "properties": {
+        "metadata_cache_directory": {
+          "title": "Reusable account metadata cache",
+          "description": "Optional absolute or home-expanded directory outside the repository for verified player metadata, normalized channel catalog/page checkpoints, request pacing and cooldowns. Catalog snapshots include sampled titles and progress; metadata records keep the playlist-duration value observed during their check. The cache is bound to one YouTube account and locked during collection. Targets for the same account can explicitly share this directory; membership, dismissals and retention clocks remain in their separate data directories. Omission uses metadata-cache inside data_directory. No credentials or full API responses are stored.",
+          "type": "string", "minLength": 1
+        },
+        "data_directory": {
+          "title": "External data directory",
+          "description": "Absolute or home-expanded path outside the repository, unique to this account and playlist. Holds SQLite state, observations, operation journals and membership history. Moving it requires an explicit migration; changing or deleting the path cannot silently erase history or dismissals. Existing historical records are retained when upgrading configuration.",
+          "type": "string",
+          "minLength": 1,
+          "examples": ["~/Library/Application Support/info.komarovsky.codex-plugin-youtube-playlist-management/playlists/PLAYLIST_ID"]
+        }
+      }
+    },
+    "channel_defaults": {
+      "title": "Values inherited by configured channels",
+      "description": "Explicit fallback values for optional channel fields. Omitting a channel field inherits here; an explicit channel null removes that limit; a channel deferred overrides a resolved default with an open choice. Retention inherits field by field. A deferred default blocks execution only when an effective configured-channel rule uses it. These defaults do not configure every subscription.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["unconfigured_additions", "lookback", "retention"],
+      "properties": {
+        "unconfigured_additions": {
+          "title": "Subscriptions without channel rules",
+          "description": "disabled means channels absent from channels contribute no automatic additions. This lets subscriptions remain available without flooding the queue. Their manual additions remain preserved under user control. Automatically enabling new subscriptions is not implemented.",
+          "type": "string",
+          "const": "disabled"
+        },
+        "lookback": {
+          "$ref": "#/definitions/lookback"
+        },
+        "retention": {
+          "title": "Inherited retention rules",
+          "description": "All three default fields are required. Each configured channel inherits maximum_age, maximum_count and selection independently unless it overrides that field. See the shared retention definition for selection behavior and examples.",
+          "allOf": [
+            {
+              "$ref": "#/definitions/retention"
+            },
+            {
+              "required": ["maximum_age", "maximum_count", "selection"]
+            }
+          ]
+        }
+      }
+    },
+    "channels": {
+      "title": "Channels managed by this configuration",
+      "description": "Explicit source-channel policies. Only configured, currently subscribed channels with additions enabled can contribute automatic additions. Each channel needs its own catch-up start and placement; lookback and retention can inherit defaults. Channel IDs and non-null pinned ranks must be unique. Removing a configured channel or unsubscribing asks whether to keep or remove its entries. Keep releases them to manual control; verified removal dismisses them. Pending questions pause that channel.",
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/channel"
+      }
+    },
+    "manual_actions": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["unknown_addition_time", "dismissed_reappearance"],
+      "description": "Explicit conventions for observed playlist membership. If omitted, these choices remain deferred. A run blocks when its current inventory requires an undecided choice.",
+      "properties": {
+        "unknown_addition_time": {
+          "type": "string",
+          "enum": ["first_observed", "retention_enabled", "deferred"],
+          "description": "For entries without a verified manager-addition timestamp: first_observed starts from the first recorded appearance of the current observed stay; retention_enabled starts from the later of that appearance and the first run with time retention enabled. Existing observation history supplies evidence where available. The chosen clock is saved once, never replaced with publication time or reset by ordinary rule edits. deferred blocks only time retention needing an unknown clock.",
+          "examples": ["first_observed", "retention_enabled", "deferred"]
+        },
+        "dismissed_reappearance": {
+          "type": "string",
+          "enum": ["readmit", "remove", "deferred"],
+          "description": "When a previously dismissed video is observed back in the playlist: readmit cancels its dismissal and applies normal channel rules, with a new stay; remove keeps the dismissal and removes the returned active managed entry. Neither choice changes unmanaged, watched or excluded-format cleanup rules. deferred blocks the affected run. A removal and return entirely between observations is undetectable and keeps the existing clock.",
+          "examples": ["readmit", "remove", "deferred"]
+        }
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "environment": {
+            "const": "development"
+          }
+        },
+        "required": ["environment"]
+      },
+      "then": {
+        "properties": {
+          "playlist_id": {
+            "not": {
+              "const": "WL"
+            }
+          }
+        }
+      }
+    }
+  ],
+  "definitions": {
+    "channelRules": {
+      "title": "Shared channel policy document",
+      "type": "object", "additionalProperties": false,
+      "required": ["channel_defaults", "channels"],
+      "properties": {
+        "channel_defaults": {"$ref": "#/properties/channel_defaults"},
+        "channels": {"$ref": "#/properties/channels"}
+      }
+    },
+    "channelId": {
+      "title": "YouTube channel ID",
+      "description": "Stable UC identifier: UC followed by 22 letters, digits, underscores or hyphens. Use an ID, not a channel name, handle or URL, so renaming a channel does not change its identity.",
+      "type": "string",
+      "pattern": "^UC[A-Za-z0-9_-]{22}$",
+      "minLength": 24,
+      "maxLength": 24
+    },
+    "videoId": {
+      "title": "YouTube video ID",
+      "description": "The 11-character ID from a video URL. A catch-up anchor uses the video's publication metadata, not its current playlist position or watch progress.",
+      "type": "string",
+      "pattern": "^[A-Za-z0-9_-]{11}$",
+      "minLength": 11,
+      "maxLength": 11
+    },
+    "duration": {
+      "title": "Positive duration",
+      "description": "Positive whole number followed by s (seconds), m (minutes), h (hours) or d (24-hour durations). Use 90m for an hour and a half. Zero, negative numbers, fractions, spaces and compound forms such as 1h30m are unsupported. A 1d window means 24 elapsed hours. Lookback includes an upload exactly on its boundary; retention expires at the exact end of its duration.",
+      "type": "string",
+      "pattern": "^[1-9][0-9]*[smhd](?![\\s\\S])",
+      "examples": ["30s", "90m", "2h", "7d"]
+    },
+    "optionalDuration": {
+      "title": "Optional time limit",
+      "description": "A duration enables the limit, null explicitly removes it, and deferred records an unresolved choice. Omission of an optional channel field inherits the corresponding channel default. These three states are intentionally different; validation does not replace any of them.",
+      "anyOf": [
+        {
+          "$ref": "#/definitions/duration"
+        },
+        {
+          "description": "No limit.",
+          "type": "null"
+        },
+        {
+          "description": "Undecided. Not equivalent to no limit.",
+          "type": "string",
+          "const": "deferred"
+        }
+      ]
+    },
+    "lookback": {
+      "title": "Publication age allowed for new additions",
+      "description": "Restrict the publication age of missing videos considered for addition, alongside catch_up.start. The window moves with each run. With 3d, uploads from the preceding 72 hours can enter; older missed uploads cannot. Once queued, leaving the lookback window alone does not remove a video. null removes the window, deferred leaves the choice unresolved, and omission inherits channel_defaults.lookback. Combine with time or count retention to control queued inventory.",
+      "allOf": [
+        {
+          "$ref": "#/definitions/optionalDuration"
+        }
+      ],
+      "examples": ["1d", "7d", null, "deferred"]
+    },
+    "retention": {
+      "title": "How much eligible viewing to retain",
+      "description": "Control queued managed inventory using time since playlist addition and an optional count constraint. The same channel time and count limits apply to every eligible queued video from that channel, whether added manually or by the manager. Only playable normal videos that are not fully watched occupy active slots. Unwatched Shorts can remain physically without occupying a slot. Refresh removes playable entries YouTube reports as exactly 100% watched, including manual additions, kept exceptions and watched excluded formats. Unavailable entries and paused-decision channels remain protected. Completion is rechecked before removal; watch history and surviving entry identities and clocks are preserved. Cleanup of unowned manual or released entries does not adopt or dismiss them. Expiry and replacement happen when a plan is applied; kept exceptions bypass channel selection and retention without consuming a slot. Rule edits preserve surviving entry identities and clocks. Count-only displacement removes the active stay without dismissal; absent eligible videos can enter when selected later. Observed external departures and other terminal manager removals remain dismissed to prevent automatic re-addition; a separately observed manual addition starts a new stay under the same channel rules.",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "maximum_age": {
+          "title": "Maximum time in the playlist",
+          "description": "Expire an active managed video after this duration since it entered the playlist. A five-day-old upload added today with 1d retention expires tomorrow. A verified manager addition uses its recorded request time, including recovery after a lost response. Manual and legacy entries use the explicitly chosen manual_actions.unknown_addition_time convention; unavailable timing blocks dependent expiry. Surviving entries retain their clocks across rule edits. Confirmed expiry also dismisses the video, preventing automatic catch-up re-addition. Kept exceptions bypass expiry. null disables expiry; deferred is unresolved; omission inherits the default.",
+          "allOf": [
+            {
+              "$ref": "#/definitions/optionalDuration"
+            }
+          ],
+          "examples": ["1d", "7d", null, "deferred"]
+        },
+        "maximum_count": {
+          "title": "Maximum unwatched videos per channel",
+          "description": "Positive integer limiting eligible unwatched inventory, with selection deciding which videos occupy the slots. Eligible overflow remains reconsiderable even if already queued and removed to enforce this count; count-only removal does not dismiss it. Each refresh derives candidates from the catalog and current rules. With 1, watching the newest upload frees a slot for another eligible unwatched upload. Every missing video selected by the channel rules can be added in a run; this is a retention limit, not a per-run quota. null means unlimited, deferred is unresolved, and omission inherits the default. Time expiry is evaluated before count selection, allowing another eligible unwatched video to refill a vacancy.",
+          "anyOf": [
+            {
+              "type": "integer",
+              "minimum": 1
+            },
+            {
+              "type": "null"
+            },
+            {
+              "type": "string",
+              "const": "deferred"
+            }
+          ],
+          "examples": [1, 5, null, "deferred"]
+        },
+        "selection": {
+          "title": "Which videos occupy limited slots",
+          "description": "latest_eligible_unwatched selects the newest N eligible unwatched videos and can replace older queued ones. oldest_eligible_unwatched selects the oldest N eligible unwatched videos, replacing newer queued choices when needed; watching or dismissing one advances through the backlog. Both apply eligibility, catch-up, publication lookback and time expiry before the count limit. Oldest means oldest within those filters, not necessarily all history. Equal publication times use ascending video ID for oldest selection and descending ID for latest selection. keep_current_and_refill prefers eligible videos already queued and fills vacancies from the newest remaining eligible candidates. Selection priority is separate from placement.order: pinned groups may display oldest or newest first, while all unpinned active videos share oldest-first publication order. With unlimited maximum_count this choice does not cap inventory. Omission inherits channel_defaults.retention.selection; no implicit schema default is inserted.",
+          "type": "string",
+          "enum": ["latest_eligible_unwatched", "oldest_eligible_unwatched", "keep_current_and_refill"]
+        }
+      }
+    },
+    "catchUpStart": {
+      "title": "Earliest publication to consider",
+      "description": "all_history allows all available eligible history. new_only fixes the starting instant when the enabled channel is first completely observed; it stays fixed across later runs and unrelated edits. An object starts from a video's publication or a quoted date/time. Choose exactly one boundary and explicitly say whether it is inclusive. This establishes initial backlog and subsequent catch-up eligibility; rolling lookback can narrow it. Discovery checkpoints and pending candidates are saved separately, so reaching a new checkpoint does not discard waiting backlog.",
+      "oneOf": [
+        {
+          "description": "all_history includes earlier uploads; new_only excludes publications before the original observed enablement time.",
+          "type": "string",
+          "enum": ["all_history", "new_only"]
+        },
+        {
+          "title": "Explicit publication boundary",
+          "description": "Use either video_id or published_after, together with inclusive. A missing anchor publication blocks selection rather than substituting a guessed date.",
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["inclusive"],
+          "properties": {
+            "inclusive": {
+              "title": "Include the boundary instant",
+              "description": "true permits publication exactly at the boundary; false requires a later publication. Including an anchor does not override watched status, dismissal or other eligibility rules.",
+              "type": "boolean",
+              "examples": [true, false]
+            },
+            "video_id": {
+              "title": "Start from this upload",
+              "description": "Resolve the chosen video's publication through YouTube. The boundary still applies when the anchor is watched; it does not depend on whether the anchor is in the playlist. Do not combine with published_after.",
+              "allOf": [
+                {
+                  "$ref": "#/definitions/videoId"
+                }
+              ]
+            },
+            "published_after": {
+              "title": "Start from this date or time",
+              "description": "Quoted ISO date or timestamp. A date alone means midnight UTC; a timestamp must include an offset to express a local boundary. For example, 2026-09-01T00:00:00+01:00 starts at Lisbon midnight on that date. inclusive separately controls equality. Do not combine with video_id; actual calendar validity is checked by the runtime.",
+              "type": "string",
+              "examples": ["2026-09-01", "2026-09-01T00:00:00+01:00"]
+            }
+          },
+          "oneOf": [
+            {
+              "required": ["video_id"]
+            },
+            {
+              "required": ["published_after"]
+            }
+          ]
+        }
+      ],
+      "examples": [
+        "all_history",
+        "new_only",
+        {
+          "published_after": "2026-09-01T00:00:00+01:00",
+          "inclusive": true
+        }
+      ]
+    },
+    "channel": {
+      "title": "One source channel",
+      "description": "Combines additions, catch-up, retention and viewing placement for one stable YouTube channel ID. Rule edits reconcile in place: keep eligible entries, remove only those excluded, and add missing eligible videos. Conflicting new manual arrivals require a keep/remove decision. Kept exceptions bypass channel selection and retention without consuming count slots. Any managed departure is dismissed, including manager removals. With no count limit, all missing eligible videos can be added in one run.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "name", "additions", "catch_up", "placement"],
+      "properties": {
+        "id": {
+          "title": "Source channel ID",
+          "description": "Stable identity of the source whose uploads are managed. Must be unique within channels. The runtime checks current subscriptions; a name change does not affect identity.",
+          "allOf": [
+            {
+              "$ref": "#/definitions/channelId"
+            }
+          ]
+        },
+        "name": {
+          "title": "Source channel label",
+          "description": "Readable label for reviewing settings. It does not determine identity, change the YouTube channel, or trigger playlist cleanup.",
+          "type": "string",
+          "examples": ["Example channel"]
+        },
+        "additions": {
+          "title": "Allow new videos from this channel",
+          "description": "enabled allows eligible additions while subscribed. ignored stops additions while retaining applicable expiry, count and ordering rules for existing active videos. It neither unsubscribes nor makes the channel unmanaged. Changing this gate does not purge entries. Other rule edits reconcile current inventory in place.",
+          "type": "string",
+          "enum": ["enabled", "ignored"],
+          "examples": ["enabled", "ignored"]
+        },
+        "lookback": {
+          "$ref": "#/definitions/lookback"
+        },
+        "retention": {
+          "$ref": "#/definitions/retention"
+        },
+        "catch_up": {
+          "title": "Starting point for this channel",
+          "description": "Required for every configured channel. Controls how far back eligible history starts, including first-run backlog. Later discoveries remain subject to this same start, optional lookback, watch status, dismissals and retention.",
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["start"],
+          "properties": {
+            "start": {
+              "$ref": "#/definitions/catchUpStart"
+            }
+          }
+        },
+        "placement": {
+          "title": "Where eligible videos appear",
+          "description": "Among active entries, pinned channel groups come first. All unpinned videos, including unmanaged manual additions, mix by publication date, oldest first. Sorting manual entries does not adopt them for automatic additions or retention. Fully watched playable entries are removed before ordering; unavailable and unwatched excluded-format entries stay outside routine reordering. Channels with pending decisions are left untouched. Missing dates or classification stop ordering until collection resolves them. Changing placement reorders existing entries without removing and re-adding them.",
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["pinned_rank", "order"],
+          "properties": {
+            "pinned_rank": {
+              "title": "Channel position at the top",
+              "description": "Positive unique integer ranks the pinned group: 1 before 2, and so on; gaps are allowed. null mixes the channel's videos with all other unpinned active videos, including manual additions, by publication date. When unpinning a newest-first group, set order to oldest_first as well. Use an integer, not a decimal.",
+              "type": ["integer", "null"],
+              "minimum": 1,
+              "examples": [1, 2, null]
+            },
+            "order": {
+              "title": "Publication order for viewing",
+              "description": "Pinned groups support oldest_first or newest_first within the group. Unpinned channels must use oldest_first and share one chronological sequence with manual additions. Existing channel settings remain oldest_first unless explicitly changed. This orders selected inventory; retention.selection independently chooses which videos enter limited slots. Equal publication dates use video ID for stable ordering. Fully watched playable entries are removed on refresh rather than ordered.",
+              "type": "string",
+              "enum": ["oldest_first", "newest_first"]
+            }
+          },
+          "if": {"properties": {"pinned_rank": {"type": "null"}}, "required": ["pinned_rank"]},
+          "then": {"properties": {"order": {"const": "oldest_first"}}}
+        }
+      }
+    }
+  }
+}
