@@ -19,3 +19,10 @@ license files. See `requirements.txt` for the pinned runtime package list.
 YouTube and Google names, trademarks and content remain their owners' property.
 This independent plugin is not affiliated with, endorsed by or sponsored by
 YouTube or Google.
+
+The plugin and skill icons embed the original red YouTube PNG from the
+[official icon download](https://brand.youtube/youtube-icon/). Its SHA-256 is
+`1027b1b0517727adb9697155a270744381c3ce9b047b1c8bd8a9389dc7d07a83`.
+The artwork remains YouTube/Google property and is excluded from the plugin's
+installation-and-use license. Restoring the asset does not claim a grant of
+trademark permission or endorsement.

@@ -2,6 +2,14 @@
 
 User-visible changes to YouTube Playlists and any action required when installing or updating it.
 
+## 0.3.3 — 2026-10-07
+
+- Restore the original YouTube artwork in the plugin and skill icons, as
+  requested by the owner. Preserve the exact former asset without redrawing it
+  and identify its separate ownership in the notices.
+- Browser behavior, playlist rules, public installation identity and local data
+  remain unchanged. No configuration or operational-history migration is required.
+
 ## 0.3.2 — 2026-10-07
 
 - Read the installed release version from plugin details; remove the duplicated

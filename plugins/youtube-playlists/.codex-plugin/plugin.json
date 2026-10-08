@@ -1,6 +1,6 @@
 {
   "name": "youtube-playlists",
-  "version": "0.3.2",
+  "version": "0.3.3",
   "description": "Build and manage a YouTube viewing queue with guided setup, readable channel rules and verified browser updates.",
   "author": {
     "name": "Leon.id Komarovsky"

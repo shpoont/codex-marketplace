@@ -190,9 +190,10 @@ your personal YAML settings and operational data remains ordinary permitted use.
 [Third-party notices](THIRD_PARTY_NOTICES.md) describe separately licensed
 material; dependencies are downloaded into the external runtime.
 
-The queue icon is original vector artwork created for this plugin and covered
-by its installation-and-use license. YouTube and Google names and content remain
-their respective owners' property. This independent plugin is not affiliated
+The icon contains the original [YouTube artwork](https://brand.youtube/youtube-icon/),
+restored without redrawing it. The artwork, names and content remain
+YouTube/Google property and are excluded from this plugin's license. No grant
+of trademark permission is claimed. This independent plugin is not affiliated
 with, endorsed by or sponsored by YouTube or Google.
 
 ## Disclaimer
