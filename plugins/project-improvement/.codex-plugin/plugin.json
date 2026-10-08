@@ -1,0 +1,29 @@
+{
+  "name": "project-improvement",
+  "version": "0.1.4",
+  "description": "Improve software, documents and working processes using project evidence and the established workflow.",
+  "author": {
+    "name": "Leon.id Komarovsky"
+  },
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Project Improvement",
+    "shortDescription": "Improve your project quality",
+    "longDescription": "Improve software, documents and working processes.\n\nCurrently includes Review and Improve: a skill that finds worthwhile changes from project evidence, implements and verifies them, and records the results through the project's established workflow. It follows existing project instructions and authorization.",
+    "developerName": "Leon.id Komarovsky",
+    "category": "Productivity",
+    "websiteURL": "https://github.com/shpoont/codex-marketplace/tree/main/plugins/project-improvement",
+    "supportURL": "https://github.com/shpoont/codex-marketplace/issues",
+    "capabilities": [
+      "Find worthwhile improvements",
+      "Improve software reliability"
+    ],
+    "defaultPrompt": [
+      "$review-and-improve Find one worthwhile improvement, implement it, and verify the result."
+    ],
+    "logo": "./assets/project-improvement.svg",
+    "composerIcon": "./assets/project-improvement.svg",
+    "brandColor": "#0F766E",
+    "brandColorDark": "#5EEAD4"
+  }
+}
