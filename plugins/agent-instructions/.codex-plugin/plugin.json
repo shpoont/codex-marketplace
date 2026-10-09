@@ -1,0 +1,33 @@
+{
+  "name": "agent-instructions",
+  "version": "0.4.1",
+  "description": "Maintain project AGENTS.md guidance and find or apply selected refactoring changes in AI agent instructions.",
+  "author": {
+    "name": "Leon.id Komarovsky"
+  },
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Agent Instructions",
+    "shortDescription": "Improve AI agent instructions",
+    "longDescription": "Keep AI agent instructions clear, useful and current.\n\nMaintain recurring AGENTS.md reviews, audit their schedules, and update project guidance from approved source tasks. Find refactoring opportunities in agent instructions, then apply only the changes you select in the same task.\n\nScheduled reviews can edit only the selected root AGENTS.md. Scheduling needs Codex desktop and accessible source tasks; manual refactoring needs access to the instruction files.",
+    "developerName": "Leon.id Komarovsky",
+    "category": "Productivity",
+    "capabilities": [
+      "Maintain AGENTS.md schedules",
+      "Improve project guidance",
+      "Find instruction problems",
+      "Apply selected refactors"
+    ],
+    "defaultPrompt": [
+      "Audit all of my AGENTS.md review schedules and report any drift.",
+      "Add this project to recurring agent instruction improvements.",
+      "Find refactoring opportunities in this project's agent instructions."
+    ],
+    "websiteURL": "https://github.com/shpoont/codex-marketplace/tree/main/plugins/agent-instructions",
+    "supportURL": "https://github.com/shpoont/codex-marketplace/issues",
+    "brandColor": "#16324F",
+    "brandColorDark": "#5EEAD4",
+    "composerIcon": "./assets/agent-instructions.svg",
+    "logo": "./assets/agent-instructions.svg"
+  }
+}
