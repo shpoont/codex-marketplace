@@ -27,9 +27,12 @@ def viewing_order(pool, selected_ids, entries, removals, policies, managed, stat
     current_ids = {e['id'] for e in entries}
     kept = [e for e in entries if e['id'] not in removals]
     future = {v['id']: v for v in pool if v['id'] in selected_ids or (v['id'] in current_ids and v['id'] not in removals)}
-    manual = [e for e in kept if e['id'] not in paused_ids and manual_entry(e, managed, state)
+    manual = [e for e in kept if e['id'] not in paused_ids
+              and (manual_entry(e, managed, state) or lifecycle.manual_protected(state, e))
               and normal_active(e) and e.get('playable') is not False]
-    manual_ids = {e['id'] for e in manual}
+    # Protected manual stays follow their configured channel's placement.
+    # Once that channel is removed, they share the unpinned chronology.
+    manual_ids = {e['id'] for e in manual if manual_entry(e, set(policies), state)}
     future.update({e['id']: e for e in manual})
     active_order = sorted(future, key=lambda vid: viewing_key(
         future[vid], policies, manual=vid in manual_ids))

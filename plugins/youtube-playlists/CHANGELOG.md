@@ -2,6 +2,21 @@
 
 User-visible changes to YouTube Playlists and any action required when installing or updating it.
 
+## 0.3.4 — 2026-10-09
+
+- Preserve detected manual additions until watched or removed manually. They
+  bypass catch-up, lookback, time expiry and channel count limits, even when they
+  initially match the automatic selection. Channel placement still applies.
+- Keep manual protection across rule edits, ignoring and unsubscription.
+  Separately observed manual re-adds begin protected stays; fully watched
+  playable entries still follow verified cleanup.
+- Recover manager writes before classifying arrivals. Upgrade local history
+  using saved provenance, with a backup before protecting older manual
+  adoptions. Preserve ambiguous ownership and recorded explicit remove intents.
+- No YAML changes are required. Older saved previews are invalidated; collect a
+  fresh preview before applying. Browser access and automatic retention remain
+  unchanged.
+
 ## 0.3.3 — 2026-10-07
 
 - Restore the original YouTube artwork in the plugin and skill icons, as

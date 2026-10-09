@@ -90,6 +90,10 @@ never loop or introduce an alternate route. Pending channel decisions may
 coexist with completed work on other channels: report both. Use `decisions` for
 the inbox, present the concrete keep/remove choice, then submit an explicit
 answer with `resolve-decision --decision ID --choice keep|remove`.
+Detected manual additions are already protected from channel filters, expiry and
+count limits; do not ask a keep/remove question for them. They still follow
+placement and fully watched cleanup. Legacy ownership and automatic entries
+whose channel stops being managed may still need a reported decision.
 Use `revoke-exception --video ID` only on explicit user request.
 
 Best-effort catalog discovery may finish successfully with `warnings`. Report

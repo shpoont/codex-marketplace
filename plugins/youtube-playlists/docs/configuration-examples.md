@@ -21,8 +21,10 @@ Changing YAML alone does not edit YouTube. Preview freshly, then authorize
 apply. Reducing count can remove overflow without dismissing it, so slots can
 refill later. Time expiry and terminal removals retain their documented history
 effects. Publication lookback controls additions, not the age of queued stays.
-Narrowing a catch-up boundary can remove managed entries. Exceptions and existing
-manual entries follow the explicit keep/remove decision process. Changing owner,
+Narrowing a catch-up boundary can remove automatic entries. Protected manual
+additions and kept exceptions bypass filters, expiry and count slots. Manual
+stays remain until watched or removed manually and still follow placement.
+Unknown legacy ownership may require a keep/remove decision. Changing owner,
 playlist or data directory requires separate setup or migration; preserve history.
 
 Editing your own YAML and operational data is permitted ordinary use under the

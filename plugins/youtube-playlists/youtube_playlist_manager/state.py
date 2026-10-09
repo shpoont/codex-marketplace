@@ -126,7 +126,7 @@ class State:
         # Legacy tracking includes both confirmed additions and adopted existing
         # entries. Preserve that ownership before classifying new arrivals.
         for e in entries:
-            data['managed_entries'][e['id']] = lifecycle.new_member(data, e, 'managed')
+            data['managed_entries'][e['id']] = lifecycle.new_member(data, e, 'managed', origin='unknown')
         data['lifecycle_migration'] = {'version': 2, 'source_state_version': data['version'],
                                      'managed_stays': len(entries)}
         membership = dict(data.get('membership', []))
@@ -170,6 +170,16 @@ class State:
         if 'entry_times' not in data:
             initialize_clocks(data, (json.loads(payload) for (payload,) in self.db.execute(
                 'SELECT payload FROM observations ORDER BY id')))
+        if 'arrival_origin_migration' not in data:
+            last_operations = {}
+            for (payload,) in self.db.execute(
+                    "SELECT payload FROM operations WHERE state='confirmed' ORDER BY rowid"):
+                parent = json.loads(payload)
+                for child in parent.get('operations', [parent]):
+                    op = {**parent, **child}
+                    if op.get('purpose') != 'transport_test' and op['kind'] in {'add', 'remove'}:
+                        last_operations[op['video_id']] = op
+            lifecycle.initialize_origins(data, last_operations)
         entries = observation['playlist']['entries']
         present = {e['id'] for e in entries}
         dismissed = set(data['dismissed'])
@@ -222,6 +232,10 @@ class State:
         if migration and migration['repaired_count']:
             from .migration import backup_before_repair
             migration['backup_path'] = backup_before_repair(self, 'before-count-window-repair-')
+        origins = data.get('arrival_origin_migration') if 'arrival_origin_migration' not in previous_state else None
+        if origins and origins['classified']['manual']:
+            from .migration import backup_before_repair
+            origins['backup_path'] = backup_before_repair(self, 'before-manual-origin-repair-')
         if any(m['status'] == 'candidate' for m in data['managed_entries'].values()):
             from .planner import plan
             classified = plan(config, observation, data, observation['collected_at'])
@@ -235,6 +249,8 @@ class State:
             self.put('state', data)
             if migration:
                 telemetry.event(self, 'count_overflow_history_repaired', migration)
+            if origins:
+                telemetry.event(self, 'arrival_origins_initialized', origins)
             telemetry.observe_changes(self, observation, previous_state)
             telemetry.queue_snapshot(self, observation['playlist'], observation['collected_at'], 'collection')
         return data
@@ -366,7 +382,7 @@ class State:
                     owned = lifecycle.member(data, {'id': vid, 'entry_id': operation.get('entry_id')})
                     if operation.get('reason') != 'count_window_overflow' and (
                             operation.get('purpose') != 'watched_cleanup' or
-                            owned.get('status') in {'managed', 'exception', 'remove_requested'}):
+                            owned.get('status') in {'managed', 'manual', 'exception', 'remove_requested'}):
                         data['dismissed'] = sorted(set(data['dismissed']) | {vid})
                     data['managed_entries'].pop(vid, None)
                     data.get('entry_policies', {}).pop(vid, None)
@@ -387,7 +403,8 @@ class State:
                     for e in playlist['entries']:
                         if e['id'] == operation['video_id']:
                             data['tracked'][e['entry_id']] = e['id']
-                            data['managed_entries'][e['id']] = lifecycle.new_member(data, e, 'managed')
+                            data['managed_entries'][e['id']] = lifecycle.new_member(
+                                data, e, 'managed', origin='manager')
                             if e['id'] in clocks:
                                 clocks[e['id']]['entry_id'] = e['entry_id']
                             if operation.get('plan_id'):

@@ -14,6 +14,7 @@ playlist evidence and journals guard writes. Incomplete evidence is reported.
   Lookback measures publication age. Shorts and completed videos are ineligible.
 - Retention age starts from the saved playlist addition, not publication.
   Count retention chooses eligible oldest or newest videos as configured.
+  Manual additions bypass these limits and all channel eligibility filters.
   Selection order and viewing order are distinct.
 - Pinned channels form ordered groups at the top. Only pinned groups can reverse
   their viewing order. The unpinned eligible videos share oldest-first chronology.
@@ -22,14 +23,26 @@ playlist evidence and journals guard writes. Incomplete evidence is reported.
   retain their protection. Ignored channels stop additions only.
 - An observed external disappearance dismisses a managed stay. Confirmed
   count-only removals clear the stay without dismissal and leave future
-  selection to the catalog and current rules. An observed re-add follows
-  the explicit configured return rule. Remove and re-add between observations
+  selection to the catalog and current rules. A separately observed manual
+  re-add starts a protected manual stay. Remove and re-add between observations
   cannot be detected reliably.
-- Existing managed-channel videos that conflict with rules require an explicit
-  keep/remove answer. Kept exceptions use the channel's ordering but do not
-  occupy ordinary retention slots. Unwatched manual videos outside managed
-  channels are preserved and share unpinned oldest-first ordering. Channel
-  removal/unsubscription may also require a keep/remove choice.
+- A playlist entry without a matching confirmed manager addition is preserved as
+  a manual addition. Its origin remains manual even when it matches the rules.
+  It occupies no channel slot and never expires; it stays until watched or
+  removed manually. Rule edits, ignoring and unsubscription do not remove it.
+  Configured-channel manual entries still follow that channel's placement;
+  unconfigured entries share unpinned oldest-first ordering.
+- Ambiguous legacy ownership can still require a keep/remove answer. Kept
+  exceptions bypass filters and retention. Stopping management may also require
+  a choice for entries added by the manager. Those questions do not pause
+  protected manual stays or their watched cleanup.
+
+On upgrade, saved addition receipts, clocks and confirmed operations distinguish
+manager additions from previously adopted manual entries. Proven manual stays
+gain protection; ambiguous legacy ownership keeps its prior status. A local
+backup and migration event accompany reclassification. Preview may repair local
+history but never edits YouTube. An already recorded explicit remove intent is
+not overturned by this migration.
 
 On the first complete observation after upgrading to 0.2.5, local history is
 repaired for old count-overflow dismissals that saved plans, observations and

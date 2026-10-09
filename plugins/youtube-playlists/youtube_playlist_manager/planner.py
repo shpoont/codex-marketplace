@@ -12,7 +12,7 @@ from .selection import select_candidates
 from .ordering import manual_entry, normal_active, viewing_key, viewing_order
 
 
-PLAN_SCHEMA = 16
+PLAN_SCHEMA = 17
 
 # Approval covers lifecycle history, not just the IDs sent to YouTube.
 APPROVAL_FIELDS = ('status', 'blockers', 'identity', 'before', 'remove', 'add', 'desired', 'expire',
@@ -77,9 +77,10 @@ def plan(config, observation, state, now, metadata_only=False):
     dismissed = set(state['dismissed'])
     old = state['policies']
     managed = set(policies) | set(old)
+    manual_ids = {e['id'] for e in entries if lifecycle.manual_protected(state, e)}
     released_ids = {e['id'] for e in entries if lifecycle.member(state, e).get('status') == 'released'}
     returned = {e['id'] for e in entries if e['id'] in dismissed and
-                e['channel_id'] in managed and normal_active(e)}
+                e['channel_id'] in managed and normal_active(e) and e['id'] not in manual_ids}
     reappearance = manual_policy(config)['dismissed_reappearance']
     if returned and reappearance == 'deferred':
         blockers.append('Previously dismissed video reappeared; reappearance policy is deferred')
@@ -88,7 +89,7 @@ def plan(config, observation, state, now, metadata_only=False):
     if len(current_ids) != len(entries):
         blockers.append('Duplicate playlist videos require an explicit resolution')
     for e in entries:
-        if (e['channel_id'] in managed and e.get('percent') is not None
+        if (e['channel_id'] in managed and e['id'] not in manual_ids and e.get('percent') is not None
                 and e['percent'] < 100 and e['kind'] == 'unknown'
                 and e['channel_id'] not in unavailable_channels):
             blockers.append('Unclassified managed playlist entry: ' + e['id'])
@@ -102,7 +103,8 @@ def plan(config, observation, state, now, metadata_only=False):
     for channel_id in list(policies) + sorted(set(old) - set(policies)):
         p = policies.get(channel_id)
         channel_entries = [e for e in entries if e['channel_id'] == channel_id
-                           and lifecycle.member(state, e).get('status') != 'released']
+                           and lifecycle.member(state, e).get('status') != 'released'
+                           and e['id'] not in manual_ids]
         existing = [e for e in channel_entries if normal_active(e)]
         if p is None or channel_id not in subs:
             output['channels'].append({'id': channel_id, 'evaluation_status': 'removed_or_unsubscribed'})
@@ -156,7 +158,7 @@ def plan(config, observation, state, now, metadata_only=False):
         known_filtered = 0
         for v in merged.values():
             queued = v['id'] in current_ids
-            if v['id'] in exception_ids or v['id'] in released_ids:
+            if v['id'] in exception_ids or v['id'] in released_ids or v['id'] in manual_ids:
                 continue  # Durable keep decisions do not occupy channel slots.
             # Ignored channels retain current entries only. Missing catalog
             # entries need no metadata and cannot block other channels' plans.
@@ -292,10 +294,10 @@ def plan(config, observation, state, now, metadata_only=False):
     # Explain eligible inventory separately from the exact membership changes.
     decision_paused = {d['channel_id'] for d in output['decisions']}
     paused = decision_paused | unavailable_channels
-    paused_ids = {e['id'] for e in entries if e['channel_id'] in paused}
+    paused_ids = {e['id'] for e in entries if e['channel_id'] in paused and e['id'] not in manual_ids}
     for e in entries:
         if (e['id'] in paused_ids or e.get('percent') == 100 or e.get('playable') is False
-                or not manual_entry(e, managed, state)):
+                or not (e['id'] in manual_ids or manual_entry(e, managed, state))):
             continue
         if e['kind'] == 'unknown':
             blockers.append('Unclassified manual playlist entry; collect again: ' + e['id'])
@@ -306,7 +308,8 @@ def plan(config, observation, state, now, metadata_only=False):
     removals = {vid: reason for vid, reason in removals.items() if vid not in paused_ids}
     for e in entries:
         if (e['percent'] == 100 and e.get('playable') is True
-                and e['channel_id'] not in decision_paused and e['id'] not in approved_removals):
+                and (e['channel_id'] not in decision_paused or e['id'] in manual_ids)
+                and e['id'] not in approved_removals):
             removals[e['id']] = 'fully_watched'
     expiry_details = {vid: details for vid, details in expiry_details.items() if vid not in paused_ids}
     output['adopt'] = [vid for vid in output['adopt'] if vid not in paused_ids]

@@ -1,5 +1,6 @@
 """Playlist-entry clocks and observed returns, independent of upload dates."""
 from .config import channel_policy, timestamp
+from . import lifecycle
 
 
 def manual_policy(config):
@@ -15,8 +16,10 @@ def observe_entries(data, observation, config):
     expired = data.setdefault('expired', {})
     actions = manual_policy(config)
     returned = present & set(data['dismissed'])
-    if returned and actions['dismissed_reappearance'] == 'readmit':
-        data['dismissed'] = sorted(set(data['dismissed']) - returned)
+    manual_returns = {e['id'] for e in observation['playlist']['entries']
+                      if e['id'] in returned and lifecycle.manual_protected(data, e)}
+    readmitted = returned if actions['dismissed_reappearance'] == 'readmit' else manual_returns
+    data['dismissed'] = sorted(set(data['dismissed']) - readmitted)
     policies = {c['id']: channel_policy(c, config['channel_defaults']) for c in config['channels']}
     enabled = data.setdefault('retention_enabled_at', {})
     for cid, policy in policies.items():
@@ -44,7 +47,8 @@ def observe_entries(data, observation, config):
         elif convention == 'retention_enabled' and entry['channel_id'] in enabled:
             start = max([clock['first_seen_at'], enabled[entry['channel_id']]], key=timestamp)
             clock.update(added_at=start, source='retention_enabled')
-    return {'returned': sorted(returned), 'action': actions['dismissed_reappearance']}
+    return {'returned': sorted(returned), 'action': actions['dismissed_reappearance'],
+            'manual_preserved': sorted(manual_returns)}
 
 
 def initialize_clocks(data, observations):

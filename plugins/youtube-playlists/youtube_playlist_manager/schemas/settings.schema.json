@@ -1,7 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "YouTube playlist manager: configuration reference (v3)",
-  "description": "Defines supported channel rules, their meaning, interactions and examples. development.yaml and watch-later.yaml are target instances; channels.yaml holds their shared channel rules. Selected values are not schema defaults. Use either channel_rules_file or inline channel_defaults and channels, never both. Missing eligible videos are added subject to channel rules, regardless of total duration or previous runs. Required settings must be explicit. Optional channel lookback and retention fields inherit channel_defaults; null removes a supported limit, while deferred records an unresolved choice and blocks dependent execution. The bundled viewing-rules and configuration guides explain the process and policy decisions. Operational observations, membership and dismissals stay outside configuration. Rolling lookback controls entry by publication age; time retention expires queued videos from their saved addition time. Manual timing and dismissal-return conventions are explicit in manual_actions.",
+  "description": "Defines supported channel rules, their meaning, interactions and examples. development.yaml and watch-later.yaml are target instances; channels.yaml holds their shared channel rules. Selected values are not schema defaults. Use either channel_rules_file or inline channel_defaults and channels, never both. Missing eligible videos are added subject to channel rules, regardless of total duration or previous runs. Required settings must be explicit. Optional channel lookback and retention fields inherit channel_defaults; null removes a supported limit, while deferred records an unresolved choice and blocks dependent execution. The bundled viewing-rules and configuration guides explain the process and policy decisions. Operational observations, membership and dismissals stay outside configuration. Rolling lookback controls entry by publication age; time retention expires queued videos from their saved addition time. Detected manual additions bypass channel eligibility, expiry and count, while retaining placement and watched cleanup. Legacy timing and non-manual return conventions remain in manual_actions.",
   "type": "object",
   "additionalProperties": false,
   "required": ["version", "environment", "account_channel_id", "playlist_id", "playlist_name", "execution", "transport", "storage"],
@@ -191,18 +191,18 @@
       "type": "object",
       "additionalProperties": false,
       "required": ["unknown_addition_time", "dismissed_reappearance"],
-      "description": "Explicit conventions for observed playlist membership. If omitted, these choices remain deferred. A run blocks when its current inventory requires an undecided choice.",
+      "description": "Conventions for legacy addition clocks and returns not recognized as manual. Detected manual additions always bypass channel filters, time expiry and count slots; separately observed manual re-adds start protected stays. If omitted, these choices remain deferred and block only a dependent automatic/legacy decision.",
       "properties": {
         "unknown_addition_time": {
           "type": "string",
           "enum": ["first_observed", "retention_enabled", "deferred"],
-          "description": "For entries without a verified manager-addition timestamp: first_observed starts from the first recorded appearance of the current observed stay; retention_enabled starts from the later of that appearance and the first run with time retention enabled. Existing observation history supplies evidence where available. The chosen clock is saved once, never replaced with publication time or reset by ordinary rule edits. deferred blocks only time retention needing an unknown clock.",
+          "description": "For older automatic/ambiguous entries without a verified manager-addition timestamp: first_observed uses the first recorded appearance of this stay; retention_enabled uses the later of that appearance and the first run with time retention enabled. Historical observations supply evidence where available. The clock is saved once and never replaced with publication time or reset by rule edits. Protected manual additions may have observation clocks for history, but never expire. deferred blocks only dependent time retention needing an unknown clock.",
           "examples": ["first_observed", "retention_enabled", "deferred"]
         },
         "dismissed_reappearance": {
           "type": "string",
           "enum": ["readmit", "remove", "deferred"],
-          "description": "When a previously dismissed video is observed back in the playlist: readmit cancels its dismissal and applies normal channel rules, with a new stay; remove keeps the dismissal and removes the returned active managed entry. Neither choice changes unmanaged, watched or excluded-format cleanup rules. deferred blocks the affected run. A removal and return entirely between observations is undetectable and keeps the existing clock.",
+          "description": "A separately observed manual re-add always clears dismissal and starts a protected manual stay, overriding this setting. For returns not recognized as manual, readmit cancels dismissal and applies ordinary rules; remove retains dismissal and reviews removal of the active returned entry; deferred blocks a dependent decision. This does not change watched or excluded-format cleanup. Remove/re-add entirely between observations may remain undetected and retain the existing clock and origin.",
           "examples": ["readmit", "remove", "deferred"]
         }
       }
@@ -292,13 +292,13 @@
     },
     "retention": {
       "title": "How much eligible viewing to retain",
-      "description": "Control queued managed inventory using time since playlist addition and an optional count constraint. The same channel time and count limits apply to every eligible queued video from that channel, whether added manually or by the manager. Only playable normal videos that are not fully watched occupy active slots. Unwatched Shorts can remain physically without occupying a slot. Refresh removes playable entries YouTube reports as exactly 100% watched, including manual additions, kept exceptions and watched excluded formats. Unavailable entries and paused-decision channels remain protected. Completion is rechecked before removal; watch history and surviving entry identities and clocks are preserved. Cleanup of unowned manual or released entries does not adopt or dismiss them. Expiry and replacement happen when a plan is applied; kept exceptions bypass channel selection and retention without consuming a slot. Rule edits preserve surviving entry identities and clocks. Count-only displacement removes the active stay without dismissal; absent eligible videos can enter when selected later. Observed external departures and other terminal manager removals remain dismissed to prevent automatic re-addition; a separately observed manual addition starts a new stay under the same channel rules.",
+      "description": "Control automatic inventory using time since playlist addition and an optional count constraint. Protected manual additions and kept exceptions bypass all channel eligibility filters, time expiry and count selection. A manual video may stay beside the full automatic count window. Only playable normal automatic videos that are not fully watched occupy slots. Fully watched playable entries are removed on refresh regardless of origin or format, with fresh completion checks; unavailable entries and automatic entries awaiting decisions remain protected. Rule edits preserve surviving identities and clocks. Count-only displacement removes a stay without dismissal and leaves it eligible for future selection. External departures of tracked stays and terminal manager removals prevent automatic re-addition. A separately observed manual re-add clears dismissal and starts another protected manual stay.",
       "type": "object",
       "additionalProperties": false,
       "properties": {
         "maximum_age": {
           "title": "Maximum time in the playlist",
-          "description": "Expire an active managed video after this duration since it entered the playlist. A five-day-old upload added today with 1d retention expires tomorrow. A verified manager addition uses its recorded request time, including recovery after a lost response. Manual and legacy entries use the explicitly chosen manual_actions.unknown_addition_time convention; unavailable timing blocks dependent expiry. Surviving entries retain their clocks across rule edits. Confirmed expiry also dismisses the video, preventing automatic catch-up re-addition. Kept exceptions bypass expiry. null disables expiry; deferred is unresolved; omission inherits the default.",
+          "description": "Expire an automatic video after this duration since it entered the playlist. A five-day-old upload added today with 1d retention expires tomorrow. Verified manager additions use recorded request time, including lost-response recovery. Older automatic/ambiguous entries use manual_actions.unknown_addition_time; missing timing blocks dependent expiry. Surviving clocks persist across rule edits. Confirmed expiry dismisses the video to prevent automatic catch-up re-addition. Protected manual additions and kept exceptions never expire. null disables expiry; deferred is unresolved; omission inherits the default.",
           "allOf": [
             {
               "$ref": "#/definitions/optionalDuration"
@@ -308,7 +308,7 @@
         },
         "maximum_count": {
           "title": "Maximum unwatched videos per channel",
-          "description": "Positive integer limiting eligible unwatched inventory, with selection deciding which videos occupy the slots. Eligible overflow remains reconsiderable even if already queued and removed to enforce this count; count-only removal does not dismiss it. Each refresh derives candidates from the catalog and current rules. With 1, watching the newest upload frees a slot for another eligible unwatched upload. Every missing video selected by the channel rules can be added in a run; this is a retention limit, not a per-run quota. null means unlimited, deferred is unresolved, and omission inherits the default. Time expiry is evaluated before count selection, allowing another eligible unwatched video to refill a vacancy.",
+          "description": "Positive integer limiting eligible automatic unwatched inventory; manual additions and kept exceptions occupy no slots. selection decides which automatic videos occupy the slots. Eligible overflow remains reconsiderable even if already queued and removed to enforce this count; count-only removal does not dismiss it. Each refresh derives candidates from the catalog and current rules. With 1, watching the newest upload frees a slot for another eligible unwatched upload. Every missing video selected by the channel rules can be added in a run; this is a retention limit, not a per-run quota. null means unlimited, deferred is unresolved, and omission inherits the default. Time expiry is evaluated before count selection, allowing another eligible unwatched video to refill a vacancy.",
           "anyOf": [
             {
               "type": "integer",
@@ -391,7 +391,7 @@
     },
     "channel": {
       "title": "One source channel",
-      "description": "Combines additions, catch-up, retention and viewing placement for one stable YouTube channel ID. Rule edits reconcile in place: keep eligible entries, remove only those excluded, and add missing eligible videos. Conflicting new manual arrivals require a keep/remove decision. Kept exceptions bypass channel selection and retention without consuming count slots. Any managed departure is dismissed, including manager removals. With no count limit, all missing eligible videos can be added in one run.",
+      "description": "Combines additions, catch-up, retention and placement for one stable YouTube channel ID. Rule edits reconcile automatic entries in place. Detected manual arrivals stay protected regardless of eligibility, occupy no count slots and follow channel placement; rule changes and unsubscription do not remove them. Unknown legacy ownership or stopping management of automatic entries may require a keep/remove decision. Confirmed count-only overflow remains eligible; observed external departures and terminal removals remain dismissed. With no count limit, all missing eligible videos can be added in one run.",
       "type": "object",
       "additionalProperties": false,
       "required": ["id", "name", "additions", "catch_up", "placement"],
@@ -438,7 +438,7 @@
         },
         "placement": {
           "title": "Where eligible videos appear",
-          "description": "Among active entries, pinned channel groups come first. All unpinned videos, including unmanaged manual additions, mix by publication date, oldest first. Sorting manual entries does not adopt them for automatic additions or retention. Fully watched playable entries are removed before ordering; unavailable and unwatched excluded-format entries stay outside routine reordering. Channels with pending decisions are left untouched. Missing dates or classification stop ordering until collection resolves them. Changing placement reorders existing entries without removing and re-adding them.",
+          "description": "Pinned channel groups come first. Protected manual entries follow their configured channel's placement without becoming subject to its filters or retention. Unconfigured manual and all other unpinned entries mix by publication date, oldest first. Fully watched playable entries are removed before ordering; unavailable and unwatched excluded-format entries stay outside reordering. Pending decisions pause automatic/ambiguous entries, while protected manual stays continue. Missing dates or classification stop ordering until resolved. Placement edits preserve entry identity and addition time.",
           "type": "object",
           "additionalProperties": false,
           "required": ["pinned_rank", "order"],

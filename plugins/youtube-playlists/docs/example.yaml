@@ -2,9 +2,9 @@
 # ILLUSTRATIVE CONFIGURATION — all account, playlist, channel and video IDs below
 # are fictional placeholders. Replace them and choose the scenarios you want.
 # This is a complete standalone file; validate it with:
-#   Ask the agent to create your external settings and validate the result.
+#   .venv/bin/youtube-playlists --config config/example.yaml validate
 # Validation checks the format; it does not check the YouTube identities.
-# Personal settings belong outside this repo. See configuration-examples.md in this folder.
+# Personal settings belong outside this repo. See README.md in this folder.
 
 version: 3
 
@@ -60,10 +60,16 @@ storage:
   data_directory: "~/Library/Application Support/info.komarovsky.codex-plugin-youtube-playlist-management/playlists/PL_REPLACE_WITH_PLAYLIST_ID"
 
 # Existing and manually added videos:
-# - A managed video is one the manager added or adopted under a configured
-#   channel's rules. Existing matching videos are adopted when a refresh applies.
-# - An existing/new manual video that conflicts with those rules prompts a
-#   keep/remove decision. That channel pauses until answered; others can update.
+# - An automatic video was added by the manager and follows channel rules.
+# - An existing/new entry without a matching confirmed manager addition is
+#   manual: bypass all channel filters, time expiry and count slots. Preserve
+#   its origin even if it matches the rules; keep it until watched or removed.
+#   With latest 1, a manual video can stay beside 1 automatically selected video.
+# - Manual entries use their configured channel's placement, or unpinned
+#   oldest-first order when unconfigured. Rule edits/ignoring/unsubscription
+#   do not remove them. Separately observed manual re-adds are protected too.
+# - Ambiguous legacy ownership can still prompt a keep/remove decision.
+#   Automatic entries pause in that channel; protected manual stays continue.
 #   keep: make an exception, exempt from channel filters/retention/count slots,
 #         but still ordered and removed when fully watched.
 #   remove: remove it and remember a dismissal (do not automatically add it again).
@@ -75,14 +81,17 @@ storage:
 #   and channels awaiting a decision retain their protections; see the footer.
 manual_actions:
   # Addition time means when THIS stay in the playlist began. Manager additions
-  # use their recorded time. For manual/older entries without a known time:
+  # use their recorded time. Older automatic/ambiguous entries without a known
+  # time use this convention; protected manual stays never expire:
   # first_observed: use the first recorded appearance of this stay.
   # retention_enabled: use the later of that appearance or the first run with
   #                    time retention enabled for this channel.
   # Once saved, that time survives rule edits and changes to this convention.
   # deferred: stop when a decision is actually needed; never guess a timestamp.
   unknown_addition_time: first_observed
-  # readmit: an observed return starts a new managed stay under ordinary rules.
+  # Protected manual re-adds always clear dismissal and stay protected.
+  # For returns not recognized as manual:
+  # readmit: start a new managed stay under ordinary rules.
   # remove: retain the dismissal and remove the returned active managed entry.
   # deferred: stop when an observed return needs this decision.
   # Remove-and-readd entirely between observations cannot be detected.
@@ -91,7 +100,7 @@ manual_actions:
 # Alternative file layout: replace BOTH inline sections below with:
 # channel_rules_file: channels.yaml
 # Move channel_defaults and channels into that sibling file. Never combine the
-# reference with either inline section. See configuration-examples.md for the two-target example.
+# reference with either inline section. See README.md for the two-target example.
 channel_defaults:
   # Only supported value here: disabled. Channels absent from channels get no
   # automatic additions. Per-channel additions instead accepts enabled | ignored.
@@ -260,14 +269,15 @@ channels:
 # shortening/enabling maximum_age can expire them immediately at that refresh.
 # Widening limits can admit waiting videos, but never clears saved dismissals.
 # Changing lookback affects missing candidates only; it does not clear the queue.
-# Existing keep exceptions survive rule edits; revoke them explicitly to return
-# them to ordinary rules. Removing a channel or unsubscribing asks keep/remove:
-# keep releases its entries from channel management; remove dismisses them.
+# Manual additions and keep exceptions survive rule edits. Revoke an exception
+# explicitly to return it to ordinary rules. Removing a channel or unsubscribing
+# asks keep/remove for automatic/ambiguous entries; protected manual stays remain.
+# keep releases the reviewed entries; remove dismisses them.
 # Changing owner/playlist or moving state requires separate setup/migration.
-# See configuration-examples.md in this folder for the rule-edit guidance.
+# See README.md in this folder for the rule-edit table and process command links.
 #
 # Common behavior has no per-channel switch: only normal Videos uploads are
 # selected; Shorts, Clips and live content are excluded. Fully watched playable
 # entries are removed on refresh, including manual videos and kept exceptions;
 # partial watches remain eligible. Unavailable entries, unwatched excluded formats
-# and channels awaiting a decision remain protected from ordinary cleanup.
+# and automatic entries awaiting a decision remain protected from cleanup.

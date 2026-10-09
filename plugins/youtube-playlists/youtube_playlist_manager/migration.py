@@ -7,6 +7,7 @@ from contextlib import closing
 
 from .config import digest, timestamp
 from . import telemetry
+from . import lifecycle
 from .state import StateError
 
 
@@ -221,7 +222,8 @@ def repair_legacy_ownership(store, snapshot, *, apply=False):
     for e in entries:
         vid, eid = e['id'], e['entry_id']
         m = data['managed_entries'].get(vid, {})
-        if (m.get('status') != 'candidate' or m.get('entry_id') != eid
+        if (lifecycle.manual_protected(data, e) or
+                m.get('status') != 'candidate' or m.get('entry_id') != eid
                 or m.get('channel_id') != e['channel_id'] or m.get('stay_id') is None
                 or current_pairs.get(eid) != vid or (eid, vid, e['channel_id']) not in continuous
                 or vid in removed or vid in data['dismissed'] or m.get('decision_id')):
