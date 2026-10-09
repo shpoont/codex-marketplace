@@ -49,7 +49,7 @@ To uninstall a selected plugin:
 codex plugin remove PLUGIN_ID@b2a48b
 ```
 
-## Renamed plugins
+## Replaced plugins
 
 | Previous plugin ID | Current plugin ID |
 | --- | --- |
@@ -59,7 +59,8 @@ codex plugin remove PLUGIN_ID@b2a48b
 | `maintain-agent-guidance` | [`agent-instructions`](plugins/agent-instructions/README.md) |
 
 Agent Instructions combines recurring guidance reviews and selected instruction
-refactoring. Its README explains how to move existing review tasks safely.
+refactoring. The separate Improvement and Refactoring catalog entries are
+retired. Its README explains how to move existing review tasks safely.
 For an older installation, follow the current plugin README to install and
 select its replacement. Verify the new copy before removing the old one.
 The replacement uses a new plugin ID; updating the old copy does not rename it.

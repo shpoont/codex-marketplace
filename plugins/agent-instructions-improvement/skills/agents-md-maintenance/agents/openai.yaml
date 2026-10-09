@@ -1,7 +1,0 @@
-interface:
-  display_name: "Manage AGENTS.md Reviews"
-  short_description: "Add, audit, migrate, pause, or remove review schedules"
-  icon_small: "./assets/icon.svg"
-  icon_large: "./assets/icon.svg"
-  brand_color: "#16324F"
-  default_prompt: "Audit all of my AGENTS.md review schedules and report any drift."

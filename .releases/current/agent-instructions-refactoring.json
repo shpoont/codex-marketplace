@@ -1,7 +1,0 @@
-{
-  "schema": 1,
-  "plugin": "agent-instructions-refactoring",
-  "version": "0.3.0",
-  "digest": "85ee1142ca7dac3a230f35ae7e0b2c919e962dd6713fecca631967ceea1f1e92",
-  "action": "release"
-}
