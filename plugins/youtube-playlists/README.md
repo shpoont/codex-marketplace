@@ -26,7 +26,7 @@ a particular browser plugin. Credentials remain in the selected browser.
 ### Install
 
 ```sh
-codex plugin marketplace add https://github.com/shpoont/codex-marketplace.git
+codex plugin marketplace add shpoont/codex-marketplace
 codex plugin add youtube-playlists@b2a48b
 ```
 

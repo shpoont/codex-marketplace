@@ -2,6 +2,12 @@
 
 User-visible changes to YouTube Playlists and any action required when installing or updating it.
 
+## 0.3.5 — 2026-10-10
+
+- Use GitHub owner/repo shorthand in the marketplace installation command.
+- Existing installations need no configuration changes. Playlist rules,
+  browser access and local history remain unchanged.
+
 ## 0.3.4 — 2026-10-09
 
 - Preserve detected manual additions until watched or removed manually. They
