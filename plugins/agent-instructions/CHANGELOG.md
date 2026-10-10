@@ -10,6 +10,19 @@ must take when installing or updating it.
 Users should be able to understand how a release affects capabilities,
 compatibility, setup, data and safe use without reading development records.
 
+## 0.4.2 — 2026-10-10
+
+### Changed
+
+- Replaces the plugin logo, composer icon and all four existing skill icon
+  pairs with the same transparent blue folded-ribbon artwork.
+- Stores each skill icon inside its own assets folder and removes the
+  superseded custom SVG icons.
+
+This is a presentation update. Review policy, skill procedures, instruction
+refactoring selection requirements and saved task references are unchanged.
+No project registry or scheduled-task migration is required.
+
 ## 0.4.1 — 2026-10-08
 
 ### Changed

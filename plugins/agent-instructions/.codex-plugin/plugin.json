@@ -1,6 +1,6 @@
 {
   "name": "agent-instructions",
-  "version": "0.4.1",
+  "version": "0.4.2",
   "description": "Maintain project AGENTS.md guidance and find or apply selected refactoring changes in AI agent instructions.",
   "author": {
     "name": "Leon.id Komarovsky"
@@ -27,7 +27,7 @@
     "supportURL": "https://github.com/shpoont/codex-marketplace/issues",
     "brandColor": "#16324F",
     "brandColorDark": "#5EEAD4",
-    "composerIcon": "./assets/agent-instructions.svg",
-    "logo": "./assets/agent-instructions.svg"
+    "composerIcon": "./assets/agent-instructions.png",
+    "logo": "./assets/agent-instructions.png"
   }
 }

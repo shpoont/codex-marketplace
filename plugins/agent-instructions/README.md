@@ -217,7 +217,7 @@ credentials, private instructions, personal data or raw traces.
 
 ## Version and license
 
-Current version: `0.4.1`. See the [changelog](CHANGELOG.md) for released
+Current version: `0.4.2`. See the [changelog](CHANGELOG.md) for released
 changes and required user actions. Distributed under the [MIT License](LICENSE).
 Python and Codex are prerequisites with their own terms; no third-party runtime
 libraries are vendored.
