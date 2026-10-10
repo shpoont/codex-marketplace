@@ -26,9 +26,11 @@ codex plugin marketplace remove OLD_MARKETPLACE_ID
 Use the commands below to register the current name and reinstall each plugin.
 
 ```sh
-codex plugin marketplace add https://github.com/shpoont/codex-marketplace.git --ref main
+codex plugin marketplace add shpoont/codex-marketplace --ref main
 codex plugin list --marketplace b2a48b
 ```
+
+The repository argument uses Codex's supported GitHub `owner/repo` shorthand.
 
 Choose a plugin from the catalog and replace `PLUGIN_ID` below with its name:
 
