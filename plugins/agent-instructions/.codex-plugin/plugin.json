@@ -1,6 +1,6 @@
 {
   "name": "agent-instructions",
-  "version": "0.4.2",
+  "version": "0.4.3",
   "description": "Maintain project AGENTS.md guidance and find or apply selected refactoring changes in AI agent instructions.",
   "author": {
     "name": "Leon.id Komarovsky"

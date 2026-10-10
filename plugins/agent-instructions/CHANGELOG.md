@@ -10,6 +10,14 @@ must take when installing or updating it.
 Users should be able to understand how a release affects capabilities,
 compatibility, setup, data and safe use without reading development records.
 
+## 0.4.3 — 2026-10-10
+
+### Changed
+
+- Uses GitHub `owner/repo` shorthand in the marketplace installation command.
+
+Runtime behavior, skill instructions and presentation assets are unchanged.
+
 ## 0.4.2 — 2026-10-10
 
 ### Changed
