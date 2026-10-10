@@ -8,6 +8,13 @@ Record user-visible changes and any required installation or update actions.
 
 Users can understand capabilities, compatibility and effects from this package.
 
+## 0.1.6 — 2026-10-10
+
+### Changed
+
+- Use `shpoont/codex-marketplace` in the CLI installation command.
+  Existing installations require no configuration changes.
+
 ## 0.1.5 — 2026-10-10
 
 ### Changed

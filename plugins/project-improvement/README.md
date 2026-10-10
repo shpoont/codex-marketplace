@@ -26,7 +26,7 @@ workflow, then reassesses before choosing the next improvement.
 ### Install
 
 ```sh
-codex plugin marketplace add https://github.com/shpoont/codex-marketplace.git
+codex plugin marketplace add shpoont/codex-marketplace
 codex plugin add project-improvement@b2a48b
 ```
 
@@ -114,7 +114,7 @@ personal data or raw traces.
 
 ## Version and license
 
-Version: `0.1.5`. See the [changelog](CHANGELOG.md) for user-visible changes.
+Version: `0.1.6`. See the [changelog](CHANGELOG.md) for user-visible changes.
 The package is provided under the [MIT License](LICENSE).
 No third-party runtime libraries are bundled.
 
