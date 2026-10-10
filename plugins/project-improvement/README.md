@@ -114,7 +114,7 @@ personal data or raw traces.
 
 ## Version and license
 
-Version: `0.1.4`. See the [changelog](CHANGELOG.md) for user-visible changes.
+Version: `0.1.5`. See the [changelog](CHANGELOG.md) for user-visible changes.
 The package is provided under the [MIT License](LICENSE).
 No third-party runtime libraries are bundled.
 

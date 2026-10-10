@@ -2,8 +2,8 @@ interface:
   display_name: "Review and Improve"
   short_description: "Find, make and verify improvements"
   default_prompt: "$review-and-improve Find one worthwhile improvement, implement it, and verify the result."
-  icon_small: "../../assets/project-improvement.svg"
-  icon_large: "../../assets/project-improvement.svg"
+  icon_small: "./assets/project-improvement.png"
+  icon_large: "./assets/project-improvement.png"
   brand_color: "#0F766E"
 policy:
   allow_implicit_invocation: false

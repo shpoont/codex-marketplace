@@ -1,6 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256">
-  <title>Project Improvement</title>
-  <rect width="256" height="256" rx="48" fill="#0F766E"/>
-  <path d="M48 196V164H92V132H136V100H180V196Z" fill="#FFFFFF"/>
-  <path d="M64 120L176 56M144 52L184 52L180 92" fill="none" stroke="#5EEAD4" stroke-width="16" stroke-linecap="round" stroke-linejoin="round"/>
-</svg>

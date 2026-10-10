@@ -1,6 +1,6 @@
 {
   "name": "project-improvement",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "Improve software, documents and working processes using project evidence and the established workflow.",
   "author": {
     "name": "Leon.id Komarovsky"
@@ -21,8 +21,8 @@
     "defaultPrompt": [
       "$review-and-improve Find one worthwhile improvement, implement it, and verify the result."
     ],
-    "logo": "./assets/project-improvement.svg",
-    "composerIcon": "./assets/project-improvement.svg",
+    "logo": "./assets/project-improvement.png",
+    "composerIcon": "./assets/project-improvement.png",
     "brandColor": "#0F766E",
     "brandColorDark": "#5EEAD4"
   }

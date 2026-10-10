@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "plugin": "project-improvement",
-  "version": "0.1.4",
-  "digest": "8d4fc18347e032596feead673baca9b010d25d8bd06c75adfc7dd6420d9a8dea",
+  "version": "0.1.5",
+  "digest": "f82bd6223faf5645e25ee8ecc9254b53dc6f31ab3264ba622cb5823e11863266",
   "action": "release"
 }

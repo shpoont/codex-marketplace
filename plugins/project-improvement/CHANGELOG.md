@@ -8,6 +8,16 @@ Record user-visible changes and any required installation or update actions.
 
 Users can understand capabilities, compatibility and effects from this package.
 
+## 0.1.5 — 2026-10-10
+
+### Changed
+
+- Use the approved transparent flowing-ribbon icon for the plugin logo,
+  composer icon and Review and Improve's existing small and large icons.
+- Keep the skill's icon inside its own assets folder so both skill icon paths
+  resolve locally. The canonical routine and behavior are unchanged.
+- Start a fresh chat after updating to load the new icon metadata.
+
 ## 0.1.4 — 2026-10-08
 
 ### Changed
