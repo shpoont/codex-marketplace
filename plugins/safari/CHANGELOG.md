@@ -10,6 +10,13 @@ updating it.
 Users should be able to understand changes to Safari automation, compatibility,
 data access and safe-use boundaries without reading private development records.
 
+## 0.1.8 — 2026-10-10
+
+### Changed
+
+- Installation instructions now use the GitHub shorthand
+  `shpoont/codex-marketplace`. Existing installations need no setup change.
+
 ## 0.1.7 — 2026-10-05
 
 ### Changed

@@ -20,7 +20,7 @@ window.
 ### Install
 
 ```sh
-codex plugin marketplace add https://github.com/shpoont/codex-marketplace.git
+codex plugin marketplace add shpoont/codex-marketplace
 codex plugin add safari@b2a48b
 ```
 
@@ -147,7 +147,7 @@ credentials, personal page data, private instructions or raw traces.
 
 ## Version and license
 
-Current version: `0.1.7`. See the [public changelog](CHANGELOG.md) for
+Current version: `0.1.8`. See the [public changelog](CHANGELOG.md) for
 user-visible changes and required actions.
 
 Copyright © 2026 b2a48b. Plugin code and documentation are distributed under
