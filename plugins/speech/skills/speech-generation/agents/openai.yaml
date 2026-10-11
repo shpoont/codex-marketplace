@@ -1,0 +1,7 @@
+interface:
+  display_name: "Generation"
+  short_description: "Turn text into local speech"
+  default_prompt: "Use $speech-generation to say ‘Hello, this is a local speech sample’ using Sarah and save a new WAV file."
+  icon_small: "./assets/icon.png"
+  icon_large: "./assets/icon.png"
+  brand_color: "#176B91"

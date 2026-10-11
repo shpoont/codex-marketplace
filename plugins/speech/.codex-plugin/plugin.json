@@ -1,0 +1,35 @@
+{
+  "name": "speech",
+  "version": "0.1.0",
+  "description": "Generate local speech with Kokoro and recognize recorded speech with Whisper.",
+  "author": {
+    "name": "Leon.id Komarovsky"
+  },
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Speech",
+    "shortDescription": "Create speech and transcripts",
+    "longDescription": "Create spoken audio from text and transcribe recorded speech locally.\n\nChoose Kokoro voices and languages for narration, or use Whisper for transcripts, English translations and timed subtitles.\n\nRequires Apple silicon, an existing MLX speech environment and downloaded models; Whisper also needs ffmpeg. No cloud speech service, voice cloning or speaker identification.",
+    "developerName": "Leon.id Komarovsky",
+    "category": "Productivity",
+    "websiteURL": "https://github.com/shpoont/codex-marketplace/tree/main/plugins/speech",
+    "supportURL": "https://github.com/shpoont/codex-marketplace/issues",
+    "privacyPolicyURL": "https://github.com/shpoont/codex-marketplace/blob/main/plugins/speech/README.md#data-and-effects",
+    "termsOfServiceURL": "https://github.com/shpoont/codex-marketplace/blob/main/plugins/speech/LICENSE",
+    "capabilities": [
+      "Generate spoken audio",
+      "Choose narration voices",
+      "Transcribe local recordings",
+      "Create timed subtitles",
+      "Translate speech to English"
+    ],
+    "defaultPrompt": [
+      "Say ‘Hello, this is a local speech sample’ using Sarah and save a new WAV file.",
+      "Transcribe the audio file I provided and save a new transcript with timestamps."
+    ],
+    "brandColor": "#176B91",
+    "brandColorDark": "#66C0E8",
+    "composerIcon": "./assets/icon.png",
+    "logo": "./assets/icon.png"
+  }
+}
