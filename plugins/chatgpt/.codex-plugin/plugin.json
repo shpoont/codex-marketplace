@@ -1,0 +1,35 @@
+{
+  "name": "chatgpt",
+  "version": "0.1.5",
+  "description": "Operate ChatGPT conversations with native chat tools and browser UI for model and research gaps.",
+  "author": {
+    "name": "Leon.id Komarovsky"
+  },
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "ChatGPT",
+    "shortDescription": "Run prompts in ChatGPT",
+    "longDescription": "Use available native ChatGPT tools to read, resume and manage conversations. Use your signed-in browser's current UI for gaps such as selecting the latest available Pro or starting Deep research.\n\nSubmit your supplied prompt once, verify completion, and return the result and chat link. Requires access to the requested features.",
+    "developerName": "Leon.id Komarovsky",
+    "category": "Productivity",
+    "websiteURL": "https://github.com/shpoont/codex-marketplace/tree/main/plugins/chatgpt",
+    "supportURL": "https://github.com/shpoont/codex-marketplace/issues",
+    "privacyPolicyURL": "https://github.com/shpoont/codex-marketplace/blob/main/plugins/chatgpt/PRIVACY.md",
+    "termsOfServiceURL": "https://github.com/shpoont/codex-marketplace/blob/main/plugins/chatgpt/TERMS.md",
+    "capabilities": [
+      "Resume a conversation",
+      "Select a requested model",
+      "Run Deep research",
+      "Return results and chat links"
+    ],
+    "defaultPrompt": [
+      "Open my most recent ChatGPT conversation and return its link without sending a message.",
+      "Use Pro in ChatGPT to answer: What are three ways to reduce meeting overload?",
+      "Use Deep research in ChatGPT to compare solar and wind power costs, with sources."
+    ],
+    "logo": "./assets/chatgpt-logo.png",
+    "composerIcon": "./assets/chatgpt-logo.png",
+    "brandColor": "#5668D9",
+    "brandColorDark": "#8390EE"
+  }
+}

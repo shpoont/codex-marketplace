@@ -1,0 +1,7 @@
+{
+  "schema": 1,
+  "plugin": "chatgpt",
+  "version": "0.1.5",
+  "digest": "314e7f621043a5cf9281f98652d6ceb718b3e7297c73cf85b01dfa3d8dd5a90d",
+  "action": "release"
+}
