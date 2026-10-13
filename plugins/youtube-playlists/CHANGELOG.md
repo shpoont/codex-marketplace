@@ -2,6 +2,11 @@
 
 User-visible changes to YouTube Playlists and any action required when installing or updating it.
 
+## 0.3.6 — 2026-10-13
+
+- Use the default skill icon by removing custom skill icon references and their
+  unused image copy. Keep the plugin's YouTube logo unchanged.
+
 ## 0.3.5 — 2026-10-10
 
 - Use GitHub owner/repo shorthand in the marketplace installation command.
