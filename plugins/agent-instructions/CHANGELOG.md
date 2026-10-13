@@ -10,6 +10,14 @@ must take when installing or updating it.
 Users should be able to understand how a release affects capabilities,
 compatibility, setup, data and safe use without reading development records.
 
+## 0.4.4 — 2026-10-13
+
+### Changed
+
+- Uses default icons for all four skills and removes their custom image copies.
+
+The main plugin icon, skill instructions and runtime behavior are unchanged.
+
 ## 0.4.3 — 2026-10-10
 
 ### Changed
