@@ -9,6 +9,11 @@ Describe changes that affect ChatGPT plugin users.
 Keep capabilities, requirements and migration information available with the
 package. Entries describe the version's user-visible scope and requirements.
 
+## Unreleased — 0.1.6
+
+- Use default skill icons by omitting custom skill icon metadata and removing
+  the duplicated skill artwork. Keep the plugin icon and skill instructions.
+
 ## Unreleased — 0.1.5
 
 - Prioritize the finished report's visible expand/fullscreen and export controls

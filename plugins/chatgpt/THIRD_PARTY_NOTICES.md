@@ -2,9 +2,8 @@
 
 ## Official ChatGPT app icon
 
-The icon in `assets/chatgpt-logo.png` and
-`skills/chatgpt/assets/chatgpt-logo.png` is official ChatGPT app artwork owned
-by OpenAI. It is copied unchanged from OpenAI's
+The plugin icon in `assets/chatgpt-logo.png` is official ChatGPT app artwork
+owned by OpenAI. It is copied unchanged from OpenAI's
 [Google Play listing](https://play.google.com/store/apps/details?id=com.openai.chatgpt),
 linked from the [official ChatGPT download page](https://chatgpt.com/download/).
 The supplied white app tile and transparent corners are retained.

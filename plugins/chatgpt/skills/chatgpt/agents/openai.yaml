@@ -2,6 +2,4 @@ interface:
   display_name: "ChatGPT Conversations"
   short_description: "Native chat tools and browser UI for gaps"
   default_prompt: "Use $chatgpt to open my most recent ChatGPT conversation and return its link without sending a message."
-  icon_small: "./assets/chatgpt-logo.png"
-  icon_large: "./assets/chatgpt-logo.png"
   brand_color: "#5668D9"
