@@ -33,16 +33,16 @@ fresh task after installation.
 Use Safari to inspect this webpage and summarize its visible content.
 ```
 
-Expected result: the task creates and records a dedicated Safari window ID,
-summarizes the current page and keeps later browser work pinned to that same
-window without intentionally bringing Safari forward.
+Expected result: the task creates and records a dedicated Safari window and
+task-bound tab handle, summarizes the requested page and keeps later browser
+work tied to that target without intentionally bringing Safari forward.
 
 ## Capabilities
 
 | Capability | Result and material effect |
 | --- | --- |
 | Inspect pages and tabs | Reads live window IDs, tab indexes, URLs and titles without choosing a window by frontmost position. |
-| Read visible content | Runs page-local JavaScript in the current tab of one explicit window and returns structured observations. |
+| Read visible content | Resolves a task-bound tab inside one explicit window and checks the reached page before reading. |
 | Click visible controls | Clicks a uniquely best visible match and reports what was acted on. It stops without clicking when equally ranked matches make the target ambiguous. |
 | Verify page changes | Re-observes the targeted page or window after each action and reports the actual state. |
 | Use signed-in sessions | Uses the browser session already available to Safari without copying or storing its credentials. |
@@ -89,13 +89,21 @@ sensitive page content in its output.
 - **External transmission:** none added by this plugin. Safari loads the sites
   you visit, and Codex processes observations under the host's existing model
   and retention settings.
-- **Local storage and telemetry:** no plugin-specific data store or telemetry.
-  Temporary JavaScript files are removed by the helpers. Safari and Codex may
-  retain their own history.
+- **Local storage and telemetry:** a task-local target file records window
+  addressing, a page marker, recovery budget and pending operation metadata.
+  Keep it free of credentials and sensitive page content. No telemetry is added.
+  Temporary JavaScript files are removed by the legacy helpers. Safari and Codex
+  may retain their own history.
 - **After removal:** page changes, account actions, Safari history and any
   windows already created can remain. Removing the plugin does not undo them.
 
 ## Limitations
+
+- Page markers are not durable native tab IDs or authenticated ownership.
+  Navigation can erase them and page scripts can copy them. Automatic recovery
+  applies only to explicitly disposable reading contexts; stateful rebinding
+  and following a moved tab into another existing window are not automatic.
+  A pending write requires observed outcome evidence before replay or recovery.
 
 - Safari only; other browsers and non-macOS platforms are outside the supported
   scope.
@@ -147,7 +155,7 @@ credentials, personal page data, private instructions or raw traces.
 
 ## Version and license
 
-Current version: `0.1.9`. See the [public changelog](CHANGELOG.md) for
+Current version: `0.1.11`. See the [public changelog](CHANGELOG.md) for
 user-visible changes and required actions.
 
 Copyright © 2026 b2a48b. Plugin code and documentation are distributed under

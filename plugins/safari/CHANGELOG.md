@@ -10,6 +10,28 @@ updating it.
 Users should be able to understand changes to Safari automation, compatibility,
 data access and safe-use boundaries without reading private development records.
 
+## 0.1.11 — 2026-10-13
+
+### Added
+
+- Task-bound JavaScript control that resolves a marked tab within a recorded
+  window instead of relying on tab selection or remembered positions.
+- Same-call page and operation guards, a durable pending-write record, and
+  opt-in bounded reconstruction of disposable reading contexts.
+
+### Limitations
+
+- Page-local markers are not native tab IDs. Stateful rebinding and following
+  moved tabs into other existing windows are not automatic.
+- Existing current-tab helpers remain compatible but are not the shared-tab-safe
+  execution path. Pending writes require observed outcome verification before
+  retrying or reconstructing their context.
+
+### Required action
+
+- Start a fresh task after updating so it loads task-bound control. Keep each
+  task's target file across retries; do not use a tab index or focus as identity.
+
 ## 0.1.9 — 2026-10-13
 
 ### Changed

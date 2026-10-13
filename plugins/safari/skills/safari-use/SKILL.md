@@ -1,130 +1,88 @@
 ---
 name: safari-use
-description: Automate Safari via AppleScript/sdef plus in-page JavaScript executed with `do JavaScript`. Use when users explicitly want Safari-native automation, especially when they need existing Safari sessions/cookies, explicit window-id targeting with per-window tab inspection and current-tab execution, sidebar/menu actions, pseudo-snapshots of visible UI text, or stepwise observe→act→observe workflows.
+description: Operate Safari's existing session through Apple Events and guarded in-page JavaScript. Use for Safari-native page inspection and actions with a task-bound window/tab handle, including recovery under shared browser use.
 ---
 
 # Safari
 
-Use these helpers for reliable Safari-native automation (AppleScript/sdef + `do JavaScript`), with explicit `window id` targeting so multiple Safari windows can be operated independently at the window level. By default, create and use a dedicated Safari window for the task, and keep all later operations pinned to that `window id`. Reuse an existing Safari window only when the user explicitly asks to operate that existing window. Do not intentionally activate or front Safari unless the user explicitly asks; if a step appears to require stealing focus, stop and ask before proceeding.
+Assume the person and other agents are using Safari concurrently. A selected tab,
+front window, remembered index, URL or title is not ownership. Use explicit
+`window id` targeting with the task handle below; never restore focus to repair
+targeting. A dedicated Safari window is the default. Reuse an existing window
+only when the user explicitly asks. Do not intentionally bring Safari forward
+without approval; window creation itself may change focus, so respect the host's
+browser-control rules and required authorization.
 
-## Helpers (`scripts/`)
+## Task-bound control
 
-### 1) `safari_list_windows.sh`
-List Safari windows/tabs as JSON.
+Use `scripts/safari_target.sh`, backed by native macOS JXA and Safari's
+`do JavaScript`. It requires no extension or extra runtime. Read
+[target-control.md](references/target-control.md) before the first use for the
+commands, function-body format and result handling.
 
-```bash
-./scripts/safari_list_windows.sh
-./scripts/safari_list_windows.sh --current-only
-./scripts/safari_list_windows.sh --include-empty
-```
+- Record one logical target in a task-local `--target-file`. The helper records
+  its window ID, page-local marker, binding generation and optional recovery
+  budget. This is not a native tab ID: markers can disappear or be copied.
+- Resolve the marked tab afresh inside the tracked window. Tab indexes are
+  temporary dispatch addresses, never identity. Normal selection changes,
+  reordering and unrelated tab churn need no approval or focus restoration.
+- Check the actual reached page's marker, expected URL and operation-specific
+  predicate inside the same JavaScript call as the payload. For writes, check
+  the intended account/object and affected values where material. A matching
+  URL alone is insufficient. Preserve human edits; unrelated changes need not
+  block the action.
+- Follow observe → act → observe. One payload does one intended synchronous
+  operation. Verify its actual result before claiming completion.
+- For ordinary disposable reading/search only, explicitly enable bounded
+  recovery at `open`. If the marked target disappears, `recover` can create a
+  new dedicated reader from its checkpoint without moving or overwriting the
+  old tab. A replacement is new, not proof the original tab survived. Repeated
+  loss exhausts the saved budget and yields; never start an endless contest.
+- A moved tab is outside the original window's binding. This first version
+  does not follow it into another existing window. Reconstruct an authorized
+  disposable context or stop only the affected stateful action.
+- After navigation/reload, re-observe. Do not repair a lost established marker
+  by writing the desired marker and immediately acting. Saved-object rebinding,
+  unsaved drafts and uploads require their material context/state to be verified;
+  this version does not automatically rebind them. Do not silently broaden a
+  guard's URL or erase a conflicting value to make it pass.
+- For an expected same-document navigation that retains its marker, use
+  `transition` with the exact observed authorized URL and a read-only context
+  guard. This explicit verification updates the expected URL; it does not clear
+  pending effects or grant authority for an unexpected destination.
+- Loading, unreadable or ambiguous results are not evidence of closure. Diagnose
+  briefly; do not reload away sensitive local state or automatically reconstruct
+  an unreadable target. Continue independent authorized work when possible.
+- A write's pending operation is stored before dispatch, separately from the
+  tab binding. Even an `ok` JavaScript return needs effect verification. Resolve
+  the recorded operation only with observed outcome evidence. An uncertain
+  result survives restart and blocks write replay and automatic reconstruction;
+  independent reads can continue. The local file lock coordinates this handle,
+  not the person or tools that bypass it.
 
-Returns per-window:
-- `index`, `id`, `tab_count`, `current_tab_index`
-- tab entries with `index`, `current`, `url`, `title`
-- omits Safari's empty window objects by default so they do not become task
-  targets or user-facing cleanup noise
-- `--include-empty` is diagnostic-only when an explicit window ID or low-level
-  Safari issue requires inspecting those objects
+## Other helpers
 
----
+- `safari_list_windows.sh`: JSON window IDs, tab indexes, URLs and titles;
+  omits Safari's empty window objects by default. `--current-only` limits
+  inspection; `--include-empty` is diagnostic only. Ignore unrelated empty objects.
+- `safari_close_window.sh --window-id <id>`: use only after fresh inspection
+  confirms the entire window is still task-created and safe to close. It reports
+  `closed`, `already_absent`, `window_still_open` or `close_error`; an empty remnant is normalized to `closed`.
+  Never close ambiguous or repurposed content.
+- `safari_eval_js_window.sh` and `safari_click_visible_text.sh` retain their old
+  current-tab behavior for compatibility. They are **not shared-tab-safe** and
+  must not be the execution path for a task-bound operation. For visible-text
+  actions through the guarded helper, inspect the DOM and require one uniquely
+  best visible match before clicking; tied matches must produce no click.
 
-### 2) `safari_eval_js_window.sh`
-Run JS in `current tab` of a specific Safari `window id`.
+Do not bypass missing permissions, inaccessible frames, native prompts or file
+selection with a weaker target. Use an authorized native/UI path when necessary;
+do not fight for focus or blindly dismiss dialogs. Safari cookies stay in Safari.
+Do not persist credentials, authentication URLs or sensitive DOM contents in the
+handle or outcome evidence. Keep reports concise and sanitized.
 
-```bash
-./scripts/safari_eval_js_window.sh --window-id 123 --js-file /tmp/probe.js
-./scripts/safari_eval_js_window.sh --window-id 123 --js 'location.href'
-```
+## Advisory Tab Group inspection
 
-Preferred pattern (quote-safe): write JS to file, then run with `--js-file`.
-
-- Requires the target window to have at least one tab. If `tab_count` is `0`, this helper fails clearly; use `safari_list_windows.sh` to inspect that state instead of treating it as a generic JS failure.
-
----
-
-### 3) `safari_click_visible_text.sh`
-Convenience click helper: finds the uniquely best **visible** element by text and
-clicks it.
-
-```bash
-./scripts/safari_click_visible_text.sh --window-id 123 --text "Continue"
-./scripts/safari_click_visible_text.sh --window-id 123 --text "Continue" --exact
-```
-
-Behavior:
-- scans common interactive elements (`a`, `button`, `[role=button]`, etc.)
-- filters by visibility (`display`, `visibility`, `opacity`, bounds)
-- ranks exact, starts-with and contains matches, preferring interactive elements
-  and then shorter labels
-- clicks only when one candidate has the best rank
-- refuses to click when multiple candidates are tied for the best match, returning
-  `clicked: false`, `reason: ambiguous-visible-match` and structured match details
-
----
-
-### 4) `safari_close_window.sh`
-Attempt to close a specific Safari `window id` and report the resulting state as JSON.
-
-```bash
-./scripts/safari_close_window.sh --window-id 123
-```
-
-Behavior:
-- closes the targeted Safari window without assuming it disappears immediately
-- distinguishes `already_absent`, `closed`, `window_still_open`, and `close_error`
-- treats a remaining empty Safari window object as `closed`; do not retry,
-  foreground Safari, or mention that implementation detail in the normal result
-
----
-
-### 5) Read-only Tab Group inspection via `SafariTabs.db`
-
-Safari's AppleScript dictionary does not expose Tab Group names or whether a window is currently showing a named Tab Group. For read-only identification only, Safari keeps private tab metadata in:
-
-```bash
-~/Library/Containers/com.apple.Safari/Data/Library/Safari/SafariTabs.db
-```
-
-Use this database only as advisory state:
-
-- **Never modify it.** Do not run `UPDATE`, `INSERT`, `DELETE`, `VACUUM`, schema changes, or any script that writes to this file, its WAL, or its SHM files.
-- Treat it as **potentially stale or not a real-time representation** of the visible Safari UI. It can lag current windows, include session/restoration state, and use a private schema that may change across Safari/macOS versions.
-- Always cross-check against a live `safari_list_windows.sh` snapshot before reporting or acting.
-
-Tab Group identification pattern:
-
-1. Capture live windows with `safari_list_windows.sh`.
-2. Query `SafariTabs.db` read-only, preferably by opening SQLite in read-only mode. Relevant fields:
-   - `windows.active_tab_group_id`
-   - `windows.local_tab_group_id`
-   - `bookmarks.title` joined from `active_tab_group_id`
-   - optionally `windows_tab_groups.active_tab_id` joined to `bookmarks` for the active tab URL/title inside the group
-3. Interpret:
-   - `active_tab_group_id == local_tab_group_id` or group title `Local` → ordinary local tabs.
-   - `active_tab_group_id != local_tab_group_id` and group title is not `Local`/`Private` → a named Tab Group is active in that window.
-   - Treat `Local`/`Private` as private-schema/UI-derived labels, not stable public API values.
-4. Map DB windows back to live Safari windows by exact active tab URL/title, tab count, and URL overlap. If the match is ambiguous or low-confidence, report uncertainty instead of claiming a definitive Tab Group/window mapping.
-5. Use the DB for identification only. Any tab moves/closes still go through Safari AppleScript/window-id operations and must be verified with a fresh `safari_list_windows.sh` snapshot.
-
-## Standard workflow (observe → act → observe)
-
-1. If the user did not explicitly ask to reuse an existing Safari window, create a new Safari window for the task. Then enumerate windows/tabs, record the new target `window id` (`safari_list_windows.sh`), and keep all later operations pinned to that `window id` rather than whichever Safari window is frontmost.
-2. Observe state with a JS probe (`safari_eval_js_window.sh` + JSON.stringify in JS). If an explicitly supplied target has no tab, stop because that target is unusable; do not turn unrelated empty Safari window objects into task status.
-3. Perform one action (`safari_click_visible_text.sh` or custom JS).
-4. Re-probe and verify concrete state change.
-5. When cleaning up a dedicated Safari window, use `safari_close_window.sh` and inspect its classification. Report only a real cleanup failure such as `window_still_open` or `close_error`; an empty remnant is normalized to `closed` and needs no user-facing note.
-
-## Guardrails
-
-- Use `window id`, never assume the frontmost or active Safari window.
-- Explicit `window id` targeting is what allows multiple Safari windows to be operated independently.
-- A dedicated Safari window is the default. Reuse an existing Safari window only when the user explicitly asks.
-- If page-local state in another Safari window/tab seems necessary, stop and ask the user before reusing it.
-- Do not intentionally `activate` Safari, bring it to front, or steal focus unless the user explicitly asks.
-- If any step appears to require Safari to become frontmost or to steal focus, stop and ask the user before proceeding.
-- Ignore unrelated empty Safari window objects. The listing helper omits them by
-  default, and successful cleanup stays successful when Safari retains an empty
-  implementation object. Use `--include-empty` only for relevant diagnostics.
-- Prefer JS temp files (`/tmp/*.js`) over long inline snippets to avoid quoting failures.
-- Keep outputs structured (JSON) and evidence-based (`url`, `title`, changed state).
-- Avoid printing sensitive data from page context.
+For a task that specifically needs named Tab Groups, read
+[tab-groups.md](references/tab-groups.md). The private database is identification
+evidence only, never a live dispatch address or tab-ownership source.
