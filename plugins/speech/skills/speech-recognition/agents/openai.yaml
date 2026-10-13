@@ -2,6 +2,4 @@ interface:
   display_name: "Recognition"
   short_description: "Turn recorded speech into text"
   default_prompt: "Use $speech-recognition to transcribe the audio file I provided and save a new transcript with timestamps."
-  icon_small: "./assets/icon.png"
-  icon_large: "./assets/icon.png"
   brand_color: "#176B91"

@@ -1,6 +1,6 @@
 {
   "name": "speech",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Generate local speech with Kokoro and recognize recorded speech with Whisper.",
   "author": {
     "name": "Leon.id Komarovsky"

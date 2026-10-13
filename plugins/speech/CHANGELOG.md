@@ -9,7 +9,14 @@ Explain changes to Speech and any action needed when installing or updating it.
 Users should understand capabilities, compatibility and safe use without
 reading development history.
 
-## Unreleased
+## 0.1.1 — 2026-10-13
+
+### Changed
+
+- Use default icons for Generation and Recognition; retain the Speech plugin
+  artwork.
+
+## 0.1.0 — 2026-10-11
 
 ### Added
 

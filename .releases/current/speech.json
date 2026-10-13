@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "plugin": "speech",
-  "version": "0.1.0",
-  "digest": "47d0443879c4ac1a5164b69a903fc4cbdc633405e47deeaf97d5eea64517a60e",
+  "version": "0.1.1",
+  "digest": "43dbcc9fb145ad200fbc2e4d8a7691e9afc61ec5f5a234ed1ea5be5c393c5c68",
   "action": "release"
 }
