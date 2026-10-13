@@ -8,6 +8,13 @@ Record user-visible changes and any required installation or update actions.
 
 Users can understand capabilities, compatibility and effects from this package.
 
+## 0.1.7 — 2026-10-13
+
+### Changed
+
+- Remove custom Review and Improve icon metadata and its unused image copy.
+  The plugin icon is unchanged; the skill uses the client's default icon.
+
 ## 0.1.6 — 2026-10-10
 
 ### Changed
