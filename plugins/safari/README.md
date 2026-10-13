@@ -147,7 +147,7 @@ credentials, personal page data, private instructions or raw traces.
 
 ## Version and license
 
-Current version: `0.1.8`. See the [public changelog](CHANGELOG.md) for
+Current version: `0.1.9`. See the [public changelog](CHANGELOG.md) for
 user-visible changes and required actions.
 
 Copyright © 2026 b2a48b. Plugin code and documentation are distributed under

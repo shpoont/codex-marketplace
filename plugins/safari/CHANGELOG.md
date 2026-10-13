@@ -10,6 +10,14 @@ updating it.
 Users should be able to understand changes to Safari automation, compatibility,
 data access and safe-use boundaries without reading private development records.
 
+## 0.1.9 — 2026-10-13
+
+### Changed
+
+- Removed explicit Safari skill icons so the skill uses the app's default icon.
+- Kept the plugin's official Safari icon, skill instructions and browser helpers
+  unchanged.
+
 ## 0.1.8 — 2026-10-10
 
 ### Changed
