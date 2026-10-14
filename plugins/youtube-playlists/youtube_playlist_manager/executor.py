@@ -12,6 +12,8 @@ from pathlib import Path
 from .config import digest, timestamp
 from .planner import APPROVAL_FIELDS, PLAN_SCHEMA, membership, observation_digest, plan, policy_config
 from .trial import plan_trial
+from .browser_control import TransportError
+from .reconciliation import playlist_delta, recovery_scope, terminal_recovery_error, transient_read
 from . import telemetry
 
 
@@ -52,6 +54,17 @@ def plan_change_details(approved, checked_at, *, rechecked=None, stage='executio
 
 
 def collect_observation(store, transport, progress=None, open_browser=False):
+    outer = getattr(transport, 'recovery_budget', None)
+    def diagnostic(kind, details):
+        telemetry.record(store, kind, telemetry.failure(ExecutionError('Observation recovery', details)))
+    with recovery_scope(transport, diagnostic) as budget:
+        result = _collect_observation(store, transport, progress, open_browser)
+        if outer is None:
+            budget.complete()
+        return result
+
+
+def _collect_observation(store, transport, progress=None, open_browser=False):
     # A failed attempt must not make an older successful observation look current.
     started = time.monotonic()
     attempt = {'status': 'running', 'started_at': telemetry.utc_now(), 'run_id': store.run_id}
@@ -68,6 +81,9 @@ def collect_observation(store, transport, progress=None, open_browser=False):
         result = transport.collect(progress=progress, previous=store.get('observation'),
                                    required_metadata_ids=sorted(store.snapshot().get('restorations', {})),
                                    metadata_selector=needed_evidence)
+        if not result.get('complete') or not result['playlist'].get('complete') or not result['subscriptions'].get('complete'):
+            raise ExecutionError('Incomplete live observation; resynchronize before reconciling membership',
+                                 playlist_delta(result['playlist'], {**result['playlist'], 'complete': False}, stage='collection'))
     except BaseException as error:
         status = 'interrupted' if isinstance(error, (KeyboardInterrupt, SystemExit)) else 'needs_attention'
         store.put('collection_attempt', {**attempt, 'status': status, 'error': str(error),
@@ -79,6 +95,8 @@ def collect_observation(store, transport, progress=None, open_browser=False):
     # Keep the latest normalized readback for diagnosing a rejected apply. It is
     # evidence only: membership advances exclusively through State.observe.
     store.put('last_collection_evidence', {'run_id': store.run_id, 'observation': result})
+    for delta in result.get('reconciliation', []):
+        telemetry.event(store, 'playlist_reconciled', telemetry.failure(ExecutionError('Progress reconciled', delta)))
     store.put('collection_attempt', {**attempt, 'status': 'complete', 'collected_at': result['collected_at']})
     telemetry.event(store, 'collection_finished', {'status': 'complete',
                     'duration_seconds': time.monotonic() - started, 'metrics': result.get('collection', {})})
@@ -101,21 +119,28 @@ def verify_effect(operation, playlist):
 
 def perform(store, transport, current, operation, now=None, guard=None):
     fresh = transport.playlist()
-    if membership(fresh) != membership(current):
-        raise ExecutionError('Playlist changed before the next operation; collect a new preview')
+    delta = playlist_delta(current, fresh, stage='execution')
+    if not fresh.get('complete') or membership(fresh) != membership(current):
+        raise ExecutionError('Playlist changed before the next operation; resynchronize before dispatch', delta)
+    if completion_changed(current, fresh):
+        raise ExecutionError('Video fully watched status changed; resynchronize before dispatch', delta)
+    if delta['classifications']:
+        telemetry.record(store, 'playlist_reconciled', telemetry.failure(ExecutionError('Progress reconciled', delta)))
     # Completion cleanup requires the entry to remain fully watched. Ordinary
     # moves/removals still stop if a formerly active entry becomes watched.
     for child in operation.get('operations', [operation]):
         if child['kind'] in {'remove', 'move'} and child.get('purpose') != 'transport_test':
             target = next(e for e in fresh['entries'] if e['id'] == child['video_id'])
+            if target.get('percent') is None:
+                raise ExecutionError('Video progress is unavailable; refresh its evidence before managing it', delta)
             if child.get('purpose') == 'user_decision':
                 if target['percent'] != child['expected_percent']:
-                    raise ExecutionError('Reviewed video progress changed; refresh the decision')
+                    raise ExecutionError('Reviewed video progress changed; refresh the decision', delta)
             elif child['kind'] == 'remove' and child.get('purpose') == 'watched_cleanup':
                 if target['percent'] != 100 or target.get('playable') is not True:
-                    raise ExecutionError('Completed video evidence changed; collect a new preview before removing it')
+                    raise ExecutionError('Completed video evidence changed; collect a new preview before removing it', delta)
             elif target['percent'] >= 100:
-                raise ExecutionError('Video is now fully watched; collect a new preview before managing it')
+                raise ExecutionError('Video is now fully watched; collect a new preview before managing it', delta)
     if guard:
         guard()
     operation = {**operation, 'before': membership(current),
@@ -129,7 +154,13 @@ def perform(store, transport, current, operation, now=None, guard=None):
             for child in operation['operations']]
     oid = store.begin_operation(operation)
     # No blind retry: even a transport exception can mean a committed YouTube write.
-    transport.edit(operation['action'], operation['before'])
+    try:
+        transport.edit(operation['action'], operation['before'])
+    except TransportError as error:
+        if error.details.get('code') == 'write_not_dispatched' and error.details.get('write_dispatched') is False:
+            store.record_not_dispatched(oid)
+            raise ExecutionError(str(error), {**error.details, 'code': 'playlist_changed'}) from error
+        raise
     # YouTube can acknowledge an edit before browse exposes it. Re-read only
     # while the complete membership is exactly the pre-edit state. An unrelated
     # difference stops immediately, and the write itself is never repeated.
@@ -277,26 +308,43 @@ def revoke_exception(store, transport, config, video_id, progress=None):
     return store.revoke_exception(video_id, expected)
 
 
+def completion_changed(before, after):
+    old = {e['entry_id']: e for e in before['entries']}
+    return any(e['entry_id'] in old and
+               ((old[e['entry_id']].get('percent') == 100) != (e.get('percent') == 100))
+               for e in after['entries'])
+
+
 def refresh(store, transport, config, now, progress=None, *, apply_changes=False):
-    """Own the complete configured refresh, with one bounded recovery cycle.
+    """Own configured refreshes and safe recovery inside one invocation budget.
 
     Fresh collection, planning and execution share one observation. Preview-only
     remains the default; the apply flag authorizes the configured policies.
     """
+    def diagnostic(kind, details):
+        telemetry.record(store, kind, telemetry.failure(ExecutionError('Refresh recovery', details)))
+    with recovery_scope(transport, diagnostic) as budget:
+        result = _refresh(store, transport, config, now, progress, apply_changes, budget)
+        budget.complete()
+        return result
+
+
+def _refresh(store, transport, config, now, progress, apply_changes, budget):
     if (store.get('transport_test') or {}).get('state') == 'running':
         raise ExecutionError('Finish the interrupted transport test first')
     confirmed_before = {row[0] for row in store.db.execute("SELECT id FROM operations WHERE state='confirmed'")}
     transport.open()
     if store.pending_operations():
         recover(store, transport)
-    for attempt in range(2):
-        observation = collect_observation(store, transport, progress)
-        store.observe(observation, config)
-        proposed = plan(config, observation, store.snapshot(), now())
-        plan_id = store.save_plan(proposed)
-        if not apply_changes or proposed['status'] != 'ready':
-            return {**proposed, 'plan_id': plan_id, 'window_id': transport.window_id}
+    write_recoveries = 0
+    while True:
         try:
+            observation = collect_observation(store, transport, progress)
+            store.observe(observation, config)
+            proposed = plan(config, observation, store.snapshot(), now())
+            plan_id = store.save_plan(proposed)
+            if not apply_changes or proposed['status'] != 'ready':
+                return {**proposed, 'plan_id': plan_id, 'window_id': transport.window_id}
             result = _apply(store, transport, config, plan_id, now, progress, live=observation)
             counts = Counter()
             for oid, payload in store.db.execute("SELECT id,payload FROM operations WHERE state='confirmed'"):
@@ -305,13 +353,22 @@ def refresh(store, transport, config, now, progress=None, *, apply_changes=False
                     counts.update(child['kind'] for child in operation.get('operations', [operation]))
             return {**result, 'added': counts['add'], 'removed': counts['remove'], 'moves': counts['move'],
                     'plan_id': plan_id, 'window_id': transport.window_id}
-        except Exception:
-            # Only a recorded uncertain write has a known recovery procedure.
-            # Unknown errors, read failures and mismatches remain visible.
-            if attempt or not store.pending_operations():
+        except Exception as error:
+            if terminal_recovery_error(error):
+                raise  # Keep any uncertain intent pending; never retry identity or bypass cooldowns.
+            if store.pending_operations():
+                # The write may already have landed. Readback must prove its
+                # effect before collection or another write can proceed.
+                if write_recoveries or not budget.take(error, 'write_readback'):
+                    raise
+                recover(store, transport)
+                write_recoveries += 1
+            elif ((getattr(error, 'details', {}).get('code') in {'playlist_changed', 'plan_changed'} or
+                   transient_read(error)) and budget.take(error, 'replan')):
+                if progress:
+                    progress({'phase': 'resynchronizing refresh', 'attempt': budget.attempts})
+            else:
                 raise
-            recover(store, transport)
-    raise ExecutionError('Refresh recovery limit reached')
 
 
 def _apply(store, transport, config, plan_id, now, progress=None, *, live=None):
@@ -337,19 +394,23 @@ def _apply(store, transport, config, plan_id, now, progress=None, *, live=None):
     # A complete fresh scan may contain renamed titles, older display labels or
     # activity on ignored channels. Preserve the reviewed playlist baseline and
     # re-evaluate every resulting action instead of requiring identical catalogs.
-    progress_baseline = lambda observation: [
-        [e['entry_id'], e['id'], e['percent']] for e in observation['playlist']['entries']]
-    if membership(live['playlist']) != approved['before'] or progress_baseline(live) != progress_baseline(baseline):
-        raise ExecutionError('YouTube observations changed: playlist membership or watch progress; preview again')
+    if not live['playlist'].get('complete') or membership(live['playlist']) != approved['before']:
+        raise ExecutionError('YouTube observations changed: playlist membership; preview again',
+                             playlist_delta(baseline['playlist'], live['playlist'], stage='revalidation'))
     checked_at = now()
+    delta = playlist_delta(baseline['playlist'], live['playlist'], stage='revalidation')
     rechecked = (plan_trial(config, live, state, checked_at, approved['development_trial']['per_channel'])
                  if approved.get('development_trial') else plan(config, live, state, checked_at))
     changes = plan_change_details(approved, checked_at, rechecked=rechecked, stage='revalidation')
     if changes['changed_fields'] or changes['deadline']['expired']:
+        if delta['classifications']:
+            changes['playlist_change'] = delta
         message = ('YouTube observations changed: saved preview time window ended at ' + approved['valid_until']
                    if changes['deadline']['expired'] else
                    'YouTube observations changed: ' + ', '.join(changes['changed_fields']))
         raise ExecutionError(message + '; collect and preview again', changes)
+    if delta['classifications']:
+        telemetry.record(store, 'playlist_reconciled', telemetry.failure(ExecutionError('Progress reconciled', delta)))
     telemetry.record(store, 'preview_revalidated', {
         'observation_changed': observation_digest(live) != approved['observation_hash'],
         'approved_actions_unchanged': True,
@@ -388,8 +449,13 @@ def _apply(store, transport, config, plan_id, now, progress=None, *, live=None):
                       'development_trial' if approved.get('development_trial') else 'management', check_time)
     check_time()
     final = transport.playlist()
-    if membership(final) != membership(current) or ids(final) != approved['desired']:
-        raise ExecutionError('Final playlist changed before completion')
+    if (not final.get('complete') or membership(final) != membership(current) or
+            ids(final) != approved['desired'] or completion_changed(current, final)):
+        raise ExecutionError('Final playlist changed before completion',
+                             playlist_delta(current, final, stage='completion'))
+    delta = playlist_delta(current, final, stage='completion')
+    if delta['classifications']:
+        telemetry.record(store, 'playlist_reconciled', telemetry.failure(ExecutionError('Progress reconciled', delta)))
     current = final
     # Unselected inventory is evidence for later runs, not an approved edit.
     # Its metadata may expire or become known without changing any action above.

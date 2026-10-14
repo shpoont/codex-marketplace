@@ -3,7 +3,9 @@
     // Identity and exact playlist guards are repeated immediately before every write.
     const before = await q.playlist(config);
     if (JSON.stringify(before.entries.map(e => [e.entry_id, e.id])) !== JSON.stringify(expectedBefore))
-      throw Error('Playlist changed immediately before dispatch; readback required');
+      throw attention('Playlist changed immediately before dispatch; no edit was sent', {
+        ...playlistDelta({complete: true, entries: expectedBefore.map(([entry_id, id]) => ({entry_id, id}))}, before, 'execution'),
+        code: 'write_not_dispatched', write_dispatched: false});
     const allowed = ['ACTION_ADD_VIDEO', 'ACTION_REMOVE_VIDEO', 'ACTION_MOVE_VIDEO_AFTER'];
     const actions = Array.isArray(action) ? action : [action];
     if (!actions.length || actions.length > 20 || actions.some(a => !allowed.includes(a.action)))

@@ -2,6 +2,18 @@
 
 User-visible changes to YouTube Playlists and any action required when installing or updating it.
 
+## 0.3.7 — 2026-10-14
+
+- Keep refreshing while you watch: merge partial progress and rewinds, and
+  recalculate watched cleanup and channel refill when a video is completed.
+- Reconcile complete playlist changes and retry suitable temporary read failures
+  within a bounded recovery window, retaining metadata checkpoints and pacing.
+  Authentication, account/target, rate-limit and API-contract failures still stop.
+- Explain changed entries and recovery exhaustion in local diagnostics. Preserve
+  saved-preview approvals and never blindly replay uncertain playlist writes.
+- No YAML changes or history migration are required. Collect a fresh preview
+  before applying changes; browser permissions and channel rules are unchanged.
+
 ## 0.3.6 — 2026-10-13
 
 - Use the default skill icon by removing custom skill icon references and their

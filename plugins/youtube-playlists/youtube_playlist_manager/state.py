@@ -352,12 +352,27 @@ class State:
                 or trial['config_hash'] != plan['config_hash']:
             raise StateError('The recorded development sample differs from this plan')
 
+    def record_not_dispatched(self, oid):
+        """An explicit adapter precondition receipt proves no edit request was sent.
+
+        Retain the intent for audit, without acknowledging an effect or changing
+        membership/lifecycle. Transport failures cannot use this path.
+        """
+        row = self.db.execute('SELECT state,payload FROM operations WHERE id=?', (oid,)).fetchone()
+        if not row or row[0] != 'pending':
+            raise StateError('Only a pending intent can be marked not dispatched')
+        with self.db:
+            self.db.execute("UPDATE operations SET state='not_dispatched' WHERE id=?", (oid,))
+            telemetry.operation_event(self, 'operation_not_dispatched', oid, json.loads(row[1]))
+
     def confirm_operation(self, oid, playlist):
         row = self.db.execute('SELECT state,payload FROM operations WHERE id=?', (oid,)).fetchone()
         if not row:
             raise StateError('Unknown operation')
         if row[0] == 'confirmed':
             return
+        if row[0] != 'pending':
+            raise StateError('An unsent operation cannot be confirmed')
         operation = json.loads(row[1])
         with self.db:
             # A confirmed manager removal advances tracking in the same transaction.

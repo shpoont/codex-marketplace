@@ -10,6 +10,19 @@ needed channel/video evidence, reconciles observed additions and disappearances,
 then computes and verifies a plan. Cached metadata reduces requests; fresh
 playlist evidence and journals guard writes. Incomplete evidence is reported.
 
+You can watch videos while a refresh runs. Fresh partial progress and rewinds
+are merged into the selection evidence; completing a video triggers cleanup
+and refill. Complete manual additions, removals and reorderings are reconciled
+under the same rules. Incomplete reads never establish a disappearance.
+The runner owns bounded recovery for suitable transient reads and stale
+observations, using existing cache checkpoints and request pacing. It stops
+after two recovery attempts or when a further retry would exceed 60 seconds
+since the first failure. Authentication, account/target changes, rate limits
+and incompatible API responses stop with their own diagnostic.
+Uncertain writes require journal/effect readback and are never replayed blindly.
+A saved, separately approved plan can continue through partial progress only
+when its actions still match; changed actions require a fresh preview.
+
 - Catch-up bounds and rolling lookback determine eligible missing uploads.
   Lookback measures publication age. Shorts and completed videos are ineligible.
 - Retention age starts from the saved playlist addition, not publication.

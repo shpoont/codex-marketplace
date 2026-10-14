@@ -1,3 +1,27 @@
+  // Raw readback changes are evidence, not a reason to discard benign viewing.
+  // Bound diagnostics and never export response bodies or session values.
+  const playlistDelta = (before, after, stage) => {
+    const index = p => new Map(p.entries.map((e, i) => [JSON.stringify([e.entry_id, e.id]), {e, i}]));
+    const old = index(before), fresh = index(after), shared = [...old.keys()].filter(k => fresh.has(k));
+    const added = [...fresh.keys()].filter(k => !old.has(k)), removed = [...old.keys()].filter(k => !fresh.has(k));
+    const order = JSON.stringify(shared) !== JSON.stringify([...fresh.keys()].filter(k => old.has(k)));
+    const progress = shared.filter(k => Object.hasOwn(old.get(k).e, 'percent') &&
+      old.get(k).e.percent !== fresh.get(k).e.percent);
+    const changes = [...new Set([...old.keys(), ...fresh.keys()])].flatMap(k => {
+      const a = old.get(k), b = fresh.get(k);
+      if (a && b && a.i === b.i && (!Object.hasOwn(a.e, 'percent') || a.e.percent === b.e.percent)) return [];
+      return [{entry_id: (a || b).e.entry_id, video_id: (a || b).e.id,
+        before_position: a ? a.i + 1 : null, after_position: b ? b.i + 1 : null,
+        before_percent: a ? a.e.percent : null, after_percent: b ? b.e.percent : null}];
+    });
+    return {code: 'playlist_changed', stage,
+      classifications: [...(after.complete === true ? [] : ['incomplete_read']),
+        ...(added.length || removed.length ? ['membership'] : []), ...(order ? ['order'] : []),
+        ...(progress.length ? ['progress'] : [])],
+      before_count: old.size, after_count: fresh.size, added_count: added.length,
+      removed_count: removed.length, progress_count: progress.length,
+      changes: changes.slice(0, 10), changes_omitted: Math.max(0, changes.length - 10)};
+  };
   q.collect = async (config, previous = null, persistent = null, requiredMetadataIds = [], deferMissing = false) => {
     stopCollection = false;
     collectionLease = Date.now() + 60000;
@@ -130,7 +154,9 @@
         const old = cached.get(v.id), entry = current.get(v.id);
         const ageEvidence = v.publication_age;
         delete v.publication_age;
-        v.percent = entry && v.listing_fresh === false ? entry.percent : Math.max(v.percent, entry?.percent || 0);
+        // A queued row is the authoritative current stay, including rewinds.
+        // Do not resurrect stale 100% listing/cache progress with Math.max.
+        if (entry) v.percent = entry.percent;
         if (!knownIds.has(v.id)) changes.new_videos++;
         if (unavailableChannels.has(v.channel_id)) {
           // The planner preserves queued entries without guessing classification
@@ -218,23 +244,30 @@
         queuedUnlisted.set(entry.id, {...metadata, kind: 'live'});
     }
     const after = await q.playlist(config);
-    const membership = p => JSON.stringify(p.entries.map(e => [e.entry_id, e.id, e.percent]));
-    if (membership(before) !== membership(after)) throw Error('Playlist changed during collection; collect again');
-    const baseline = before.entries.map(e => [e.entry_id, e.id, e.percent]);
+    const delta = playlistDelta(before, after, 'collection');
+    if (delta.classifications.some(k => k !== 'progress'))
+      throw attention('Playlist membership or order changed during collection; resynchronize', delta);
+    const baseline = after.entries.map(e => [e.entry_id, e.id, e.percent]);
     await q.identity(config);
     const byId = new Map(videos.map(v => [v.id, v]));
     for (const entry of after.entries) {
+      const prior = current.get(entry.id);
+      if (entry.percent < 100 && entry.playable && (prior.percent >= 100 || !prior.playable))
+        throw attention('Playlist video became active during collection; refresh its evidence', delta);
       if (ownerMetadata.has(entry.id)) entry.channel_id = ownerMetadata.get(entry.id).channel_id;
       if (unavailableChannels.has(entry.channel_id)) continue; // Preserve the actual playlist row.
       const v = byId.get(entry.id);
-      if (v) Object.assign(entry, v, {percent: Math.max(entry.percent, v.percent),
-        playable: entry.playable && v.playable});
+      if (v) {
+        v.percent = entry.percent;
+        Object.assign(entry, v, {percent: entry.percent, playable: entry.playable && v.playable});
+      }
       else if (exclusions[entry.id]) entry.kind = exclusions[entry.id];
       else if (queuedUnlisted.has(entry.id)) Object.assign(entry, queuedUnlisted.get(entry.id), {
         playable: entry.playable && queuedUnlisted.get(entry.id).playable});
     }
     collectionLease = 0;
     return {schema: 2, ...identity, playlist: after, subscriptions, channels, collection: changes,
+      ...(delta.classifications.length ? {reconciliation: [delta]} : {}),
       ...(deferMissing ? {metadata_stage: {baseline, deferred_ids: deferredIds, age_skipped_ids: ageSkippedIds}} : {}),
       collected_at: new Date().toISOString(), complete: true};
   };

@@ -143,10 +143,61 @@ def plan_failure(details):
     return safe
 
 
+def reconciliation_failure(details):
+    """Keep actionable changes and retry receipts; drop arbitrary browser values."""
+    safe = {}
+    stages = {'collection', 'metadata', 'read', 'replan', 'revalidation', 'execution', 'completion', 'write_readback'}
+    if details.get('code') == 'playlist_changed' and details.get('stage') in stages:
+        safe.update(code='playlist_changed', stage=details['stage'])
+        classifications = details.get('classifications')
+        safe['classifications'] = [k for k in ('incomplete_read', 'membership', 'order', 'progress')
+                                   if isinstance(classifications, list) and k in classifications]
+        for key in ('before_count', 'after_count', 'added_count', 'removed_count', 'progress_count', 'changes_omitted'):
+            value = details.get(key)
+            if type(value) is int and 0 <= value <= 2**63 - 1:
+                safe[key] = value
+        kept = []
+        changes = details.get('changes')
+        if isinstance(changes, list):
+            for item in changes[:10]:
+                if (not isinstance(item, dict) or not isinstance(item.get('video_id'), str) or
+                        not re.fullmatch(r'[A-Za-z0-9_-]{11}', item['video_id']) or
+                        not isinstance(item.get('entry_id'), str) or
+                        not re.fullmatch(r'[A-Za-z0-9_=-]{1,256}', item['entry_id'])):
+                    continue
+                row = {k: item[k] for k in ('entry_id', 'video_id')}
+                for key in ('before_position', 'after_position', 'before_percent', 'after_percent'):
+                    value = item.get(key)
+                    if value is None:
+                        row[key] = None
+                    elif ('position' in key and type(value) is int and 1 <= value <= 2**63 - 1 or
+                          'percent' in key and type(value) in (int, float) and math.isfinite(value) and 0 <= value <= 100):
+                        row[key] = value
+                kept.append(row)
+            safe['changes'] = kept
+            safe['changes_omitted'] = safe.get('changes_omitted', 0) + len(changes) - len(kept)
+    recovery = details.get('recovery')
+    if (isinstance(recovery, dict) and recovery.get('stage') in stages and
+            recovery.get('outcome') in {'retrying', 'recovered', 'exhausted'}):
+        row = {k: recovery[k] for k in ('stage', 'outcome')}
+        for key in ('attempts', 'limit', 'elapsed_seconds', 'deadline_seconds'):
+            value = recovery.get(key)
+            if type(value) in (int, float) and math.isfinite(value) and 0 <= value <= 86400:
+                row[key] = value
+        if type(recovery.get('exhausted')) is bool:
+            row['exhausted'] = recovery['exhausted']
+        safe['recovery'] = row
+    return safe
+
+
 def failure(error):
     """Allowlisted diagnostics only: never store arbitrary exception/response text."""
     details = getattr(error, 'details', {}) or {}
-    safe = plan_failure(details)
+    safe = {**plan_failure(details), **reconciliation_failure(details)}
+    if isinstance(details.get('playlist_change'), dict):
+        change = reconciliation_failure(details['playlist_change'])
+        if change.get('code') == 'playlist_changed':
+            safe['playlist_change'] = change
     for key in ('http_status', 'retry_after_seconds'):
         value = details.get(key)
         if isinstance(value, (int, float)) and math.isfinite(value):
@@ -219,6 +270,12 @@ def failure(error):
         category = 'playlist_unavailable'
     elif details.get('code') == 'plan_changed' and 'stage' in safe:
         category = 'stale_or_changed_evidence'
+    elif details.get('code') == 'playlist_changed':
+        category = 'incomplete_evidence' if 'incomplete_read' in safe.get('classifications', []) else 'stale_or_changed_evidence'
+    elif details.get('code') == 'read_failed':
+        category = 'transient_read_failure'
+    elif details.get('code') == 'target_mismatch':
+        category = 'identity_or_authentication'
     return {'category': category, 'error_type': type(error).__name__, **safe}
 
 

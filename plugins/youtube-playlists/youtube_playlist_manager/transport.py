@@ -8,6 +8,7 @@ from datetime import datetime, timezone
 from urllib.parse import urlparse, parse_qs
 
 from .browser import initialization_source
+from .reconciliation import READ_METHODS, playlist_delta, recovery_scope, transient_read
 from .browser_control import (JavaScriptRunner, TransportError, browser_session,
                               SCRIPT_TIMEOUT_SECONDS, JOB_STATUS_SCRIPT_TIMEOUT_SECONDS,
                               READ_ONLY_PAGE_RECOVERIES)
@@ -72,6 +73,18 @@ class YouTubeTransport:
         return self.runner.close()
 
     def call(self, method: str, *args, progress=None, timeout=2400, checkpoint=None):
+        with recovery_scope(self) as budget:
+            while True:
+                try:
+                    return self._call_once(method, *args, progress=progress, timeout=timeout, checkpoint=checkpoint)
+                except TransportError as error:
+                    # Collection restarts must reload successful cache checkpoints.
+                    # Every write remains single-dispatch, regardless of its error.
+                    if method not in READ_METHODS or not transient_read(error) or not budget.take(error, 'read'):
+                        raise
+                    time.sleep(budget.attempts)
+
+    def _call_once(self, method: str, *args, progress=None, timeout=2400, checkpoint=None):
         self.evaluate('JSON.stringify(window.__playlistManager.start(' +
                       json.dumps(method) + ',' + json.dumps(args) + '))')
         deadline, last = time.monotonic() + timeout, None
@@ -106,6 +119,10 @@ class YouTubeTransport:
         raise TransportError('Browser job deadline exceeded; writes require readback before retry')
 
     def collect(self, progress=None, previous=None, required_metadata_ids=None, metadata_selector=None):
+        with recovery_scope(self) as budget:
+            return self._collect(budget, progress, previous, required_metadata_ids, metadata_selector)
+
+    def _collect(self, budget, progress, previous, required_metadata_ids, metadata_selector):
         from .metadata_cache import MetadataCache, CacheError
         try:
             with MetadataCache(self.config) as cache:
@@ -125,7 +142,7 @@ class YouTubeTransport:
                         if (isinstance(error, TransportError) and
                                 error.details.get('code') == 'ytpm_page_missing' and
                                 self.runner.can_recover and
-                                recoveries < READ_ONLY_PAGE_RECOVERIES):
+                                recoveries < READ_ONLY_PAGE_RECOVERIES and budget.take(error, 'collection')):
                             try:
                                 self.runner.recover_read_only()
                                 self.open()
@@ -136,6 +153,14 @@ class YouTubeTransport:
                             if progress:
                                 progress({'phase': 'recovering read-only browser page',
                                           'completed_restarts': recoveries})
+                            continue
+                        if (isinstance(error, TransportError) and
+                                (transient_read(error) or error.details.get('code') == 'playlist_changed') and
+                                budget.take(error, 'collection')):
+                            if transient_read(error):
+                                time.sleep(budget.attempts)
+                            if progress:
+                                progress({'phase': 'resynchronizing collection', 'attempt': budget.attempts})
                             continue
                         try:
                             self.evaluate('''(()=>{const q=window.__playlistManager;
@@ -163,13 +188,29 @@ class YouTubeTransport:
             observation['collected_at'] = datetime.now(timezone.utc).isoformat()
             needed = select_metadata(observation)
             if not needed:
-                # Metadata may take time; membership/progress and account must
-                # still match the original raw playlist before state can advance.
+                # Metadata may take time. Merge current viewing into both queue
+                # and catalog before asking the planner about newly vacant slots.
                 fresh = self.playlist()
                 self.call('identity', self.config)
-                if (not fresh.get('complete') or
-                        [[e['entry_id'], e['id'], e['percent']] for e in fresh['entries']] != stage['baseline']):
-                    raise TransportError('Playlist changed during metadata checks; collect again')
+                if any(fresh.get(k) != self.config[k] for k in ('playlist_id', 'account_channel_id')):
+                    raise TransportError('Playlist identity differs from configured target', {'code': 'target_mismatch'})
+                delta = playlist_delta(stage['baseline'], fresh, stage='metadata')
+                if any(k != 'progress' for k in delta['classifications']):
+                    raise TransportError('Playlist changed during metadata checks; resynchronize', delta)
+                existing = {e['id']: e for e in observation['playlist']['entries']}
+                for e in fresh['entries']:
+                    old = existing[e['id']]
+                    if (e.get('percent') is not None and e['percent'] < 100 and e.get('playable') and
+                            (old.get('percent') == 100 or old.get('playable') is False)):
+                        raise TransportError('Playlist video became active during metadata checks; refresh its evidence', delta)
+                    if e['id'] in videos:
+                        videos[e['id']]['percent'] = e['percent']
+                    existing[e['id']] = {**e, **old, 'percent': e['percent'],
+                                         'playable': e.get('playable') is True and old.get('playable') is True}
+                observation['playlist'] = {**fresh, 'entries': [existing[e['id']] for e in fresh['entries']]}
+                stage['baseline'] = [[e['entry_id'], e['id'], e['percent']] for e in fresh['entries']]
+                if delta['classifications']:
+                    observation.setdefault('reconciliation', []).append(delta)
                 observation['collected_at'] = datetime.now(timezone.utc).isoformat()
                 if select_metadata(observation):
                     continue  # A time boundary created a vacancy during readback.

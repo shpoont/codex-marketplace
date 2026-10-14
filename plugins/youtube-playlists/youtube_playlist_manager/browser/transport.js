@@ -128,7 +128,9 @@
         if (!receivedResponse) metrics.network_errors++;
         // Retry the same read once after a transport failure. Writes, HTTP
         // rejections and unknown response formats always stop for inspection.
-        if (!readOnly || attempt || !['AbortError', 'TypeError'].includes(error?.name)) throw error;
+        if (!readOnly || !['AbortError', 'TypeError'].includes(error?.name)) throw error;
+        if (attempt) throw attention('YouTube read failed after its transport retry',
+          {code: 'read_failed', endpoint: url.pathname});
         q.job.progress = {phase: 'retrying interrupted read', endpoint: url.pathname};
       } finally { clearTimeout(timer); metrics.duration_ms += Math.max(0, Date.now() - requestStarted); }
     }

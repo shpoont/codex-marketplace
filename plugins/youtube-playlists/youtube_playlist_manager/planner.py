@@ -29,7 +29,7 @@ def observation_digest(observation):
     def semantic(value, parent=None):
         if isinstance(value, dict):
             return {k: semantic(v, k) for k, v in value.items()
-                    if k not in ['collected_at', 'collection', 'metadata_checked_at'] and
+                    if k not in ['collected_at', 'collection', 'metadata_checked_at', 'reconciliation'] and
                     not (parent == 'publication_age' and k == 'observed_at')}
         if isinstance(value, list):
             return [semantic(v) for v in value]

@@ -85,8 +85,17 @@ reported blocker. Do not poll unchanged status repeatedly or load entire
 catalogs into the conversation. Commands may take longer for cold backlogs;
 let the process finish, keep the user informed, and do not prevent sleep.
 
-A `needs_attention` result is not executable. Report its actual diagnostic;
-never loop or introduce an alternate route. Pending channel decisions may
+The deterministic runner merges concurrent partial watch progress and rewinds,
+replans configured updates when completion or complete membership/order changes,
+and owns bounded safe read recovery. It shares two recovery attempts and a
+60-second recovery window starting at the first failure, retains cache
+checkpoints and pacing, and never blindly replays an uncertain write. Saved
+`apply --plan` approvals still require a new preview when their actions change.
+
+A terminal or recovery-exhausted `needs_attention` result is not executable.
+Report its actual diagnostic, including the change and exhausted stage when
+available; never start another agent retry loop or introduce an alternate route.
+Pending channel decisions may
 coexist with completed work on other channels: report both. Use `decisions` for
 the inbox, present the concrete keep/remove choice, then submit an explicit
 answer with `resolve-decision --decision ID --choice keep|remove`.
