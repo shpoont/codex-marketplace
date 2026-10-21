@@ -99,7 +99,11 @@
       previous.publication_age_version === publicationAgeVersion &&
       previous.page_index?.length && age >= 0 && age < maxAgeMs;
     const old = new Map((incremental ? previous.videos : []).map(v => {
-      const {listing_unavailable, ...known} = v; // Skips apply to one collection, not future runs.
+      const {listing_unavailable, is_upcoming, ...known} = v; // Skips apply to one collection, not future runs.
+      // A scheduled premiere is temporary, unlike an excluded Live upload.
+      // Retained tail rows must compete for fresh checks after it is released.
+      if (is_upcoming || known.kind === 'upcoming') Object.assign(known, {
+        kind: 'normal', publication: null, duration: null, playable: true, availability: null});
       return [v.id, {...known, listing_fresh: false}];
     }));
     const rows = new Map(), index = [], seen = new Set();
@@ -156,7 +160,7 @@
     const old = new Map(catalog.videos.map(v => [v.id, v]));
     full.videos = full.videos.map(v => {
       const saved = old.get(v.id);
-      return saved ? {...saved, ...v, publication: saved.publication, duration: saved.duration,
+      return saved && !saved.is_upcoming && saved.kind !== 'upcoming' ? {...saved, ...v, publication: saved.publication, duration: saved.duration,
         playable: saved.playable, listing_unavailable: v.listing_unavailable === true} : v;
     });
     return full;
@@ -170,6 +174,17 @@
     const availability = {status: status || null, reason: d.playabilityStatus?.reason || '',
       error_reason: text(screen?.reason), subreason: text(screen?.subreason)};
     const explanation = [availability.reason, availability.error_reason, availability.subreason].filter(Boolean).join(' — ');
+    const limited = /try again later|too many requests|rate.?limit/i.test(explanation);
+    // The offline status and translated reason alone do not establish why a
+    // video is unavailable. Require the player's explicit upcoming flag and
+    // exact identity before deferring it. Do not invent its publication date.
+    if (['OK', 'LIVE_STREAM_OFFLINE'].includes(status) && !limited &&
+        v?.videoId === id && v.channelId && v.isUpcoming === true && v.isLive !== true) {
+      return {id, channel_id: v.channelId, publication: null, duration: null,
+        playable: false, availability, is_upcoming: true, is_live: false,
+        unlisted_normal: false, content_warning: false,
+        metadata_checked_at: new Date().toISOString()};
+    }
     const contentWarning = status === 'CONTENT_CHECK_REQUIRED';
     const membersOnly = status === 'UNPLAYABLE' && (availability.reason ===
       'Join this channel to get access to members-only content like this video, and other exclusive perks.' ||
@@ -177,8 +192,8 @@
     if (membersOnly) availability.restriction = 'members_only';
     // UNPLAYABLE also carries temporary session failures. It cannot establish
     // unavailable inventory, even if publication/duration are returned with it.
-    if (status !== 'OK' && !membersOnly && !(contentWarning && contentWarnings === 'include')) {
-      const limited = /try again later|too many requests|rate.?limit/i.test(explanation);
+    if (v?.isUpcoming === true ||
+        (status !== 'OK' && !membersOnly && !(contentWarning && contentWarnings === 'include'))) {
       throw attention('Playback needs attention for ' + id + ': availability check incomplete (' +
         (status || 'missing status') + ')' + (explanation ? ': ' + explanation : ''), {
         code: limited ? 'rate_limited' : 'availability_incomplete', video_id: id, ...availability});
@@ -192,6 +207,7 @@
       duration: Number(v.lengthSeconds), playable: !membersOnly, availability,
       metadata_checked_at: new Date().toISOString(),
       content_warning: contentWarning,
+      is_upcoming: false,
       unlisted_normal: v.videoId === id && m.isUnlisted === true &&
         m.isShortsEligible === false && v.isLiveContent === false && !v.isLive && !v.isUpcoming,
       is_live: v.isLiveContent === true || v.isLive === true || v.isUpcoming === true};

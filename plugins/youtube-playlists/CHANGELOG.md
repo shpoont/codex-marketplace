@@ -2,6 +2,14 @@
 
 User-visible changes to YouTube Playlists and any action required when installing or updating it.
 
+## 0.3.8 — 2026-10-21
+
+- Defer confirmed upcoming premieres and continue refreshing other videos.
+  Existing queued premieres stay in place and are checked again on a later
+  collection. Unknown availability errors still require attention.
+- Preserve manual premiere removals so released videos do not reappear against
+  your choice. No settings changes or history migration are required.
+
 ## 0.3.7 — 2026-10-14
 
 - Keep refreshing while you watch: merge partial progress and rewinds, and

@@ -46,7 +46,7 @@
       ...metadataCache.keys(), ...(persistent?.catalogs || []).flatMap(c => c.videos.map(v => v.id))]);
     const metadataOnly = v => Object.fromEntries(Object.entries(v).filter(([key]) => [
       'id', 'channel_id', 'publication', 'duration', 'playable', 'availability',
-      'metadata_checked_at', 'playlist_duration', 'content_warning', 'unlisted_normal', 'is_live'].includes(key)));
+      'metadata_checked_at', 'playlist_duration', 'content_warning', 'unlisted_normal', 'is_live', 'is_upcoming'].includes(key)));
     const cacheFresh = (old, v, entry) => {
       const restricted = old?.playable === false && old.availability?.status === 'UNPLAYABLE' &&
         old.availability.restriction === 'members_only';
@@ -97,7 +97,8 @@
     const readChannels = [...config.channels];
     const configuredIds = new Set(readChannels.map(c => c.id));
     const needsListing = e => e.percent < 100 && e.playable !== false &&
-      !ownerMetadata.get(e.id)?.unlisted_normal && !ownerMetadata.get(e.id)?.is_live;
+      !ownerMetadata.get(e.id)?.unlisted_normal && !ownerMetadata.get(e.id)?.is_live &&
+      !ownerMetadata.get(e.id)?.is_upcoming;
     const manualIds = new Set(before.entries.filter(needsListing).map(e => e.id));
     // Classify current manual entries so excluded formats stay outside management.
     for (const entry of before.entries) {
@@ -219,7 +220,8 @@
         if (m.channel_id && m.channel_id !== v.channel_id)
           throw Error(`Video owner differs from channel for ${v.id}: listed under ${v.channel_id}, player owner ${m.channel_id}`);
         Object.assign(v, m);
-        if (m.is_live) v.kind = 'live';
+        if (m.is_upcoming) v.kind = 'upcoming';
+        else if (m.is_live) v.kind = 'live';
         completed++; q.job.progress = {phase: 'publication metadata', completed, total: videos.length, ...changes};
       }
     }
@@ -240,6 +242,8 @@
       if (metadata.channel_id !== entry.channel_id) throw Error('Queued unlisted video owner differs from channel');
       if (metadata.unlisted_normal === true)
         queuedUnlisted.set(entry.id, {...metadata, kind: 'normal', classification: 'player_unlisted_normal'});
+      else if (metadata.is_upcoming === true)
+        queuedUnlisted.set(entry.id, {...metadata, kind: 'upcoming'});
       else if (metadata.is_live === true)
         queuedUnlisted.set(entry.id, {...metadata, kind: 'live'});
     }

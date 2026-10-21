@@ -201,7 +201,8 @@ class YouTubeTransport:
                 for e in fresh['entries']:
                     old = existing[e['id']]
                     if (e.get('percent') is not None and e['percent'] < 100 and e.get('playable') and
-                            (old.get('percent') == 100 or old.get('playable') is False)):
+                            (old.get('percent') == 100 or
+                             old.get('playable') is False and not old.get('is_upcoming'))):
                         raise TransportError('Playlist video became active during metadata checks; refresh its evidence', delta)
                     if e['id'] in videos:
                         videos[e['id']]['percent'] = e['percent']
@@ -267,7 +268,9 @@ class YouTubeTransport:
             cache.checkpoint([{'type': 'metadata', 'video': metadata}])
             videos[vid].update(metadata)
             videos[vid].pop('publication_age', None)
-            if metadata.get('is_live'):
+            if metadata.get('is_upcoming'):
+                videos[vid]['kind'] = 'upcoming'
+            elif metadata.get('is_live'):
                 videos[vid]['kind'] = 'live'
             fetched.add(vid)
             metrics['metadata_fetched'] += 1

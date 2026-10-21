@@ -117,6 +117,17 @@ class MetadataCache:
                 # Cache verified success or a recognized access restriction only;
                 # never ambiguous failures, watch progress or membership.
                 availability = v.get('availability', {})
+                if v.get('is_upcoming') is True:
+                    if (v.get('playable') is not False or v.get('is_live') is not False
+                            or not v.get('id') or not v.get('channel_id')
+                            or availability.get('status') not in {'OK', 'LIVE_STREAM_OFFLINE'}):
+                        raise CacheError('Refusing unverified upcoming metadata checkpoint')
+                    timestamp(v['metadata_checked_at'])
+                    # Recheck next collection. Neither an old positive record
+                    # nor a cached live exclusion may outlast the premiere.
+                    self.db.execute('DELETE FROM metadata WHERE id=?', (v['id'],))
+                    self.db.execute('INSERT OR IGNORE INTO known_videos VALUES (?)', (v['id'],))
+                    continue
                 restricted = (v.get('playable') is False and availability.get('status') == 'UNPLAYABLE'
                               and availability.get('restriction') == 'members_only')
                 positive = (v.get('playable') is True and availability.get('status') in ['OK', 'CONTENT_CHECK_REQUIRED'])

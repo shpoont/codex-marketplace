@@ -74,7 +74,9 @@ def observe_members(data, observation, configured, enabled_channels=()):
             continue
         # Entry identity guards decisions/exception ownership. The timestamp
         # convention deliberately cannot infer every action between observations.
-        if e['channel_id'] in configured and (e['kind'] == 'normal' or prior):
+        # A manually queued premiere must retain its origin/removal history
+        # even before it becomes eligible normal inventory.
+        if e['channel_id'] in configured and (e['kind'] in {'normal', 'upcoming'} or prior):
             receipt = data.get('entry_policies', {}).get(vid, {})
             # A receipt cannot reclaim an externally re-added stay after an
             # observed absence, even if YouTube reuses the entry ID.

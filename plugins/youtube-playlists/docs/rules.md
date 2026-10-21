@@ -23,6 +23,12 @@ Uncertain writes require journal/effect readback and are never replayed blindly.
 A saved, separately approved plan can continue through partial progress only
 when its actions still match; changed actions require a fresh preview.
 
+An explicitly identified upcoming premiere is deferred until a later refresh.
+It uses no automatic channel slot, and other additions and watched-video cleanup
+continue. An existing queued premiere stays in place. Upcoming status is checked
+again on the next collection rather than cached as a permanent Live exclusion.
+An offline reason alone is insufficient; unknown availability still needs attention.
+
 - Catch-up bounds and rolling lookback determine eligible missing uploads.
   Lookback measures publication age. Shorts and completed videos are ineligible.
 - Retention age starts from the saved playlist addition, not publication.

@@ -166,7 +166,8 @@ def plan(config, observation, state, now, metadata_only=False):
                 filtered['additions_ignored'] += 1
                 continue
             if not normal_active(v):
-                filtered['not_normal' if v.get('kind') != 'normal' else
+                filtered['upcoming' if v.get('kind') == 'upcoming' else
+                         'not_normal' if v.get('kind') != 'normal' else
                          'unknown_progress' if v.get('percent') is None else 'fully_watched'] += 1
                 continue
             if v['id'] in dismissed:
