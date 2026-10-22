@@ -1,0 +1,4 @@
+interface:
+  display_name: "Mail Organizer"
+  short_description: "Organize inboxes and selected email"
+  default_prompt: "Use $mail-organizer to organize my inbox and suggest handling before making changes."

@@ -1,0 +1,30 @@
+{
+  "name": "organizers",
+  "version": "0.1.5",
+  "description": "Organize related emails, understand what needs attention, and turn messages into action, with you approving the changes.",
+  "author": {
+    "name": "Leon.id Komarovsky"
+  },
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Organizers",
+    "shortDescription": "Organize mail, stay in control",
+    "longDescription": "Organize related emails and decide what to keep, clear away or act on.\n\nReview routine mail in groups, understand requests and deadlines, and discuss individual messages or follow-up. Mail Organizer summarizes what matters and suggests handling; you can approve or change it before anything is changed.\n\nCurrently includes mail only. Uses existing connected tools; available actions depend on those connections.",
+    "developerName": "Leon.id Komarovsky",
+    "category": "Productivity",
+    "composerIcon": "./assets/organizers.png",
+    "logo": "./assets/organizers.png",
+    "websiteURL": "https://github.com/shpoont/codex-marketplace/tree/main/plugins/organizers",
+    "supportURL": "https://github.com/shpoont/codex-marketplace/issues",
+    "privacyPolicyURL": "https://github.com/shpoont/codex-marketplace/blob/main/plugins/organizers/README.md#privacy-and-data",
+    "termsOfServiceURL": "https://github.com/shpoont/codex-marketplace/blob/main/plugins/organizers/README.md#terms-and-license",
+    "capabilities": [
+      "Review related emails",
+      "Understand requests and deadlines",
+      "Apply approved email actions"
+    ],
+    "defaultPrompt": [
+      "Help me organize my inbox. Suggest related groups and ask before making changes."
+    ]
+  }
+}
