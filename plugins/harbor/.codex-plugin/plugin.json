@@ -1,0 +1,31 @@
+{
+  "name": "harbor",
+  "version": "0.1.0",
+  "description": "Design trustworthy Harbor agent evaluations and interpret their evidence.",
+  "author": {
+    "name": "Leon.id Komarovsky"
+  },
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Harbor",
+    "shortDescription": "Design trustworthy agent tests",
+    "longDescription": "Build agent tests that answer a clear question.\n\nDesign realistic Harbor cases, check that verifiers accept good results and reject bad ones, and interpret failures without overstating the evidence. Keep setup work focused with explicit limits and stopping conditions.\n\nRunning evaluations requires a compatible Harbor installation, an isolated execution backend, and agreed model settings.",
+    "developerName": "Leon.id Komarovsky",
+    "category": "Productivity",
+    "capabilities": [
+      "Design agent evaluations",
+      "Review cases and verifiers",
+      "Interpret recorded results"
+    ],
+    "defaultPrompt": [
+      "Design a focused Harbor evaluation for the agent behavior in this project.",
+      "Review this Harbor evaluation for weak verifiers and unsupported claims."
+    ],
+    "websiteURL": "https://github.com/shpoont/codex-marketplace/tree/main/plugins/harbor",
+    "supportURL": "https://github.com/shpoont/codex-marketplace/issues",
+    "brandColor": "#136C91",
+    "brandColorDark": "#69C9E5",
+    "composerIcon": "./assets/harbor.svg",
+    "logo": "./assets/harbor.svg"
+  }
+}

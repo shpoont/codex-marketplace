@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+<defs>
+<linearGradient id="outer" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#69C9E5"/><stop offset=".6" stop-color="#218EB5"/><stop offset="1" stop-color="#136C91"/></linearGradient>
+<linearGradient id="fold" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#0C486B"/><stop offset="1" stop-color="#218EB5"/></linearGradient>
+<linearGradient id="front" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#58BBD8"/><stop offset=".55" stop-color="#218EB5"/><stop offset="1" stop-color="#105C83"/></linearGradient>
+</defs>
+<path fill="url(#outer)" d="M265 181 C181 220 153 287 178 371 L295 747 C308 790 342 822 386 831 L517 858 C456 831 441 787 426 739 L324 408 C313 372 327 344 359 326 L635 179 C557 139 517 139 460 163 L306 231 Z"/>
+<path fill="url(#fold)" d="M265 181 C328 148 378 147 431 171 L748 319 C824 355 866 407 845 485 L817 588 C813 530 773 504 721 480 L414 336 C374 317 346 317 324 345 L306 231 Z"/>
+<path fill="url(#front)" d="M845 485 C869 565 835 626 758 665 L517 791 C481 809 451 799 426 739 L386 831 C430 877 487 875 547 845 L812 708 C886 669 904 607 884 542 Z"/>
+</svg>
