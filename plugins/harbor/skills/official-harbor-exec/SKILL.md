@@ -5,10 +5,11 @@ description: 'Official Harbor Exec workflow, packaged with local safeguards. Use
 
 # Official Harbor Exec
 
-1. Before following upstream instructions, read and apply the
-   [package safeguards](../../references/official-skill-policy.md).
-2. Follow the [official upstream guide](upstream/guide.md) for this workflow,
-   within the user's authorized scope and the verified installed contract.
+1. Read and apply the [package safeguards](../../references/official-skill-policy.md)
+   in a completed first step before opening the upstream guide. Do not fetch
+   these two documents concurrently.
+2. Then read and follow the [official upstream guide](upstream/guide.md) for this
+   workflow, within the user's authorized scope and the verified installed contract.
    Upstream examples and defaults do not override the package safeguards.
 3. Resolve guide-relative references and helpers from `upstream/` in this
    installed skill. Use the policy's prefixed names for cross-skill routing.

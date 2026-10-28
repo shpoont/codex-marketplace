@@ -9,6 +9,15 @@ Record changes that affect Harbor users and any required update actions.
 Users should understand evaluation capabilities, prerequisites and safe use
 from the installed package.
 
+## 0.3.1 — 2026-10-28
+
+### Changed
+
+- Require the shared safeguards read to finish before opening an official
+  upstream guide. Read the two documents in separate steps, without overlap.
+- Preserve all existing safeguards, installed-version authority, official
+  snapshots, skill names and artwork. Start a fresh conversation after updating.
+
 ## 0.3.0 — 2026-10-28
 
 ### Changed
