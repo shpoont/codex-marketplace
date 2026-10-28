@@ -1,9 +1,15 @@
 # Result interpretation
 
-Read the relevant section when interpreting recorded evaluations. The core
-skill's safeguards, model agreements, and installed-version checks apply.
+Read the relevant section when interpreting recorded evaluations. Apply the
+[shared package safeguards](../../../references/official-skill-policy.md).
 
 ## Score validity and denominators
+
+Use trial and verifier evidence, not process exit status alone. Separate valid
+acceptance, valid rejection, infrastructure/authentication error, incomplete or
+cancelled work, and descriptive ungated measurements. Do not generalize beyond
+observed cases, attempts, environment and verifier. Historical results support
+their recorded conditions; they do not prove current behavior.
 
 Build an outcome ledger before summarizing performance. Account for planned,
 completed, valid scored, invalid, cancelled, and unattempted trials; distinguish
@@ -77,6 +83,11 @@ Use the current [regrade guide](https://docs.harborframework.com/jobs/regrade)
 for mechanics and validate compatibility against the installed release.
 
 ## Analyze protocol
+
+Harbor Analyze is an optional model-backed run over recorded jobs or trials to
+summarize patterns, explain failures, compare evidence or identify follow-up
+questions. Its interpretation is not a verifier, does not change earned rewards
+and must not replace the raw trial/verifier record.
 
 Before running Analyze:
 

@@ -1,8 +1,9 @@
 # Evaluation workflow
 
 Use this guidance to operate an ongoing investigation without losing its
-purpose between setup, trials, repairs, and resumed work. The core safeguards,
-model agreements, and installed-version checks remain authoritative.
+purpose between setup, trials, repairs, and resumed work. Apply the
+[shared package safeguards](../../../references/official-skill-policy.md);
+load only the methodology sections relevant to the current concern.
 
 ## Working record and resumption
 
@@ -57,6 +58,17 @@ independent work and already authorized bounded repairs. Reassessment is not
 a reason to freeze every setup task or request the same approval again.
 
 ## Results and closeout
+
+Report enough context to understand and reproduce the claim: cases and attempts;
+agent, model, effort and relevant configuration for each model-backed role;
+environment and verifier boundaries; acceptances, rejections, errors and
+incomplete trials; planned and valid scored trials, exclusions and metric
+denominators; reward dimensions or other evidence; duration and usage when
+available; relevant version/configuration differences; resolved task, context,
+verifier and environment provenance and usage bounds; limitations, uncertainty
+and unresolved failures. Link retained detail instead of copying it into every
+update. Estimated cost is not authoritative billing, and one stochastic run
+does not establish reliability.
 
 Lead updates with what was learned about the original question, the current
 stage, and what the next action will resolve. Show concrete old and new

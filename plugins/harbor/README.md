@@ -4,7 +4,7 @@ Design trustworthy agent evaluations with Harbor. Turn a project question into
 representative cases, check that the verifier measures the intended behavior,
 and interpret results with clear evidence limits.
 
-This independent package combines our `harbor-agent-tests` methodology with
+This independent package combines our `harbor-evaluate-agent-behavior` methodology with
 six officially sourced Harbor workflows. It uses Harbor's official logo;
 Harbor Framework does not publish or endorse this plugin. “Official” identifies
 the origin of the bundled guides, whose exact revision and hashes appear in
@@ -12,7 +12,7 @@ the origin of the bundled guides, whose exact revision and hashes appear in
 
 | Skill | Use it for |
 | --- | --- |
-| `harbor-agent-tests` | Evaluation design, calibration and evidence review |
+| `harbor-evaluate-agent-behavior` | Evaluation design, calibration and evidence review |
 | `official-create-task` | Authoring a Harbor task |
 | `official-rewardkit` | Building a task verifier with Reward Kit |
 | `official-harbor-exec` | Planning Exec map and reduce jobs and artifacts |
@@ -20,7 +20,7 @@ the origin of the bundled guides, whose exact revision and hashes appear in
 | `official-publish` | Publishing tasks or datasets to Harbor Hub |
 | `official-upload-parity-experiments` | Preparing parity-results uploads to Hugging Face |
 
-Each official entrypoint loads [package safeguards](references/official-skill-policy.md)
+Every entrypoint loads [package safeguards](references/official-skill-policy.md)
 before its unmodified upstream guide. The installed command/API contract and
 our evaluation safeguards remain authoritative over upstream examples.
 
@@ -51,6 +51,14 @@ Open a fresh Codex conversation after installation. Select Harbor and verify
 that all seven skills above are available. If a standalone copy of the
 same skill is installed, select the intended copy explicitly and preserve a
 recovery copy before changing its installation.
+
+## Upgrade from 0.2.0
+
+The methodology skill is now **Harbor Evaluate Agent Behavior**, with slug
+`harbor-evaluate-agent-behavior`. Replace saved `$harbor-agent-tests` invocations
+and old methodology resource paths with this slug. The retired slug is not an
+alias or an eighth skill. Open a fresh conversation after updating; the plugin
+ID, six official skill names and Harbor CLI commands are unchanged.
 
 ## Use
 

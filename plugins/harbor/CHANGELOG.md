@@ -9,6 +9,22 @@ Record changes that affect Harbor users and any required update actions.
 Users should understand evaluation capabilities, prerequisites and safe use
 from the installed package.
 
+## 0.3.0 — 2026-10-28
+
+### Changed
+
+- Rename our methodology skill to **Harbor Evaluate Agent Behavior**, slug
+  `harbor-evaluate-agent-behavior`. Update saved `$harbor-agent-tests` invocations
+  and old resource paths; the retired slug has no alias. Start a fresh conversation
+  after updating. Plugin ID `harbor` and the six official slugs are unchanged.
+- Shorten its entrypoint and load detailed methodology only for the current
+  concern. Keep incident reproduction, controlled comparisons, calibration,
+  isolation, score validity, Analyze and bounded-investigation guidance in refs.
+- Maintain shared safeguards as one authority, preserving installed-version
+  checks, model-role agreements and budgets, execution/authentication boundaries
+  and reviewed external writes. Route operational work to the bundled official
+  skills. Their pinned guides, helper, logo and license remain unchanged.
+
 ## 0.2.0 — 2026-10-28
 
 ### Added

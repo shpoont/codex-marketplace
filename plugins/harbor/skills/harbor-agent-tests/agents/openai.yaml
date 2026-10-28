@@ -1,7 +1,0 @@
-interface:
-  display_name: "Harbor Agent Tests"
-  short_description: "Design and analyze trustworthy agent evaluations"
-  default_prompt: "Use $harbor-agent-tests to design a trustworthy, reproducible, and isolated evaluation for this project."
-
-policy:
-  allow_implicit_invocation: true

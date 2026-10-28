@@ -1,7 +1,23 @@
 # Experiment design
 
-Read the relevant section for the selected evaluation mode. The core skill's
-safeguards, model agreements, and installed-version checks apply.
+Read the relevant section for the selected evaluation mode. Apply the
+[shared package safeguards](../../../references/official-skill-policy.md).
+
+## Claim and cases
+
+State the decision the evaluation should inform and the claim its evidence can
+support. Define success, failure, uncertainty and evidence limits before choosing
+implementation details. Use realistic inputs with the smallest context needed
+for the behavior. Keep independently diagnosable scenarios separate; include
+important boundary and failure cases. Keep hidden answers and verifier
+implementation out of the agent prompt.
+
+For comparisons, hold cases, context, environment, verifier, attempt policy and
+reporting rules constant. Change one material variable at a time unless studying
+an explicitly combined intervention. Use repeated attempts for reliability
+claims. Apply the incident or injected-context sections below when relevant;
+record resolved inputs, settings, resource enforcement and usage bounds under
+[execution planning and provenance](#execution-planning-and-provenance).
 
 ## Incident reproduction
 
@@ -76,7 +92,7 @@ trajectory capture or loading, session resume, and network or resource
 enforcement. Check the installed agent integration and provider declarations,
 then verify relevant behavior with a focused smoke check. Configuration
 acceptance or successful setup alone does not prove tool connectivity,
-enforcement, or usable evidence. Model-backed probes still require the core
+enforcement, or usable evidence. Model-backed probes still require the shared
 model-setting agreement.
 
 Check effective access across environment startup, agent setup and execution,
@@ -150,7 +166,7 @@ defined completion rule. Inspect step errors as well as trial errors.
 Treat the simulated user as an experimental component with its own agreed
 model and effort, persona, task knowledge, bridge instructions, turn or resource
 budget, and stopping rule. Preserve those conditions across target-agent
-comparisons unless the experiment deliberately varies them. Apply the core
+comparisons unless the experiment deliberately varies them. Apply the shared
 model agreements before user-model calls, including calibration runs.
 
 Control what information reaches the target through conversation; keep hidden
@@ -205,8 +221,8 @@ not describe the code actually used. Verify the effective agent version when
 installation or prebuilt-image behavior can change it. Preserve safe
 configuration and lock records without copying secrets into the archive.
 
-For requested input-compilation or map-reduce workflows, use the
-[official Harbor Exec skill](https://github.com/harbor-framework/harbor/blob/main/skills/harbor-exec/SKILL.md).
+For requested input-compilation or map-reduce mechanics, use
+[$official-harbor-exec](../../official-harbor-exec/SKILL.md).
 Include compiled-task inputs and any reducer in the provenance and model
 agreements. File-existence checks establish presence, not semantic correctness.
 Use the current [job config](https://docs.harborframework.com/jobs/configs),
@@ -216,10 +232,9 @@ references for mechanics, checked against the installed runtime.
 
 ## Benchmark conversion
 
-When importing an existing benchmark, consult the
-[official adapter skill](https://github.com/harbor-framework/harbor/blob/main/skills/create-adapter/SKILL.md)
-and its [Adapters Agent Guide](https://github.com/harbor-framework/harbor/blob/main/adapters/ADAPTER_CONTRIBUTING.md)
-for the current contract. Define the parity claim and preserve the original
+When importing an existing benchmark, use
+[$official-create-adapter](../../official-create-adapter/SKILL.md)
+for mechanics and its compatible-checkout prerequisites. Define the parity claim and preserve the original
 benchmark's relevant conditions when comparing harnesses. Contribution,
 publication, or coordination steps in an upstream guide do not expand the
 user's authorized scope.

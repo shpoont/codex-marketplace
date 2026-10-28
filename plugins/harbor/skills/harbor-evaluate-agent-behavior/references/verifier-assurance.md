@@ -1,7 +1,24 @@
 # Verifier assurance
 
-Read the relevant section when designing or reviewing a verifier. The core
-skill's safeguards, model agreements, and installed-version checks apply.
+Read the relevant section when designing or reviewing a verifier. Apply the
+[shared package safeguards](../../../references/official-skill-policy.md).
+
+## Evidence choice and calibration
+
+Prefer deterministic checks for observable facts. Use model judgment only for
+qualities deterministic evidence cannot honestly check; follow the
+[judge protocol](#judge-protocol). Make subjective criteria concrete, observable
+and tied to the claim. Ground criteria and downstream gates in the task contract
+below. Define pass thresholds before seeing results. Keep separate reward
+dimensions when averaging would hide failure; make mandatory conditions and
+aggregation explicit and calibrate mixed outcomes.
+
+Prove the evaluator accepts a known-good outcome and rejects at least one
+plausible bad outcome through the actual collection, transfer and verifier path.
+Distinguish normal rejection from a broken environment, agent, verifier or
+collector. Apply the same calibration and error classification to borrowed
+verifiers; an upstream example is not evidence of correctness. Use proportionate
+[staged preflight](#staged-preflight) before scaling execution.
 
 ## Task and grading contract
 
@@ -162,7 +179,7 @@ even when a justified aggregate is reported.
 ## Judge protocol
 
 Use model judgment only for criteria that need it; keep observable facts under
-deterministic checks. Apply the core model-setting agreement to every judge
+deterministic checks. Apply the shared model-setting agreement to every judge
 and any model-backed calibration or audit.
 
 Record the rubric revision, evidence shown to each judge, model and effort,
@@ -197,8 +214,8 @@ and [criterion isolation](https://docs.harborframework.com/rewardkit/quick-start
 for current capabilities. Check the installed RewardKit version and agent or
 provider support before selecting options.
 
-For implementation examples, consult the
-[official RewardKit skill](https://github.com/harbor-framework/harbor/blob/main/skills/rewardkit/SKILL.md)
+For implementation mechanics, use
+[$official-rewardkit](../../official-rewardkit/SKILL.md)
 under the same version checks and safeguards.
 
 ## Staged preflight
@@ -228,12 +245,12 @@ real agent performance answer different questions. A completed review job is
 not proof that its rubric approved the task, nor that the task is a valid
 evaluation. Inspect the actual deliverable and evidence.
 
-Model-backed reviews and pilots require the core model-setting agreements;
+Model-backed reviews and pilots require the shared model-setting agreements;
 ordinary static checks do not. Do not add model audits or repeated runs simply
 because the tools support them. Stop when the requested claim has sufficient
 evidence or a blocker requires a decision.
 
 Consult [lint](https://docs.harborframework.com/tasks/lint),
 [job configuration](https://docs.harborframework.com/jobs/configs), and the
-[official task authoring skill](https://github.com/harbor-framework/harbor/blob/main/skills/create-task/SKILL.md)
+[$official-create-task](../../official-create-task/SKILL.md)
 for available mechanics, verified against the installed release.

@@ -1,0 +1,7 @@
+interface:
+  display_name: "Harbor Evaluate Agent Behavior"
+  short_description: "Design and analyze trustworthy agent evaluations"
+  default_prompt: "Use $harbor-evaluate-agent-behavior to design a focused Harbor evaluation with representative cases, calibrated evidence and a clear stopping condition."
+
+policy:
+  allow_implicit_invocation: true
