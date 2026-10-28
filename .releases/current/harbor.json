@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "plugin": "harbor",
-  "version": "0.1.0",
-  "digest": "9c7d714f04fd417c88d04a7e513b674522ed2d819f72baae9dd0ee56cd870800",
+  "version": "0.2.0",
+  "digest": "3b3cd6dccba4635f349d8a1e9116a5e1afe4466c9b991cefc1b794bcd07e92c8",
   "action": "release"
 }

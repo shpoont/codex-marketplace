@@ -1,0 +1,4 @@
+interface:
+  display_name: Official Harbor Upload Parity Experiments
+  short_description: Prepare parity result uploads
+  default_prompt: Use $official-upload-parity-experiments to prepare a scoped parity-results upload and review its Hugging Face destination.

@@ -1,0 +1,4 @@
+interface:
+  display_name: Official Harbor Publish
+  short_description: Publish Harbor tasks or datasets
+  default_prompt: Use $official-publish to prepare a Harbor Hub task or dataset publication for review.

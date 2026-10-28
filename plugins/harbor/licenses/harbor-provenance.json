@@ -1,0 +1,128 @@
+{
+  "schema": 1,
+  "repository": "https://github.com/harbor-framework/harbor",
+  "commit": "3095f96e5cc813783dc50c9c7970bc225fb7627b",
+  "license": "Apache-2.0",
+  "license_file": "harbor-Apache-2.0.txt",
+  "logo": {
+    "path": "docs-mintlify/harbor-logo.png",
+    "git_blob_sha": "e4919a5f01b3af123cf1ad7d2022f4498cce59a4",
+    "sha256": "b5004bb031b04aa6d55d93df8547ac39cf17f5341e1056c21e05581612b972fb"
+  },
+  "skills": {
+    "official-create-task": {
+      "upstream_slug": "create-task",
+      "display_name": "Official Harbor Create Task",
+      "packaging_changes": [
+        "Prefixed entrypoint and display name",
+        "Safeguard-loading entrypoint",
+        "Original SKILL.md stored as upstream/guide.md"
+      ],
+      "files": [
+        {
+          "upstream_path": "skills/create-task/SKILL.md",
+          "packaged_path": "skills/official-create-task/upstream/guide.md",
+          "git_blob_sha": "a36132b2c5ccc10c6aa0f23187044ae709cf8a3c",
+          "sha256": "057e05079f6bbcbca5124efc97b67efa4e6af882b9722a74b4cb0ff722ee19e0"
+        }
+      ]
+    },
+    "official-rewardkit": {
+      "upstream_slug": "rewardkit",
+      "display_name": "Official Harbor Reward Kit",
+      "packaging_changes": [
+        "Prefixed entrypoint and display name",
+        "Safeguard-loading entrypoint",
+        "Original SKILL.md stored as upstream/guide.md"
+      ],
+      "files": [
+        {
+          "upstream_path": "skills/rewardkit/SKILL.md",
+          "packaged_path": "skills/official-rewardkit/upstream/guide.md",
+          "git_blob_sha": "a4d521089699379c722f1526af816a3b8fb1ea06",
+          "sha256": "2b28cc04682a93c2e1acb8080619c2e629f779cb2fc25af3b535431c192b1155"
+        }
+      ]
+    },
+    "official-harbor-exec": {
+      "upstream_slug": "harbor-exec",
+      "display_name": "Official Harbor Exec",
+      "packaging_changes": [
+        "Prefixed entrypoint and display name",
+        "Safeguard-loading entrypoint",
+        "Original SKILL.md stored as upstream/guide.md"
+      ],
+      "files": [
+        {
+          "upstream_path": "skills/harbor-exec/SKILL.md",
+          "packaged_path": "skills/official-harbor-exec/upstream/guide.md",
+          "git_blob_sha": "0f33cae659ffa5eaa37d98f0cfebaccecf19b4ed",
+          "sha256": "7a74b4a046bbbeb596d25f6d35386a85d183f85c8499d6c62a329971388b0a64"
+        },
+        {
+          "upstream_path": "skills/harbor-exec/references/examples.md",
+          "packaged_path": "skills/official-harbor-exec/upstream/references/examples.md",
+          "git_blob_sha": "b79e679bd3319052b45fb8d969a4cb77068cfef5",
+          "sha256": "20b587d9c6f2d6095aa42b0f22b466c5f28563bab010173a5c39767466c30e99"
+        }
+      ]
+    },
+    "official-create-adapter": {
+      "upstream_slug": "create-adapter",
+      "display_name": "Official Harbor Create Adapter",
+      "packaging_changes": [
+        "Prefixed entrypoint and display name",
+        "Safeguard-loading entrypoint",
+        "Original SKILL.md stored as upstream/guide.md"
+      ],
+      "files": [
+        {
+          "upstream_path": "skills/create-adapter/SKILL.md",
+          "packaged_path": "skills/official-create-adapter/upstream/guide.md",
+          "git_blob_sha": "bd7cb0ba7b409dc1bd90d5d9f262f585343b88ea",
+          "sha256": "a15e47e80b13ce1fae813489ecb54d118071394eeceb55d3da974f3625035fc9"
+        }
+      ]
+    },
+    "official-publish": {
+      "upstream_slug": "publish",
+      "display_name": "Official Harbor Publish",
+      "packaging_changes": [
+        "Prefixed entrypoint and display name",
+        "Safeguard-loading entrypoint",
+        "Original SKILL.md stored as upstream/guide.md"
+      ],
+      "files": [
+        {
+          "upstream_path": "skills/publish/SKILL.md",
+          "packaged_path": "skills/official-publish/upstream/guide.md",
+          "git_blob_sha": "ebb6723657b4bbeb90c2358e09df44939a94ae98",
+          "sha256": "25d7c2ec4a99cac151ba15273a9376f3dce616356763ecd6ee7e30690777c1f2"
+        }
+      ]
+    },
+    "official-upload-parity-experiments": {
+      "upstream_slug": "upload-parity-experiments",
+      "display_name": "Official Harbor Upload Parity Experiments",
+      "packaging_changes": [
+        "Prefixed entrypoint and display name",
+        "Safeguard-loading entrypoint",
+        "Original SKILL.md stored as upstream/guide.md"
+      ],
+      "files": [
+        {
+          "upstream_path": "skills/upload-parity-experiments/SKILL.md",
+          "packaged_path": "skills/official-upload-parity-experiments/upstream/guide.md",
+          "git_blob_sha": "570aa50aeed56ad2e5891d975a6aa2f7b67394c6",
+          "sha256": "257567d704bfda045c78fc1a7cca5acd6f7c54dec9a5e91bd841b1612e048c5d"
+        },
+        {
+          "upstream_path": "skills/upload-parity-experiments/scripts/create_pr.py",
+          "packaged_path": "skills/official-upload-parity-experiments/upstream/scripts/create_pr.py",
+          "git_blob_sha": "33050a402d5375ad67ae8959267969fa49c43265",
+          "sha256": "edd36c2f42e48e1009b3ab3146d79f034d4e5c481561778fcabdc1b6481329df"
+        }
+      ]
+    }
+  }
+}

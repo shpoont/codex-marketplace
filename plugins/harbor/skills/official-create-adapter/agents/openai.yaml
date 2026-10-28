@@ -1,0 +1,4 @@
+interface:
+  display_name: Official Harbor Create Adapter
+  short_description: Scaffold a benchmark adapter
+  default_prompt: Use $official-create-adapter to help me scaffold a Harbor benchmark adapter from the compatible tutorial.

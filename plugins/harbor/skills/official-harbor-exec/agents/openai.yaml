@@ -1,0 +1,4 @@
+interface:
+  display_name: Official Harbor Exec
+  short_description: Plan Harbor map and reduce jobs
+  default_prompt: Use $official-harbor-exec to plan a bounded Harbor Exec workflow and its artifact contract.

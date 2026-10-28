@@ -1,31 +1,35 @@
 {
   "name": "harbor",
-  "version": "0.1.0",
-  "description": "Design trustworthy Harbor agent evaluations and interpret their evidence.",
+  "version": "0.2.0",
+  "description": "Design trustworthy agent evaluations and use Harbor's official task, Exec and publishing workflows.",
   "author": {
     "name": "Leon.id Komarovsky"
   },
   "skills": "./skills/",
   "interface": {
     "displayName": "Harbor",
-    "shortDescription": "Design trustworthy agent tests",
-    "longDescription": "Build agent tests that answer a clear question.\n\nDesign realistic Harbor cases, check that verifiers accept good results and reject bad ones, and interpret failures without overstating the evidence. Keep setup work focused with explicit limits and stopping conditions.\n\nRunning evaluations requires a compatible Harbor installation, an isolated execution backend, and agreed model settings.",
+    "shortDescription": "Design focused agent tests",
+    "longDescription": "Build agent evaluations that answer a clear question. Design realistic cases, calibrate verifiers and interpret failures with explicit limits.\n\nIncludes six officially sourced Harbor workflows for tasks, Reward Kit, Exec, adapters, Hub publishing and parity uploads. Their names start with Official; this plugin is independently maintained.\n\nExecution needs compatible installed tools, an isolated backend and agreed model settings. Publication and uploads require explicit review and authorization. Optional parity PR creation needs a separately installed Python dependency.",
     "developerName": "Leon.id Komarovsky",
     "category": "Productivity",
     "capabilities": [
       "Design agent evaluations",
-      "Review cases and verifiers",
-      "Interpret recorded results"
+      "Create tasks and verifiers",
+      "Plan Exec jobs and adapters",
+      "Prepare reviewed publications"
     ],
     "defaultPrompt": [
       "Design a focused Harbor evaluation for the agent behavior in this project.",
-      "Review this Harbor evaluation for weak verifiers and unsupported claims."
+      "Review this Harbor evaluation for weak verifiers and unsupported claims.",
+      "Use the official Harbor skills to plan a task, Exec job or reviewed publication."
     ],
     "websiteURL": "https://github.com/shpoont/codex-marketplace/tree/main/plugins/harbor",
     "supportURL": "https://github.com/shpoont/codex-marketplace/issues",
-    "brandColor": "#136C91",
-    "brandColorDark": "#69C9E5",
-    "composerIcon": "./assets/harbor.svg",
-    "logo": "./assets/harbor.svg"
+    "privacyURL": "https://github.com/shpoont/codex-marketplace/tree/main/plugins/harbor#boundaries-and-data",
+    "termsURL": "https://github.com/shpoont/codex-marketplace/blob/main/plugins/harbor/LICENSE",
+    "brandColor": "#111111",
+    "brandColorDark": "#F4F4F5",
+    "composerIcon": "./assets/harbor.png",
+    "logo": "./assets/harbor.png"
   }
 }

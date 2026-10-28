@@ -1,0 +1,4 @@
+interface:
+  display_name: Official Harbor Reward Kit
+  short_description: Build a calibrated task verifier
+  default_prompt: Use $official-rewardkit to help me design a Harbor Reward Kit verifier without launching a judge.

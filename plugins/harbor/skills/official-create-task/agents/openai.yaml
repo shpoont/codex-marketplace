@@ -1,0 +1,4 @@
+interface:
+  display_name: Official Harbor Create Task
+  short_description: Create a Harbor evaluation task
+  default_prompt: Use $official-create-task to guide me through authoring a Harbor task with calibrated verification.
