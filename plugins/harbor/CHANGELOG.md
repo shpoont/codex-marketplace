@@ -9,6 +9,16 @@ Record changes that affect Harbor users and any required update actions.
 Users should understand evaluation capabilities, prerequisites and safe use
 from the installed package.
 
+## 0.3.2 — 2026-10-29
+
+### Changed
+
+- Require the complete adapter contributing tutorial before branch creation,
+  scaffolding or adapter-file changes. Read-only prerequisite checks remain
+  allowed; an unavailable checkout or tutorial blocks adapter changes.
+- Preserve shared safeguards, installed-version checks and pinned official
+  guides. Start a fresh conversation after updating.
+
 ## 0.3.1 — 2026-10-28
 
 ### Changed

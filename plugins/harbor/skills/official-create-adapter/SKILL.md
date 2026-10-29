@@ -11,7 +11,12 @@ description: Official Harbor Create Adapter workflow, packaged with local safegu
 2. Then read and follow the [official upstream guide](upstream/guide.md) for this
    workflow, within the user's authorized scope and the verified installed contract.
    Upstream examples and defaults do not override the package safeguards.
-3. Resolve guide-relative references and helpers from `upstream/` in this
+3. Before branch creation, `harbor adapter init` or adapter-file changes, read
+   `adapters/ADAPTER_CONTRIBUTING.md` in full from the user's selected compatible
+   Harbor checkout. Scaffolding is not exempt from this prerequisite. Read-only
+   prerequisite checks are allowed. If the checkout or tutorial is unavailable,
+   stop adapter changes and report the missing prerequisite.
+4. Resolve guide-relative references and helpers from `upstream/` in this
    installed skill. Use the policy's prefixed names for cross-skill routing.
 
 This independently maintained entrypoint adds the `official-` slug, Official

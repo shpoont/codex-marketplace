@@ -1,6 +1,6 @@
 {
   "name": "harbor",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "description": "Design trustworthy agent evaluations and use Harbor's official task, Exec and publishing workflows.",
   "author": {
     "name": "Leon.id Komarovsky"
