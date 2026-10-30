@@ -1,6 +1,6 @@
 {
   "name": "chatgpt",
-  "version": "0.1.6",
+  "version": "0.1.7",
   "description": "Operate ChatGPT conversations with native chat tools and browser UI for model and research gaps.",
   "author": {
     "name": "Leon.id Komarovsky"

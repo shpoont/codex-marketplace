@@ -9,6 +9,13 @@ Describe changes that affect ChatGPT plugin users.
 Keep capabilities, requirements and migration information available with the
 package. Entries describe the version's user-visible scope and requirements.
 
+## 0.1.7 — 2026-10-30
+
+- Require evidence that a reported blocker prevents the requested action:
+  an explicit rejection of an authorized attempt, or a disabled required control
+  with a matching explanation in the current UI. Warning text alone is
+  insufficient; report uncertainty when a blocker is not established.
+
 ## Unreleased — 0.1.6
 
 - Use default skill icons by omitting custom skill icon metadata and removing

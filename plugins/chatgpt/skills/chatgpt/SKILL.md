@@ -52,6 +52,12 @@ each read/action and the exact chat URL before content; a pinned window does not
 pin its selected tab. If selection changes, return only to a positively identified
 task tab. Never navigate an unknown tab to repair targeting.
 
+Before reporting a blocker, verify that it prevents the requested action.
+Sufficient evidence is an explicit rejection of an authorized attempt, or a
+required control verified as disabled with a matching explanation in the current
+UI. Warning text alone is insufficient. If neither is verified, report the
+uncertainty.
+
 Allow brief diagnosis and safe read/navigation retries: inspect current rendered
 structure/labels, wait for content, revise a failed locator, or reload/reopen the
 same chat. A selector miss alone does not prove missing content. Respect an

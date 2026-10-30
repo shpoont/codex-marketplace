@@ -7,7 +7,7 @@ gaps such as choosing Pro for a new chat or running Deep research. Submit your
 supplied prompt and return the completed answer or report with its chat link.
 This compact bridge can be retired when equivalent native support is available.
 
-**Version:** 0.1.5.
+**Version:** 0.1.7.
 
 ## Requirements and installation
 
