@@ -1,0 +1,30 @@
+{
+  "name": "expert-roles",
+  "version": "0.1.0",
+  "description": "Choose expert perspectives for Codex and manage their personal installations while preserving existing roles and local edits.",
+  "license": "MIT",
+  "skills": "./skills/",
+  "author": {
+    "name": "Leon.id Komarovsky"
+  },
+  "interface": {
+    "displayName": "Expert Roles",
+    "shortDescription": "Manage personal expert roles",
+    "longDescription": "Choose expert perspectives for your work in Codex. Browse the reviewed collection, inspect installed versions, and add or remove one personal expert at a time.\n\nExisting manual roles and local edits are preserved. Requires Python 3.12 or newer on macOS or Linux. Updates, manual-role adoption and project installation are not included.",
+    "developerName": "Leon.id Komarovsky",
+    "category": "Productivity",
+    "websiteURL": "https://github.com/shpoont/codex-marketplace/tree/main/plugins/expert-roles",
+    "supportURL": "https://github.com/shpoont/codex-marketplace/issues",
+    "privacyPolicyURL": "https://github.com/shpoont/codex-marketplace/blob/main/plugins/expert-roles/PRIVACY.md",
+    "termsOfServiceURL": "https://github.com/shpoont/codex-marketplace/blob/main/plugins/expert-roles/TERMS.md",
+    "logo": "./assets/logo.png",
+    "composerIcon": "./assets/logo.png",
+    "brandColor": "#B87344",
+    "capabilities": ["Browse expert perspectives", "Inspect installed versions", "Manage personal experts"],
+    "defaultPrompt": [
+      "Show available Expert Roles without changing anything.",
+      "Inspect my installed expert versions and ownership without changing anything.",
+      "Preview installing Steve Jobs as a personal expert without changing anything."
+    ]
+  }
+}

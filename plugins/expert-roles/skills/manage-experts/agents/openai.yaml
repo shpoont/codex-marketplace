@@ -1,0 +1,4 @@
+interface:
+  display_name: Manage Expert Roles
+  short_description: Choose and manage personal experts
+  default_prompt: Show available Expert Roles and inspect my installed expert versions without changing anything.
