@@ -12,6 +12,51 @@ from .browser_control import (TransportError, browser_session, guarded_source, p
                               SCRIPT_TIMEOUT_SECONDS, JOB_STATUS_SCRIPT_TIMEOUT_SECONDS)
 
 
+CREATE_WINDOW_SCRIPT = '''on run argv
+set creationURL to item 1 of argv
+tell application "Safari"
+    make new document with properties {URL:creationURL}
+end tell
+repeat 50 times
+    set candidateIds to {}
+    tell application "Safari"
+        repeat with candidateWindow in every window
+            if (count of tabs of candidateWindow) is 1 then
+                if URL of tab 1 of candidateWindow is creationURL then
+                    set end of candidateIds to id of candidateWindow
+                end if
+            end if
+        end repeat
+    end tell
+    set createdId to my uniqueCreatedWindow(candidateIds)
+    if createdId is not 0 then return createdId
+    delay 0.1
+end repeat
+error "YTPM_WINDOW_CREATION_UNVERIFIED"
+end run
+
+on uniqueCreatedWindow(candidateIds)
+    if (count of candidateIds) > 1 then error "YTPM_WINDOW_CREATION_AMBIGUOUS"
+    if (count of candidateIds) is 0 then return 0
+    return item 1 of candidateIds
+end uniqueCreatedWindow'''
+
+NAVIGATE_CREATED_WINDOW_SCRIPT = '''on run argv
+set windowId to (item 1 of argv) as integer
+set creationURL to item 2 of argv
+set targetURL to item 3 of argv
+tell application "Safari"
+    if not (exists window id windowId) then error "YTPM_PAGE_MISSING"
+    set createdWindow to window id windowId
+    if (count of tabs of createdWindow) is not 1 then error "YTPM_PAGE_MISSING"
+    set createdTab to tab 1 of createdWindow
+    if URL of createdTab is not creationURL then error "YTPM_PAGE_MISSING"
+    set visible of createdWindow to false
+    set URL of createdTab to targetURL
+end tell
+end run'''
+
+
 class SafariPage:
     def __init__(self, window_id: int | None = None):
         self.window_id = window_id
@@ -19,6 +64,7 @@ class SafariPage:
         self.page_token = None
         self.tab_index = None
         self._owned_window_id = None
+        self._creation_url = None
         self.cleanup_result = None
         self._read_recovery_cleanups = []
 
@@ -56,22 +102,25 @@ class SafariPage:
         self.url = url
         created = self.window_id is None
         if self.window_id is None:
-            self.window_id = int(self._script('''on run argv
-tell application "Safari"
-    make new document with properties {URL:(item 1 of argv)}
-    return id of window 1
-end tell
-end run''', self.url))
+            if self._creation_url is not None:
+                raise TransportError('Safari window creation outcome is unknown; inspect before retrying',
+                                     {'code': 'ytpm_window_creation_unverified'})
+            self._creation_url = 'about:blank#ytpm-' + str(uuid.uuid4())
+            receipt = self._script(CREATE_WINDOW_SCRIPT, self._creation_url)
+            try:
+                created_id = int(receipt)
+                if created_id <= 0:
+                    raise ValueError('Invalid window ID')
+            except ValueError as error:
+                raise TransportError('Safari window creation returned no verified identity',
+                                     {'code': 'ytpm_window_creation_unverified'}) from error
+            self.window_id = created_id
             self._owned_window_id = self.window_id
             self.cleanup_result = None
-            # A command-owned page does not need to be visible while its
-            # same-page data requests run. Hide it promptly so it does not
-            # compete with the user's Safari windows during long collections.
-            self._script('''on run argv
-tell application "Safari"
-    set visible of window id ((item 1 of argv) as integer) to false
-end tell
-end run''', str(self.window_id))
+            # Guard the creation marker again before hiding or navigating.
+            # Front-window order can change while the person uses Safari.
+            self._script(NAVIGATE_CREATED_WINDOW_SCRIPT, str(self.window_id),
+                         self._creation_url, self.url)
         deadline = time.monotonic() + 45
         while time.monotonic() < deadline:
             if self.page_token is None:
@@ -91,7 +140,10 @@ end run''', str(self.window_id))
         """Clean up command-owned resources, never an explicitly reused window."""
         if self.cleanup_result is None:
             if self._owned_window_id is None:
-                self.cleanup_result = {'classification': 'preserved_existing_window'}
+                self.cleanup_result = (
+                    {'classification': 'verification_error', 'reason': 'creation_unverified'}
+                    if self._creation_url is not None else
+                    {'classification': 'preserved_existing_window'})
             else:
                 guard = ('JSON.stringify({owned:(' + self._page_matches() +
                          ' && window.__ytpmPageIdentity === ' + json.dumps(self.page_token) + ')})')
@@ -102,7 +154,7 @@ end run''', str(self.window_id))
                             (Path(__file__).parent / 'browser/window_cleanup.applescript').read_text(),
                             str(self._owned_window_id), js.name,
                             'true' if self.page_token is None else 'false',
-                            self.url)
+                            self.url, self._creation_url or '')
                     self.cleanup_result = {'classification': classification,
                                            'window_id': self._owned_window_id}
                 except (TransportError, OSError) as error:
@@ -153,6 +205,7 @@ end run''', str(self._owned_window_id)).lower()
         self._read_recovery_cleanups.append(dict(self.cleanup_result))
         self.window_id = None
         self._owned_window_id = None
+        self._creation_url = None
         self.page_token = None
         self.tab_index = None
         self.cleanup_result = None

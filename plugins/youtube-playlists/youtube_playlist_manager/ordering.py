@@ -12,17 +12,19 @@ def manual_entry(entry, managed, state):
     return entry['channel_id'] not in managed or lifecycle.member(state, entry).get('status') == 'released'
 
 
-def viewing_key(video, policies, *, manual=False):
+def viewing_key(video, policies, *, manual=False, unpinned_order='oldest_first'):
     """One key for previews, additions and placement; manual entries are unpinned."""
     placement = policies[video['channel_id']]['placement'] if not manual else {}
     rank = placement.get('pinned_rank')
     published = timestamp(video['publication']) - datetime(1970, 1, 1, tzinfo=timezone.utc)
-    if rank is not None and placement['order'] == 'newest_first':
+    direction = placement['order'] if rank is not None else unpinned_order
+    if direction == 'newest_first':
         published = -published
     return rank is None, rank or 0, published, video['id']
 
 
-def viewing_order(pool, selected_ids, entries, removals, policies, managed, state, paused_ids):
+def viewing_order(pool, selected_ids, entries, removals, policies, managed, state, paused_ids,
+                  *, unpinned_order='oldest_first'):
     """Return desired IDs and the IDs allowed to move after planned removals."""
     current_ids = {e['id'] for e in entries}
     kept = [e for e in entries if e['id'] not in removals]
@@ -35,7 +37,7 @@ def viewing_order(pool, selected_ids, entries, removals, policies, managed, stat
     manual_ids = {e['id'] for e in manual if manual_entry(e, set(policies), state)}
     future.update({e['id']: e for e in manual})
     active_order = sorted(future, key=lambda vid: viewing_key(
-        future[vid], policies, manual=vid in manual_ids))
+        future[vid], policies, manual=vid in manual_ids, unpinned_order=unpinned_order))
     # Private/unavailable, excluded-format and paused entries remain protected.
     active_ids = set(active_order)
     desired, iterator = [], iter(active_order)

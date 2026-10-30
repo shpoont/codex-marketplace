@@ -35,8 +35,9 @@ An offline reason alone is insufficient; unknown availability still needs attent
   Count retention chooses eligible oldest or newest videos as configured.
   Manual additions bypass these limits and all channel eligibility filters.
   Selection order and viewing order are distinct.
-- Pinned channels form ordered groups at the top. Only pinned groups can reverse
-  their viewing order. The unpinned eligible videos share oldest-first chronology.
+- Pinned channels form ordered groups at the top, each using its own
+  `placement.order`. The unpinned eligible videos share the target-wide `unpinned_order`,
+  `oldest_first` when omitted or `newest_first` when chosen.
 - Fully watched playable entries are removed, including manual additions and
   kept exceptions. Partially watched videos remain eligible. Unavailable entries
   retain their protection. Ignored channels stop additions only.
@@ -50,7 +51,7 @@ An offline reason alone is insufficient; unknown availability still needs attent
   It occupies no channel slot and never expires; it stays until watched or
   removed manually. Rule edits, ignoring and unsubscription do not remove it.
   Configured-channel manual entries still follow that channel's placement;
-  unconfigured entries share unpinned oldest-first ordering.
+  unconfigured entries share `unpinned_order`, oldest first when omitted.
 - Ambiguous legacy ownership can still require a keep/remove answer. Kept
   exceptions bypass filters and retention. Stopping management may also require
   a choice for entries added by the manager. Those questions do not pause

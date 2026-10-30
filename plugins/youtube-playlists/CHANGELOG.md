@@ -2,6 +2,48 @@
 
 User-visible changes to YouTube Playlists and any action required when installing or updating it.
 
+## 0.3.11 — 2026-10-30
+
+- Choose newest-first or oldest-first viewing order for all unpinned videos
+  using the playlist's `unpinned_order` setting, with existing oldest-first
+  behavior preserved by default. Pinned groups, selection and retention stay
+  independent of that choice.
+- Identify Safari's temporary window by its unique creation marker before
+  hiding or navigating it. Working in another Safari window no longer makes
+  the plugin target that window. Ambiguous or unacknowledged creation stops
+  without repeating creation or assuming cleanup succeeded.
+- Keep guarded cleanup available if startup stops at the initial marker page.
+  No settings-version or history migration is required.
+
+## 0.3.10 — 2026-10-30
+
+Unreleased candidate; superseded by 0.3.11 after browser acceptance found a
+Safari window-creation targeting defect.
+
+- Choose `unpinned_order: newest_first` or `oldest_first` in each target profile.
+  All active unpinned videos share that direction; omitting the field preserves
+  oldest-first behavior and the existing policy fingerprint.
+- Keep pinned ranks and pinned-group direction, eligibility, retention, manual
+  protection, entry identities and addition clocks unchanged. Ordering edits
+  use verified moves instead of removing and re-adding videos.
+- Preserve resumptions of existing development samples when the new setting is
+  omitted or explicitly oldest-first. A changed direction still requires a new
+  sample decision. Collect and preview again for older saved ordinary plans;
+  no settings-version or history migration is required.
+
+## 0.3.9 — 2026-10-29
+
+Unreleased candidate; superseded by 0.3.10 before public release.
+
+- Choose `unpinned_order: newest_first` or `oldest_first` in each target profile
+  to control the shared viewing sequence across unpinned channels and manual
+  additions. Omitting the field preserves oldest-first behavior.
+- Pinned ranks and each pinned group's direction remain independent. Video
+  selection, retention, manual protection, identities and addition clocks are
+  unchanged; reordering uses verified moves rather than removing and re-adding.
+- Collect and preview again after upgrading or changing direction. Older saved
+  plans are rejected; no configuration-version or history migration is required.
+
 ## 0.3.8 — 2026-10-21
 
 - Defer confirmed upcoming premieres and continue refreshing other videos.

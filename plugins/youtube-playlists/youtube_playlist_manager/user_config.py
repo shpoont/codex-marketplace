@@ -36,6 +36,7 @@ def initialize_config(account_channel_id, playlist_id, playlist_name, channels, 
         'version': 3, 'environment': 'development',
         'account_channel_id': account_channel_id, 'playlist_id': playlist_id,
         'playlist_name': playlist_name, 'execution': {'trigger': 'manual'},
+        'unpinned_order': 'oldest_first',
         'transport': {'access': 'in_page_internal_api'},
         'content_warnings': 'stop',
         'storage': {

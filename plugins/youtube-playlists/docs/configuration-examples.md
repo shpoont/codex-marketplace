@@ -2,7 +2,8 @@
 
 The [annotated example](example.yaml) covers full backlogs, date/video boundaries,
 new uploads, rolling publication windows, addition-age expiry, count windows,
-retention/refill, ignored additions and pinned viewing order. Every identity is
+retention/refill, ignored additions, pinned viewing order and the shared unpinned
+viewing direction. Every identity is
 fictional. The agent replaces identities and selects rules with the user; the
 example is documentation and is never loaded automatically.
 
@@ -16,6 +17,23 @@ The sibling file contains exactly `channel_defaults` and `channels`; the target
 files keep separate account/playlist bindings and data directories. Do not mix
 the file reference with inline channel rules. A shared cache is account-scoped;
 playlist membership, dismissals and addition times remain target-specific.
+
+To watch recent unpinned uploads first, set this in the target playlist YAML:
+
+```yaml
+unpinned_order: newest_first
+```
+
+Use `oldest_first`, or omit the field, for older uploads first. This is one shared
+sequence across all unpinned channels and unconfigured manual additions. Pinned
+groups retain their ranks and individual `placement.order`. For an unpinned
+channel, keep `placement.order: oldest_first` as the compatible placeholder;
+`unpinned_order` controls the actual shared direction. The setting stays in the
+target file when using `channel_rules_file`, not in the shared channel file.
+Selection, filters, retention, entry identities and addition clocks do not change.
+If your editor uses copied schemas from an older installation, refresh that
+schema copy from the current installed plugin to recognize the new field. The
+runtime always validates against its own bundled schema.
 
 Changing YAML alone does not edit YouTube. Preview freshly, then authorize
 apply. Reducing count can remove overflow without dismissing it, so slots can

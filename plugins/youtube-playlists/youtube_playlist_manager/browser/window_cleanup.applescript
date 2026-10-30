@@ -4,6 +4,8 @@ on run argv
     set guardCode to read (POSIX file (item 2 of argv)) as «class utf8»
     set allowUnbound to (item 3 of argv) is "true"
     set expectedURL to item 4 of argv
+    set creationURL to ""
+    if (count of argv) > 4 then set creationURL to item 5 of argv
     tell application "Safari"
         if not running then return "already_absent"
         if not (exists window id windowId) then return "already_absent"
@@ -13,7 +15,7 @@ on run argv
         repeat with candidate in tabs of ownedWindow
             set candidateURL to URL of candidate
             if allowUnbound then
-                if originalCount is 1 and (candidateURL is expectedURL or candidateURL is "about:blank" or candidateURL is "") then
+                if my unboundPageMatches(candidateURL, originalCount, expectedURL, creationURL) then
                     set end of matches to candidate
                 end if
             else if candidateURL starts with "https://www.youtube.com/playlist?" then
@@ -67,3 +69,7 @@ on retainedWindowOutcome(remainingCount, isVisible)
     if isVisible is true then return "empty_window_persisted"
     return "verification_error"
 end retainedWindowOutcome
+
+on unboundPageMatches(candidateURL, originalCount, expectedURL, creationURL)
+    return originalCount is 1 and (candidateURL is expectedURL or candidateURL is creationURL or candidateURL is "about:blank" or candidateURL is "")
+end unboundPageMatches

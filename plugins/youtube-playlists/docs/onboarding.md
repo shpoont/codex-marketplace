@@ -51,7 +51,9 @@ language; the agent handles commands, identities and external YAML.
 - No time expiry. Partially watched videos remain eligible. Shorts, clips,
   live content and fully watched videos are excluded by the existing rules.
 - Channels are unpinned, so selected videos from all of them are mixed by
-  publication date, oldest first. Selection and viewing order are different.
+  publication date, oldest first (`unpinned_order: oldest_first`). The user can
+  choose `newest_first` later without changing selection. Pinned groups keep
+  their separate viewing direction.
 - Unknown addition times use first observation; an observed returned dismissed
   video starts a new stay. Existing user conventions remain unchanged.
 - Viewer-discretion warnings stop for attention by default. Do not change that

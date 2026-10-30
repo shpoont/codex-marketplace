@@ -23,6 +23,12 @@ playlist_name: "Example viewing queue" # Local label; does not rename it on YouT
 execution:
   trigger: manual # On demand; running again is allowed. This creates no schedule.
 
+# One viewing direction for the whole unpinned queue, across channels and manual
+# additions. Omit this field for the same oldest-first behavior; use newest_first
+# to watch recent uploads first. Pinned groups still use their placement.order.
+# For an unpinned channel, placement.order stays oldest_first as a legacy placeholder.
+unpinned_order: oldest_first
+
 transport:
   access: in_page_internal_api # Uses the signed-in session; no credentials here.
 # The command supplies a JavaScript page runner. Default commands use Safari;
@@ -66,7 +72,7 @@ storage:
 #   its origin even if it matches the rules; keep it until watched or removed.
 #   With latest 1, a manual video can stay beside 1 automatically selected video.
 # - Manual entries use their configured channel's placement, or unpinned
-#   oldest-first order when unconfigured. Rule edits/ignoring/unsubscription
+#   unpinned_order when unconfigured (oldest_first in this example). Rule edits/ignoring/unsubscription
 #   do not remove them. Separately observed manual re-adds are protected too.
 # - Ambiguous legacy ownership can still prompt a keep/remove decision.
 #   Automatic entries pause in that channel; protected manual stays continue.

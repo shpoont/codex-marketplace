@@ -12,7 +12,7 @@ from .selection import select_candidates
 from .ordering import manual_entry, normal_active, viewing_key, viewing_order
 
 
-PLAN_SCHEMA = 17
+PLAN_SCHEMA = 18
 
 # Approval covers lifecycle history, not just the IDs sent to YouTube.
 APPROVAL_FIELDS = ('status', 'blockers', 'identity', 'before', 'remove', 'add', 'desired', 'expire',
@@ -38,8 +38,14 @@ def observation_digest(observation):
 
 
 def policy_config(config):
-    return {**{k: v for k, v in config.items() if k not in ['playlist_name', 'storage', 'channels', 'channel_defaults']},
-            'channels': sorted((channel_policy(c, config['channel_defaults']) for c in config['channels']), key=lambda c: c['id'])}
+    policy = {k: v for k, v in config.items()
+              if k not in ['playlist_name', 'storage', 'channels', 'channel_defaults']}
+    # Preserve the legacy fingerprint for both omitted and explicit defaults.
+    # Persisted development samples use it to guard unchanged resumptions.
+    if policy.get('unpinned_order') == 'oldest_first':
+        policy.pop('unpinned_order')
+    return {**policy, 'channels': sorted(
+        (channel_policy(c, config['channel_defaults']) for c in config['channels']), key=lambda c: c['id'])}
 
 
 def plan(config, observation, state, now, metadata_only=False):
@@ -330,7 +336,7 @@ def plan(config, observation, state, now, metadata_only=False):
     blockers.extend('Stale candidate listing: ' + vid for vid in output['listing_requests'])
     output['decisions_complete'] = not blockers
     def display_key(video):
-        return viewing_key(video, policies)
+        return viewing_key(video, policies, unpinned_order=config.get('unpinned_order', 'oldest_first'))
     output['candidate_preview'] = {
         'scope': 'eligible_managed_videos',
         'complete': not blockers,
@@ -365,7 +371,8 @@ def plan(config, observation, state, now, metadata_only=False):
                             if e['id'] in approved_removals else {})}
                         for e in entries if e['id'] in removals]
     output['desired'], output['movable'] = viewing_order(
-        pool, selected_ids, entries, removals, policies, managed, state, paused_ids)
+        pool, selected_ids, entries, removals, policies, managed, state, paused_ids,
+        unpinned_order=config.get('unpinned_order', 'oldest_first'))
     output['added_duration_seconds'] = sum(v['duration'] for v in additions)
     # A paused channel cannot change this plan's actions or lifecycle effects.
     deadlines = [d for d in deadlines if d[2] not in paused]

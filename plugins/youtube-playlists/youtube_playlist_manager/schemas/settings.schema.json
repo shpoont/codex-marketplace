@@ -63,6 +63,20 @@
         }
       }
     },
+    "unpinned_order": {
+      "title": "Viewing order of the shared unpinned sequence",
+      "description": "One playlist-wide publication direction for all active unpinned videos across channels, including unconfigured manual additions and released entries. oldest_first watches older uploads first; newest_first watches newer uploads first. Omission means oldest_first, preserving existing profiles. This belongs in the target YAML even when channel_rules_file is used; it is not a per-channel setting. Pinned groups retain their pinned_rank and placement.order. This changes viewing order only, not eligibility, retention or which videos occupy count-limited slots. Equal publication times always use ascending video ID. Unavailable, excluded-format and paused entries retain their protections. Changing direction preserves surviving entry identities and addition clocks; collect and preview again before apply.",
+      "type": "string",
+      "enum": [
+        "oldest_first",
+        "newest_first"
+      ],
+      "default": "oldest_first",
+      "examples": [
+        "oldest_first",
+        "newest_first"
+      ]
+    },
     "transport": {
       "title": "YouTube connection",
       "description": "YouTube access method, independent of viewing rules and browser identity. The command selects its JavaScript runner; a capable runner must execute in the actual signed-in YouTube page. Default commands use the built-in Safari controller; --javascript-bridge explicitly supplies another browser controller.",
@@ -326,7 +340,7 @@
         },
         "selection": {
           "title": "Which videos occupy limited slots",
-          "description": "latest_eligible_unwatched selects the newest N eligible unwatched videos and can replace older queued ones. oldest_eligible_unwatched selects the oldest N eligible unwatched videos, replacing newer queued choices when needed; watching or dismissing one advances through the backlog. Both apply eligibility, catch-up, publication lookback and time expiry before the count limit. Oldest means oldest within those filters, not necessarily all history. Equal publication times use ascending video ID for oldest selection and descending ID for latest selection. keep_current_and_refill prefers eligible videos already queued and fills vacancies from the newest remaining eligible candidates. Selection priority is separate from placement.order: pinned groups may display oldest or newest first, while all unpinned active videos share oldest-first publication order. With unlimited maximum_count this choice does not cap inventory. Omission inherits channel_defaults.retention.selection; no implicit schema default is inserted.",
+          "description": "latest_eligible_unwatched selects the newest N eligible unwatched videos and can replace older queued ones. oldest_eligible_unwatched selects the oldest N eligible unwatched videos, replacing newer queued choices when needed; watching or dismissing one advances through the backlog. Both apply eligibility, catch-up, publication lookback and time expiry before the count limit. Oldest means oldest within those filters, not necessarily all history. Equal publication times use ascending video ID for oldest selection and descending ID for latest selection. keep_current_and_refill prefers eligible videos already queued and fills vacancies from the newest remaining eligible candidates. Selection priority is separate from placement.order: pinned groups may display oldest or newest first, while all unpinned active videos share the target unpinned_order (oldest_first when omitted). With unlimited maximum_count this choice does not cap inventory. Omission inherits channel_defaults.retention.selection; no implicit schema default is inserted.",
           "type": "string",
           "enum": ["latest_eligible_unwatched", "oldest_eligible_unwatched", "keep_current_and_refill"]
         }
@@ -438,7 +452,7 @@
         },
         "placement": {
           "title": "Where eligible videos appear",
-          "description": "Pinned channel groups come first. Protected manual entries follow their configured channel's placement without becoming subject to its filters or retention. Unconfigured manual and all other unpinned entries mix by publication date, oldest first. Fully watched playable entries are removed before ordering; unavailable and unwatched excluded-format entries stay outside reordering. Pending decisions pause automatic/ambiguous entries, while protected manual stays continue. Missing dates or classification stop ordering until resolved. Placement edits preserve entry identity and addition time.",
+          "description": "Pinned channel groups come first. Protected manual entries follow their configured channel's placement without becoming subject to its filters or retention. Unconfigured manual and all other unpinned entries mix by publication date using the target unpinned_order, oldest_first when omitted. Fully watched playable entries are removed before ordering; unavailable and unwatched excluded-format entries stay outside reordering. Pending decisions pause automatic/ambiguous entries, while protected manual stays continue. Missing dates or classification stop ordering until resolved. Placement edits preserve entry identity and addition time.",
           "type": "object",
           "additionalProperties": false,
           "required": ["pinned_rank", "order"],
@@ -452,7 +466,7 @@
             },
             "order": {
               "title": "Publication order for viewing",
-              "description": "Pinned groups support oldest_first or newest_first within the group. Unpinned channels must use oldest_first and share one chronological sequence with manual additions. Existing channel settings remain oldest_first unless explicitly changed. This orders selected inventory; retention.selection independently chooses which videos enter limited slots. Equal publication dates use video ID for stable ordering. Fully watched playable entries are removed on refresh rather than ordered.",
+              "description": "Pinned groups support oldest_first or newest_first within the group. For an unpinned channel, retain oldest_first here as the compatible placeholder; the target-wide unpinned_order controls its actual shared viewing sequence with manual additions. This field never overrides that target setting. Existing channel settings remain oldest_first unless explicitly changed. This orders selected inventory; retention.selection independently chooses which videos enter limited slots. Equal publication dates use video ID for stable ordering. Fully watched playable entries are removed on refresh rather than ordered.",
               "type": "string",
               "enum": ["oldest_first", "newest_first"]
             }
