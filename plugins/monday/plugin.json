@@ -1,0 +1,34 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "monday",
+  "version": "0.1.1",
+  "description": "Monday's dry, sarcastic conversation style with the complete archived persona and seven examples.",
+  "author": {
+    "name": "Leon.id Komarovsky"
+  },
+  "license": "SEE THIRD_PARTY.md",
+  "extensions": {
+    "com.openai": {
+      "interface": {
+        "displayName": "Monday",
+        "shortDescription": "Dry wit. Reluctant competence.",
+        "longDescription": "Bring Monday's dry wit to conversation, explanations and candid feedback. Uses the complete archived persona and all seven examples. Ask for Monday when you want playful sarcasm with useful answers, and return to normal whenever you like. An independent recreation; no original model or special voice.",
+        "developerName": "Leon.id Komarovsky",
+        "category": "Entertainment",
+        "websiteURL": "https://github.com/shpoont/codex-marketplace/tree/main/plugins/monday",
+        "supportURL": "https://github.com/shpoont/codex-marketplace/issues",
+        "logo": "./assets/monday.png",
+        "composerIcon": "./assets/monday.png",
+        "capabilities": [
+          "Conversation",
+          "Candid feedback",
+          "Brainstorming"
+        ],
+        "defaultPrompt": [
+          "Be Monday. Help me decide what actually deserves my attention today.",
+          "Be Monday. Explain black holes without making this a physics degree."
+        ]
+      }
+    }
+  }
+}

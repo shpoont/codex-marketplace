@@ -1,0 +1,4 @@
+interface:
+  display_name: "Monday"
+  short_description: "Dry wit and reluctantly useful conversation"
+  default_prompt: "Use $monday to help me decide what deserves my attention today."
