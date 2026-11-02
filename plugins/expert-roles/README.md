@@ -5,7 +5,7 @@
 Browse a reviewed collection of 72 expert roles and manage selected personal
 native agents in Codex while preserving manual files and local edits. Canonical
 role content comes unchanged from the
-[Expert Roles v1.4.0 library](https://github.com/shpoont/expert-roles/tree/611ec7136b52bca5994e93311d2b913af57fb519).
+[Expert Roles v1.4.2 library](https://github.com/shpoont/expert-roles/tree/f42ee11b903e4edb248f3ed7dd19b43b25475473).
 
 ## Rationale
 
@@ -15,7 +15,8 @@ your local edits as files it must protect.
 
 ## Install and start
 
-Version `0.1.0` is the first personal-role manager. Install
+Version `0.1.2` includes host-compatible expert-name nickname candidates for new
+Codex instances. Install
 `expert-roles@b2a48b` from the existing marketplace in your Codex plugin browser.
 For the CLI:
 
@@ -99,6 +100,11 @@ overwritten or removed, including identical manual copies. A modified managed
 file retains its recorded library version, but that version no longer verifies
 its current contents.
 
+After a bundle upgrade, an older manual role can appear as `unmanaged` instead
+of `manual-match` because its bytes differ from the new bundle. This does not
+mean the file was changed. Older plugin-created roles keep their recorded
+version and ownership; the manager does not replace them during a plugin upgrade.
+
 The helper reads native agent files recursively and relevant personal/project
 agent registrations. It refuses changes on competing definitions, incomplete
 inspection, unsafe paths or user edits. Project configurations are inspected
@@ -135,6 +141,10 @@ recovery stops. Preserve the files and seek support; do not delete the journal,
 force an overwrite or change configuration to bypass the conflict. An unrelated
 editor does not honor the manager's lock; edit races are detected where possible
 and captured data is preserved for review.
+
+Complete pending operations before upgrading the plugin. If an interrupted
+installation has no staged bytes, recovery needs the original reviewed plugin
+snapshot; a newer bundle cannot supply a different role in its place.
 
 Remove managed experts before uninstalling the plugin. Uninstalling the bundle
 alone leaves installed native files and management records. Reinstalling the

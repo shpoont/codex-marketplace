@@ -10,6 +10,21 @@ released or updated.
 Users should be able to understand capabilities, compatibility, setup and data
 effects from the distributed documentation.
 
+## 0.1.2 — 2026-11-02
+
+- Bundle 72 unchanged Codex exports from Expert Roles library v1.4.2, adding
+  expert-name nicknames compatible with the current Codex character rule.
+  Role IDs, descriptions, instructions and paths are preserved.
+- Preserve existing personal files during a plugin upgrade. Earlier manual
+  copies may show as `unmanaged` against the new bundle; plugin-created roles
+  retain their recorded version and ownership. Personal-role updates remain
+  unsupported, so existing roles are not automatically replaced.
+- Complete pending operations before upgrading. An interrupted installation
+  without staged bytes needs its original reviewed plugin snapshot for recovery.
+
+Naming is verified on Codex CLI 0.166.0. Existing conversations are not renamed;
+desktop labels and older-host compatibility remain unverified.
+
 ## 0.1.0 — 2026-10-30
 
 First personal-role manager for Codex.
