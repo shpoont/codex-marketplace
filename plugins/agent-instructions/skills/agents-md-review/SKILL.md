@@ -45,6 +45,11 @@ At every invocation, including continuation of an existing task:
    If the plugin changes during the run, stop before writing and resolve afresh.
 4. Execute the loaded policy within the caller's fixed authority and project
    boundaries. An update never expands write or external-action permissions.
+   Its guidance-budget check must pass before review, for a proposed edit before
+   writing, and against a fresh host prompt export after writing. Use the same
+   selected helper's `guidance --help` for the read-only interface. If the
+   intended host cannot export its prompt or its effective settings are unknown,
+   report the missing evidence and stop; another host is not a substitute.
    Before any AGENTS.md write, rerun the policy loader and compare the qualified identity, installed path, version
    and policy/rendered hashes with the recorded snapshot, as well as re-reading AGENTS.md
    for concurrent edits. A mismatch requires a fresh review, not a stale write.

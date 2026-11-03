@@ -33,6 +33,146 @@ def digest(text: str) -> str:
     return hashlib.sha256(text.encode("utf-8")).hexdigest()
 
 
+def guidance_check(project: Path, max_bytes: int, cwd: Path | None = None,
+                   fallbacks: tuple[str, ...] = (), candidate: bytes | None = None,
+                   prompt_input: list | None = None) -> dict:
+    """Check supplied host settings and project files, never infer configuration or write.
+
+    A candidate is a projection. A prompt export can establish a fresh-host
+    observation, not adoption by an already-running conversation.
+    """
+    if type(max_bytes) is not int or max_bytes < 0:
+        raise InputError("guidance budget must be a non-negative integer")
+    project = Path(project)
+    cwd = Path(cwd) if cwd is not None else project
+    try:
+        if (not project.is_absolute() or project != project.resolve(strict=True)
+                or not project.is_dir() or not cwd.is_absolute()
+                or cwd != cwd.resolve(strict=True) or not cwd.is_dir()
+                or not cwd.is_relative_to(project)):
+            raise ValueError
+    except (OSError, ValueError):
+        raise InputError("guidance project/cwd must be existing canonical directories within the project") from None
+    names = ("AGENTS.override.md", "AGENTS.md") + tuple(fallbacks)
+    if (any(
+            not isinstance(name, str) or name in ("", ".", "..")
+            or Path(name).name != name or "/" in name or "\\" in name
+            or any(ord(char) < 32 for char in name) for name in names)
+            or len(set(names)) != len(names)):
+        raise InputError("guidance fallback names must be distinct plain filenames")
+    if candidate is not None and prompt_input is not None:
+        raise InputError("a candidate projection cannot verify a loaded prompt")
+
+    def read(path):
+        if path.is_symlink():
+            raise InputError("guidance inspection refuses symlinked instruction files")
+        if not path.exists():
+            return None
+        if not path.is_file():
+            raise InputError("guidance instruction path is not a regular file")
+        try:
+            raw = path.read_bytes()
+            text = raw.decode("utf-8")
+        except (OSError, UnicodeError):
+            raise InputError("guidance file is unreadable or not UTF-8") from None
+        if "\0" in text:
+            raise InputError("guidance file contains a NUL byte")
+        return raw
+
+    target = project / "AGENTS.md"
+    original = read(target)
+    if candidate is not None:
+        try:
+            candidate_text = candidate.decode("utf-8")
+        except (AttributeError, UnicodeError):
+            raise InputError("guidance candidate must be UTF-8 bytes") from None
+        if not candidate_text.strip() or "\0" in candidate_text:
+            raise InputError("guidance candidate must contain non-empty instructions without NUL bytes")
+    directories = [project]
+    for part in cwd.relative_to(project).parts:
+        directories.append(directories[-1] / part)
+    selected = []
+    texts = []
+    used = 0
+    root_selected = None
+    for directory in directories:
+        for name in names:
+            path = directory / name
+            raw = candidate if path == target and candidate is not None else read(path)
+            if raw is None or not raw.decode("utf-8").strip():
+                continue
+            if directory == project:
+                root_selected = path
+            if path == target and candidate is None and raw != original:
+                raise InputError("guidance changed during inspection; check again")
+            selected.append({"path": str(path), "bytes": len(raw),
+                             "sha256": hashlib.sha256(raw).hexdigest(),
+                             "remaining_before": max(0, max_bytes - used),
+                             "exceeds_remaining": len(raw) > max(0, max_bytes - used)})
+            texts.append(raw.decode("utf-8").strip())
+            used += len(raw)
+            break
+    problems = []
+    if candidate is None and (original is None or not original.decode("utf-8").strip()):
+        problems.append("target-missing-or-empty")
+    if root_selected != target:
+        problems.append("target-not-selected")
+    if used > max_bytes:
+        problems.append("project-guidance-exceeds-budget")
+
+    loaded = "not-provided"
+    if prompt_input is None and candidate is None:
+        problems.append("host-export-required")
+    if prompt_input is not None:
+        if not isinstance(prompt_input, list):
+            raise InputError("prompt input must be the JSON list exported by the intended host")
+        header = f"# AGENTS.md instructions for {cwd}\n"
+        blocks = []
+        for message in prompt_input:
+            if not isinstance(message, dict) or message.get("type") != "message" or message.get("role") != "user":
+                continue
+            content = message.get("content")
+            if not isinstance(content, list):
+                continue
+            for block in content:
+                if (not isinstance(block, dict) or block.get("type") != "input_text"
+                        or not isinstance(block.get("text"), str)):
+                    continue
+                text = block["text"]
+                if text.startswith(header):
+                    prefix, opening, remainder = text[len(header):].partition("<INSTRUCTIONS>")
+                    body, closing, suffix = remainder.rpartition("</INSTRUCTIONS>")
+                    if opening and closing and not prefix.strip() and not suffix.strip():
+                        blocks.append(body)
+        matched = False
+        if len(blocks) == 1 and texts:
+            position = 0
+            matched = True
+            for text in texts:
+                start = blocks[0].find(text, position)
+                if start < 0:
+                    matched = False
+                    break
+                position = start + len(text)
+        loaded = "matches-supplied-host-export" if matched else "missing-or-incomplete"
+        if not matched:
+            problems.append("loaded-guidance-not-verified")
+    snapshot = {"project": str(project), "cwd": str(cwd), "max_bytes": max_bytes,
+                "fallback_filenames": list(fallbacks), "sources": selected,
+                "original_target_sha256": hashlib.sha256(original).hexdigest() if original is not None else None}
+    return {**snapshot, "schema_version": 1,
+            "check_kind": "candidate-projection" if candidate is not None else "current-guidance",
+            "settings_basis": "caller-supplied effective host settings; not auto-discovered",
+            "count_basis": "raw UTF-8 project-source bytes; excludes global guidance and prompt framing",
+            "project_guidance_bytes": used, "remaining_bytes": max(0, max_bytes - used),
+            "original_target_bytes": len(original) if original is not None else None,
+            "problems": problems, "loaded_guidance": loaded,
+            "candidate_fits": candidate is not None and not problems,
+            "delivery_check_passed": candidate is None and not problems and loaded == "matches-supplied-host-export",
+            "snapshot_sha256": digest(json.dumps(snapshot, sort_keys=True)),
+            "limits": "A supplied fresh-host export is evidence only for that host/cwd/settings snapshot, not a running chat. No instructions, settings or files are changed."}
+
+
 def line_text(value, label: str) -> str:
     if (not isinstance(value, str) or not value.strip() or len(value) > 4096
             or any(ord(c) < 32 or ord(c) == 127 for c in value)
@@ -349,6 +489,7 @@ def audit(projects: list[dict], directory: Path) -> dict:
         else:
             status = "current"
         finding["instruction_status"] = status
+        finding["guidance_status"] = "not-assessed"
         finding["policy_loading"] = "current-enabled-plugin-at-run-time"
         if task:
             finding["actual_prompt_sha256"] = digest(task["prompt"])
@@ -376,8 +517,29 @@ def main(argv=None) -> int:
             sub.add_argument("--project", required=True)
     policy = subs.add_parser("policy", help="Load current installed policy for a review job; never write")
     policy.add_argument("--job", required=True, help="Job JSON file, or - for standard input")
+    guidance = subs.add_parser("guidance", help="Check project instruction budget and supplied host export read-only")
+    guidance.add_argument("--project", type=Path, required=True, help="Canonical project root selected by the intended host")
+    guidance.add_argument("--cwd", type=Path, help="Intended working directory; defaults to project root")
+    guidance.add_argument("--max-bytes", type=int, required=True, help="Verified effective project_doc_max_bytes; never inferred")
+    guidance.add_argument("--fallback-filename", action="append", default=[], help="Effective fallback filenames, in order; repeat as needed")
+    guidance.add_argument("--candidate", help="Proposed complete root AGENTS.md as a UTF-8 file, or - on standard input; never written")
+    guidance.add_argument("--prompt-input", type=Path, help="Fresh codex debug prompt-input JSON file, or - on standard input, from the intended host/cwd/settings; not a model response")
     args = parser.parse_args(argv)
     try:
+        if args.command == "guidance":
+            if args.candidate is not None and args.prompt_input is not None:
+                raise InputError("a candidate projection cannot verify a loaded prompt")
+            try:
+                candidate = (sys.stdin.buffer.read() if args.candidate == "-"
+                             else Path(args.candidate).read_bytes()) if args.candidate is not None else None
+                prompt = json.loads(sys.stdin.read() if str(args.prompt_input) == "-"
+                                    else args.prompt_input.read_text(encoding="utf-8")) if args.prompt_input is not None else None
+            except (OSError, UnicodeError, json.JSONDecodeError):
+                raise InputError("guidance candidate or host prompt export could not be read") from None
+            result = guidance_check(args.project, args.max_bytes, args.cwd,
+                                    tuple(args.fallback_filename), candidate, prompt)
+            print(json.dumps(result, indent=2))
+            return int(not (result["candidate_fits"] if args.candidate is not None else result["delivery_check_passed"]))
         if args.command == "policy":
             try:
                 job = json.loads(sys.stdin.read() if args.job == "-" else Path(args.job).read_text(encoding="utf-8"))

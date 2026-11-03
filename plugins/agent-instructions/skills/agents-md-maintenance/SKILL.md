@@ -51,6 +51,9 @@ only; runtime selection requires `agent-instructions`.
 Changes to the shared review policy do not stale an unchanged reference wrapper;
 reviewers load the enabled installation at each run. The audit is a configuration
 check, not proof that the dependency is currently enabled or a review succeeded.
+`guidance_status: not-assessed` keeps target guidance safety separate from saved
+wrapper freshness. Use the helper's `guidance` command for a budget/loading check;
+it does not change schedules, settings or instruction files.
 Report current, outdated, migration-required, missing/unconfigured, misbound, duplicate, unreadable,
 and unregistered-reviewer findings separately. Status ACTIVE/PAUSED is separate
 from instruction freshness. An audit is not authorization to synchronize.

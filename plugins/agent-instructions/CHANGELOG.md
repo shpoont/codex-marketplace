@@ -10,6 +10,20 @@ must take when installing or updating it.
 Users should be able to understand how a release affects capabilities,
 compatibility, setup, data and safe use without reading development records.
 
+## 0.4.5 — 2026-11-03
+
+### Fixed
+
+- Checks the project instruction byte budget and selected instruction files
+  before a review, including overrides that hide the root guidance.
+- Checks proposed edits before writing and verifies complete guidance against
+  a fresh host prompt export afterward. Unknown settings or incomplete guidance
+  block completion rather than silently losing instructions.
+
+The checker is read-only. It does not raise host limits, shorten existing guides
+or grant permission to move instructions into other files. Saved task references
+and the root-AGENTS.md-only write boundary are unchanged.
+
 ## 0.4.4 — 2026-10-13
 
 ### Changed

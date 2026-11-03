@@ -100,6 +100,31 @@ implementation work, change schedules, commit, push, publish or perform paid
 operations. When evidence does not support an improvement, AGENTS.md stays
 byte-for-byte unchanged.
 
+### Instruction budget checks
+
+Reviews require verified effective host settings and a complete project
+instruction chain. The read-only helper's `guidance --help` describes its inputs.
+Supply the intended host's project root, working directory,
+`project_doc_max_bytes`, ordered fallback filenames and a fresh
+`codex debug prompt-input` JSON export from that same host/context. Account for
+active profiles and invocation overrides; reading one configuration file alone
+does not establish the effective settings. If they or the export are unavailable,
+the review stops. No default budget is silently assumed.
+
+`--prompt-input -` accepts the export on standard input, so raw instructions need
+not be saved to disk. Use `--candidate -` separately for a draft projection;
+candidate and loaded-prompt modes cannot be combined.
+
+The helper counts raw UTF-8 project-source bytes and detects root overrides and
+combined-chain exhaustion. Global guidance and prompt framing are excluded from
+that count. `--candidate` checks proposed complete root guidance without writing
+it; a fitting draft is not proof of loading. After an edit, the current-guidance
+check must pass against a fresh host export containing the complete selected
+sources in order. This proves only that fresh host snapshot, not adoption by an
+existing conversation. The plugin does not increase limits, automatically remove
+instructions, or move them into other files. An existing oversized or shadowed
+guide needs a separately authorized correction that preserves its meaning.
+
 ### Manual instruction refactoring
 
 Start with discovery:
@@ -129,7 +154,8 @@ An AGENTS.md review job does not supply this separate manual authorization.
 
 - **Local reads:** the project registry, saved automation definitions, the
   selected project's root AGENTS.md, installed plugin resources and current
-  Codex plugin inventory. Manual discovery reads the requested instruction
+  Codex plugin inventory, supplied host prompt export and applicable project
+  instruction chain. Manual discovery reads the requested instruction
   sources and relevant host/project evidence; selected refactoring uses the
   established discovery context.
 - **Account reads:** source task history explicitly registered for the project.
@@ -150,6 +176,9 @@ An AGENTS.md review job does not supply this separate manual authorization.
 
 Audit output can include registry keys, automation IDs, status and prompt
 hashes; rendered task prompts contain paths, source task IDs and boundaries.
+Guidance checks include source paths, byte counts and hashes. Host prompt exports
+can contain private global/project instructions; keep them in temporary private
+run evidence outside projects and plugin caches, and never publish them.
 Treat these outputs as private. Do not include registries, paths, conversation
 excerpts or credentials in public support reports.
 
@@ -217,7 +246,7 @@ credentials, private instructions, personal data or raw traces.
 
 ## Version and license
 
-Current version: `0.4.4`. See the [changelog](CHANGELOG.md) for released
+Current version: `0.4.5`. See the [changelog](CHANGELOG.md) for released
 changes and required user actions. Distributed under the [MIT License](LICENSE).
 Python and Codex are prerequisites with their own terms; no third-party runtime
 libraries are vendored.
