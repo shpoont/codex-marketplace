@@ -19,15 +19,22 @@ network requests does not mean that your Codex conversation stays on the device.
 
 ## What it stores and changes
 
-An explicit apply operation can create one selected personal role or remove an
-unchanged role that the manager previously created. Existing manual files are
-not adopted or overwritten. The helper never edits Codex configuration or
-unrelated roles.
+An explicit apply operation can create, update or remove one selected personal
+role. Adopting a manual role requires explicit authorization and exact bytes
+from a recognized canonical release. Updates retain an original backup and
+captured source; unknown manual edits are preserved. The helper never edits
+Codex configuration or unrelated roles.
 
 Ownership records, the library license, an operation lock and any recovery
 files live in `expert-roles/` under the selected Codex home. Records use relative
 role destinations and library version, commit and digest provenance. A failed
 operation can retain staged or captured role contents for explicit recovery.
+Updates also retain read-only original backups and provenance under `backups/`,
+captured originals under `updates/`, and adoption/update history in ownership
+records. These files remain even after successful updates or role removal.
+While an update is pending, its journal also retains the approved preview with
+the then-current home/project paths. This context is removed with the journal
+after successful recovery or completion; it is not a write destination override.
 See the [README](README.md#failure-recovery-and-removal) before changing them.
 
 Removing a managed role clears its ownership entry. The management directory

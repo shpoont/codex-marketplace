@@ -10,6 +10,17 @@ released or updated.
 Users should be able to understand capabilities, compatibility, setup and data
 effects from the distributed documentation.
 
+## 0.2.0 — 2026-11-03
+
+- Add one-expert update previews with a frozen plan hash required for apply.
+- Allow explicit adoption of unchanged recognized canonical manual exports;
+  preserve edited files and refuse conflicting definitions or downgrades.
+- Retain original backups, captured sources and provenance with interrupted
+  update recovery. Recovery rechecks the approved preview and journal integrity
+  before resuming. Preserve existing schema-1 ownership compatibility.
+- Continue bundling unchanged library v1.4.2 exports. Plugin upgrades alone do
+  not update personal roles; each update/adoption must be requested explicitly.
+
 ## 0.1.2 — 2026-11-02
 
 - Bundle 72 unchanged Codex exports from Expert Roles library v1.4.2, adding

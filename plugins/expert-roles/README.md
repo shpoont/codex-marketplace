@@ -15,8 +15,8 @@ your local edits as files it must protect.
 
 ## Install and start
 
-Version `0.1.2` includes host-compatible expert-name nickname candidates for new
-Codex instances. Install
+Version `0.2.0` supports selected updates and explicit adoption of verified
+canonical exports. Install
 `expert-roles@b2a48b` from the existing marketplace in your Codex plugin browser.
 For the CLI:
 
@@ -49,10 +49,12 @@ The `manage-experts` skill supports these requests:
 - List the bundled experts and inspect versions and ownership.
 - Preview or install one selected expert personally.
 - Preview or remove one unchanged plugin-created expert.
+- Preview or update one unchanged managed expert, or explicitly adopt and update
+  an exact export from a recognized canonical release.
 - Inspect and explicitly resume an interrupted operation.
 
-Updates, adoption of manual files, project installation, multi-expert operations
-and automatic expert invocation are deferred. Installing a file makes no claim
+Project installation, multi-expert commands and automatic expert invocation are
+deferred. Installing a file makes no claim
 that Codex has loaded or invoked it. A fresh-session native-role check is a
 separate verification step after installation is authorized.
 
@@ -69,7 +71,7 @@ resolve in this order:
 Native files go under that directory's `agents/`. Ownership, the library license,
 an operation lock and recovery files go under `expert-roles/`, outside agent
 discovery. Ownership records contain relative role paths, library version,
-commit, digest and the fact that the manager created the file. No author-machine
+commit, digest, and update/adoption history with relative backup paths. No author-machine
 path or fixed username is used. Relative or empty configured homes are rejected.
 
 For direct use, locate the installed `manage-experts` skill and set `SKILL_DIR`
@@ -95,8 +97,10 @@ working directory and its ancestor `.codex` directories are inspected.
 
 `status` distinguishes available, plugin-managed, missing, modified, unmanaged,
 matching-manual and conflicting definitions. `manual-match` means an exact match
-to bundled bytes, with no plugin ownership. Existing files are never adopted,
-overwritten or removed, including identical manual copies. A modified managed
+to bundled bytes, with no plugin ownership. Install and remove never adopt an
+unmanaged file. Explicit `update --adopt` can replace a verified canonical
+manual export and take ownership of the new file while retaining the original.
+A modified managed
 file retains its recorded library version, but that version no longer verifies
 its current contents.
 
@@ -104,6 +108,32 @@ After a bundle upgrade, an older manual role can appear as `unmanaged` instead
 of `manual-match` because its bytes differ from the new bundle. This does not
 mean the file was changed. Older plugin-created roles keep their recorded
 version and ownership; the manager does not replace them during a plugin upgrade.
+
+## Selected updates and explicit adoption
+
+Preview a managed update with `update EXPERT_ID`. For a manual role, use
+`update EXPERT_ID --adopt` only when adopting that selected role is authorized.
+Recognition uses exact reviewed release hashes, including v1.4.0 and v1.4.1;
+filenames or version comments alone are insufficient. Unknown edits, aliases,
+conflicting definitions and downgrades are refused.
+
+The preview discloses current/target provenance and hashes, ownership before and
+after, the backup path and `plan_sha256`. Apply only that frozen preview:
+
+```sh
+python "$SKILL_DIR/scripts/manage.py" update steve-jobs --adopt
+python "$SKILL_DIR/scripts/manage.py" update steve-jobs --adopt --expect-plan "$PLAN_SHA256" --apply
+```
+
+Set `PLAN_SHA256` to the exact preview value. Omit `--adopt` for an already
+managed role. Apply rechecks the preview under the operation lock and refuses
+intervening changes. Originals are backed up read-only under
+`expert-roles/backups/`, with provenance; the transaction also retains its
+captured source under `expert-roles/updates/`. The new canonical file preserves
+the prior mode. Ownership is recorded after publication and byte checks; a
+failure can leave a published file awaiting explicit recovery.
+An unchanged current managed role is a no-op. Each command selects one expert;
+no operation implicitly updates all installed or bundled roles.
 
 The helper reads native agent files recursively and relevant personal/project
 agent registrations. It refuses changes on competing definitions, incomplete
@@ -145,11 +175,20 @@ and captured data is preserved for review.
 Complete pending operations before upgrading the plugin. If an interrupted
 installation has no staged bytes, recovery needs the original reviewed plugin
 snapshot; a newer bundle cannot supply a different role in its place.
+Update recovery likewise needs a helper that recognizes its recorded source and
+target provenance. Keep the initiating version available until recovery is clear.
+The pending update retains its approved preview, including its original home and
+project context. Recovery checks the preview hash and recorded transition before
+writing; it resolves destinations from the currently selected Codex home.
+Captured originals are retained even after success so edits through an old
+editor handle are not discarded. Do not delete backups or transaction evidence
+to force an operation to proceed.
 
 Remove managed experts before uninstalling the plugin. Uninstalling the bundle
 alone leaves installed native files and management records. Reinstalling the
 manager can inspect those records. Upgrading the plugin does not update installed
-roles; updates and adoption remain unsupported in this increment.
+roles; each selected update or adoption remains explicit. Removing a managed
+role preserves its backups and captured originals.
 
 ## Support, version and license
 

@@ -20,11 +20,13 @@ import re
 import stat
 import tempfile
 import tomllib
+import uuid
 
 PACKAGE = Path(__file__).resolve().parents[3]
 PLUGIN = "expert-roles"
 SLUG = re.compile(r"[a-z0-9]+(?:-[a-z0-9]+)*\Z")
 DIGEST = re.compile(r"[0-9a-f]{64}\Z")
+RECOGNIZED_SHA256 = "76e4677ee352c614c2462679cf6fbde20105515d2c036912e74aed66f08f97e4"
 
 
 class Conflict(Exception):
@@ -35,13 +37,24 @@ def digest(data):
     return hashlib.sha256(data).hexdigest()
 
 
-def regular_bytes(path):
+def regular_file(path):
     """Read only a regular, non-symlink file, including at the open boundary."""
     fd = os.open(path, os.O_RDONLY | os.O_NOFOLLOW | os.O_NONBLOCK)
     with os.fdopen(fd, "rb") as stream:
-        if not stat.S_ISREG(os.fstat(stream.fileno()).st_mode):
+        info = os.fstat(stream.fileno())
+        if not stat.S_ISREG(info.st_mode):
             raise Conflict(f"Expected a regular file: {path}")
-        return stream.read()
+        return stream.read(), stat.S_IMODE(info.st_mode)
+
+
+def regular_bytes(path):
+    return regular_file(path)[0]
+
+
+def version_tuple(value):
+    if not isinstance(value, str) or not re.fullmatch(r"(?:0|[1-9][0-9]*)\.(?:0|[1-9][0-9]*)\.(?:0|[1-9][0-9]*)", value):
+        raise Conflict("Unrecognized library version")
+    return tuple(int(part) for part in value.split("."))
 
 
 def check_directory(path):
@@ -75,6 +88,19 @@ def sync_directory(path):
         os.fsync(fd)
     finally:
         os.close(fd)
+
+
+def durable_directory(path):
+    check_directory(path)
+    missing = []
+    for part in (path, *path.parents):
+        if part.exists():
+            break
+        missing.append(part)
+    for part in reversed(missing):
+        part.mkdir(mode=0o700, exist_ok=True)
+        check_directory(part)
+        sync_directory(part.parent)
 
 
 def raise_io(error):
@@ -117,6 +143,16 @@ class Manager:
         self.license = regular_bytes(self.package / "library/LICENSE")
         if digest(self.license) != self.snapshot["license_sha256"]:
             raise Conflict("Bundled library license failed integrity check")
+        self.recognized = []
+        historical = self.package / "library/recognized-releases.json"
+        if os.path.lexists(historical):
+            data = regular_bytes(historical)
+            if digest(data) != RECOGNIZED_SHA256:
+                raise Conflict("Recognized-release catalog failed integrity check")
+            catalog = json.loads(data)
+            if catalog["schema"] != 1 or catalog["repository"] != self.snapshot["repository"]:
+                raise Conflict("Unrecognized historical library catalog")
+            self.recognized = catalog["releases"]
 
     def name(self, value):
         name = value if value.startswith("expert-") else f"expert-{value}"
@@ -160,9 +196,11 @@ class Manager:
         value = self.read_json(self.journal_file, None)
         if value is None:
             return None
-        if not isinstance(value, dict) or value.get("schema") != 1 or value.get("operation") not in ("install", "remove"):
+        if not isinstance(value, dict) or value.get("schema") != 1 or value.get("operation") not in ("install", "remove", "update"):
             raise Conflict("Invalid recovery record; preserve it for review")
         self.validate_entry(value.get("name"), value.get("entry"))
+        if value["operation"] == "update":
+            self.validate_update(value)
         return value
 
     def inventory(self):
@@ -270,7 +308,7 @@ class Manager:
     def lock(self):
         check_directory(self.home)
         check_directory(self.storage)
-        self.storage.mkdir(parents=True, exist_ok=True, mode=0o700)
+        durable_directory(self.storage)
         fd = os.open(self.storage / "lock", os.O_CREAT | os.O_RDWR | os.O_NOFOLLOW | os.O_NONBLOCK, 0o600)
         try:
             if not stat.S_ISREG(os.fstat(fd).st_mode):
@@ -288,7 +326,9 @@ class Manager:
                 "repository": self.snapshot["repository"], "revision": self.snapshot["revision"],
                 "version": self.snapshot["version"], "sha256": digest(self.payloads[name])}
 
-    def apply(self, operation, name):
+    def apply(self, operation, name, *, adopt=False, expected_plan=None):
+        if operation == "update":
+            return self.apply_update(name, adopt=adopt, expected_plan=expected_plan)
         # No lock/state directories are created for a rejected or idempotent plan.
         outcome = self.plan(operation, name)
         if outcome != "ready":
@@ -318,6 +358,8 @@ class Manager:
         pending = self.pending()
         if pending is None:
             return "nothing-pending"
+        if pending["operation"] == "update":
+            return self.finish_update(pending)
         name, entry, operation = pending["name"], pending["entry"], pending["operation"]
         path = self.agents / f"{name}.toml"
         state = self.state()
@@ -388,6 +430,243 @@ class Manager:
         sync_directory(self.storage)
         return "installed" if operation == "install" else "removed"
 
+    def identify(self, name, sha256):
+        """Recognize exact reviewed exports, never a filename or version comment."""
+        for release in [self.snapshot, *self.recognized]:
+            if release["files"].get(name + ".toml") == sha256:
+                return {"repository": self.snapshot["repository"], "version": release["version"],
+                        "revision": release["revision"], "sha256": sha256}
+        raise Conflict("This file is not an unchanged recognized canonical export; preserve user edits")
+
+    def update_plan(self, name, *, adopt=False):
+        status = self.status()
+        if status["pending"] or status["inspection_issues"]:
+            raise Conflict("Resolve pending recovery or incomplete inspection before updating")
+        path = self.agents / (name + ".toml")
+        row = next(row for row in status["roles"] if row["name"] == name)
+        if row["status"] not in ("managed", "manual-match", "unmanaged") or len(row["definitions"]) != 1:
+            raise Conflict(f"{name} is {row['status']}; update needs one unchanged personal definition")
+        if row["definitions"][0]["path"] != str(path) or row["definitions"][0].get("registration"):
+            raise Conflict("Only the canonical personal filename can be updated; preserve aliases and registrations")
+        data, mode = regular_file(path)
+        existing = self.state()["roles"].get(name)
+        if existing:
+            if digest(data) != existing["sha256"]:
+                raise Conflict("Managed bytes changed; preserve them for review")
+            source = {key: existing[key] for key in ("repository", "version", "revision", "sha256")}
+        else:
+            if not adopt:
+                raise Conflict("This role is unmanaged; explicit --adopt is required to claim an unchanged canonical export")
+            source = self.identify(name, digest(data))
+        target = self.entry(name)
+        if version_tuple(source["version"]) > version_tuple(target["version"]):
+            raise Conflict("The installed role is newer than this bundle; downgrades are not supported")
+        if source["version"] == target["version"] and any(source[k] != target[k] for k in ("revision", "sha256")):
+            raise Conflict("The same library version has different provenance; preserve it for review")
+        outcome = "already-current" if existing and all(source[k] == target[k] for k in source) else "ready"
+        plan = {"result": outcome, "expert": name, "codex_home": str(self.home), "project": str(self.project),
+                "destination": f"agents/{name}.toml",
+                "current": dict(source, mode=mode), "target": target,
+                "ownership": {"before": "managed" if existing else "unmanaged", "after": "managed", "adopt": not bool(existing)},
+                "ownership_record_sha256": digest(json.dumps(existing, sort_keys=True).encode()),
+                "backup": f"expert-roles/backups/{name}/{source['sha256']}.toml" if outcome == "ready" else None}
+        plan["plan_sha256"] = digest(json.dumps(plan, sort_keys=True).encode())
+        return plan
+
+    def apply_update(self, name, *, adopt=False, expected_plan=None):
+        def checked_plan():
+            plan = self.update_plan(name, adopt=adopt)
+            if plan["result"] != "already-current" and (not expected_plan or expected_plan != plan["plan_sha256"]):
+                raise Conflict("Update needs --expect-plan from the unchanged preview; preview again after any change")
+            return plan
+        plan = checked_plan()
+        if plan["result"] == "already-current":
+            return "already-current"
+        with self.lock():
+            plan = checked_plan()
+            if plan["result"] == "already-current":
+                return "already-current"
+            if any(os.path.lexists(self.storage / filename) for filename in ("payload", "removed")):
+                raise Conflict("Unrecognized transaction file; preserve it for review")
+            existing = self.state()["roles"].get(name)
+            history = existing.get("history", []) if existing else []
+            if not isinstance(history, list):
+                raise Conflict("Unrecognized ownership history; preserve it for review")
+            entry = dict(plan["target"], history=[*history, dict(plan["current"],
+                         backup=plan["backup"], adopted=not bool(existing))])
+            # A new canonical file is published by this operation, even when it
+            # replaces a manually installed export. Keep v1 ownership compatibility;
+            # history explicitly discloses the adoption instead of disguising it.
+            pending = {"schema": 1, "operation": "update", "name": name, "entry": entry,
+                       "before": dict(plan["current"], entry=existing), "backup": plan["backup"],
+                       "transaction": uuid.uuid4().hex, "plan_sha256": plan["plan_sha256"],
+                       "approved_preview": plan}
+            pending["journal_sha256"] = digest(json.dumps(pending, sort_keys=True).encode())
+            self.validate_update(pending)
+            atomic_json(self.journal_file, pending)
+            return self.finish()
+
+    def validate_update(self, pending):
+        if (set(pending) != {"schema", "operation", "name", "entry", "before", "backup", "transaction",
+                             "plan_sha256", "approved_preview", "journal_sha256"}
+                or digest(json.dumps({k: v for k, v in pending.items() if k != "journal_sha256"},
+                                     sort_keys=True).encode()) != pending.get("journal_sha256")):
+            raise Conflict("Update recovery record changed or needs its initiating helper; preserve it for review")
+        name, before = pending["name"], pending.get("before")
+        entry = pending["entry"]
+        self.validate_entry(name, entry)
+        if (not isinstance(before, dict) or not DIGEST.fullmatch(str(before.get("sha256", "")))
+                or before.get("repository") != self.snapshot["repository"]
+                or not re.fullmatch(r"[0-9a-f]{40}", str(before.get("revision", "")))
+                or type(before.get("mode")) is not int or not 0 <= before["mode"] <= 0o7777
+                or not re.fullmatch(r"[0-9a-f]{32}", str(pending.get("transaction", "")))
+                or not DIGEST.fullmatch(str(pending.get("plan_sha256", "")))
+                or pending.get("backup") != f"expert-roles/backups/{name}/{before['sha256']}.toml"):
+            raise Conflict("Invalid update recovery record; preserve it for review")
+        version_tuple(before.get("version"))
+        if before.get("entry") is not None:
+            self.validate_entry(name, before["entry"])
+            if any(before[key] != before["entry"][key] for key in ("repository", "version", "revision", "sha256")):
+                raise Conflict("Update source and ownership differ")
+        elif any(before[k] != self.identify(name, before["sha256"])[k]
+                 for k in ("repository", "version", "revision", "sha256")):
+            raise Conflict("Unrecognized adoption provenance")
+        known_target = self.identify(name, entry["sha256"])
+        if (any(entry[k] != known_target[k] for k in known_target)
+                or version_tuple(before["version"]) > version_tuple(entry["version"])):
+            raise Conflict("Unrecognized update target provenance or downgrade")
+        prior_history = before["entry"].get("history", []) if before.get("entry") else []
+        history = dict((key, before[key]) for key in ("repository", "version", "revision", "sha256", "mode"))
+        history.update(backup=pending["backup"], adopted=before.get("entry") is None)
+        if not isinstance(prior_history, list) or entry.get("history") != [*prior_history, history]:
+            raise Conflict("Update ownership history differs; preserve it for review")
+        preview = pending["approved_preview"]
+        if not isinstance(preview, dict):
+            raise Conflict("Missing approved update preview; preserve recovery files")
+        body = {k: v for k, v in preview.items() if k != "plan_sha256"}
+        if (preview.get("plan_sha256") != pending["plan_sha256"]
+                or digest(json.dumps(body, sort_keys=True).encode()) != pending["plan_sha256"]):
+            raise Conflict("Approved update preview changed; preserve recovery files")
+        for key in ("codex_home", "project"):
+            if not isinstance(body.get(key), str) or not Path(body[key]).is_absolute():
+                raise Conflict("Invalid approved preview context")
+        expected = {"result": "ready", "expert": name, "codex_home": body["codex_home"],
+                    "project": body["project"], "destination": entry["path"],
+                    "current": {k: before[k] for k in ("repository", "version", "revision", "sha256", "mode")},
+                    "target": {k: entry[k] for k in ("path", "scope", "origin", "repository", "revision", "version", "sha256")},
+                    "ownership": {"before": "managed" if before.get("entry") else "unmanaged",
+                                  "after": "managed", "adopt": before.get("entry") is None},
+                    "ownership_record_sha256": digest(json.dumps(before.get("entry"), sort_keys=True).encode()),
+                    "backup": pending["backup"]}
+        if body != expected or set(entry) != set(expected["target"]) | {"history"}:
+            raise Conflict("Update transition differs from its approved preview; preserve recovery files")
+        # Preview paths are historical context only. Recovery uses this manager's
+        # selected home and freshly inspected project, including after relocation.
+
+    def check_update_file(self, path, expected):
+        data, mode = regular_file(path)
+        if digest(data) != expected["sha256"] or mode != expected["mode"]:
+            raise Conflict("Update bytes or mode changed; preserve the role and recovery files")
+        return data
+
+    def update_backup(self, pending, source):
+        before = pending["before"]
+        backup = self.home / pending["backup"]
+        check_directory(backup.parent)
+        durable_directory(backup.parent)
+        if not os.path.lexists(backup):
+            self.exclusive_write(backup, self.check_update_file(source, before))
+            backup.chmod(0o400)
+            sync_directory(backup.parent)
+        data, mode = regular_file(backup)
+        if digest(data) != before["sha256"] or mode != 0o400:
+            raise Conflict("Original backup changed; preserve it for review")
+        metadata = {key: before[key] for key in ("repository", "version", "revision", "sha256", "mode")}
+        metadata_path = backup.with_suffix(".json")
+        if not os.path.lexists(metadata_path):
+            self.exclusive_write(metadata_path, (json.dumps(metadata, sort_keys=True) + "\n").encode())
+            metadata_path.chmod(0o400)
+            sync_directory(backup.parent)
+        data, mode = regular_file(metadata_path)
+        if json.loads(data) != metadata or mode != 0o400:
+            raise Conflict("Backup provenance changed; preserve it for review")
+
+    def finish_update(self, pending):
+        name, entry, before = pending["name"], pending["entry"], pending["before"]
+        path = self.agents / (name + ".toml")
+        state = self.state()
+        existing = state["roles"].get(name)
+        if existing != before.get("entry") and existing != entry:
+            raise Conflict("Ownership changed during the interrupted update")
+        check_directory(self.agents)
+        found, issues = self.inventory()
+        if issues or any(d["path"] != str(path) or d.get("registration") for d in found.get(name, [])):
+            raise Conflict("Resolve competing definitions or inspection issues before update recovery")
+        workspace = self.storage / "updates" / pending["transaction"]
+        check_directory(workspace)
+        durable_directory(workspace)
+        if self.agents.stat().st_dev != workspace.stat().st_dev:
+            raise Conflict("Update requires staging and personal agents on the same filesystem")
+        if any(p.name not in ("payload", "captured") for p in workspace.iterdir()):
+            raise Conflict("Unrecognized update transaction file; preserve it for review")
+        payload, captured = workspace / "payload", workspace / "captured"
+        target = dict(entry, mode=before["mode"])
+        if existing != entry:
+            if not os.path.lexists(payload):
+                # Recovery must not substitute different bundle bytes for the
+                # recorded target. Keep the initiating helper until pending clears.
+                data = self.payloads.get(name)
+                if data is None or digest(data) != entry["sha256"]:
+                    raise Conflict("Recovery needs the original reviewed plugin snapshot")
+                self.exclusive_write(payload, data)
+                payload.chmod(before["mode"])
+                sync_directory(workspace)
+            self.check_update_file(payload, target)
+        source = captured if os.path.lexists(captured) else path
+        self.update_backup(pending, source)
+        license_path = self.storage / "library-LICENSE"
+        if os.path.lexists(license_path):
+            if regular_bytes(license_path) != self.license:
+                raise Conflict("Existing library license differs; preserve it for review")
+        else:
+            self.exclusive_write(license_path, self.license)
+        if existing != entry:
+            if not os.path.lexists(captured):
+                if os.path.lexists(path) and os.path.samefile(payload, path):
+                    raise Conflict("Original capture is missing; preserve the staged and installed files")
+                self.check_update_file(path, before)
+                os.rename(path, captured)
+                sync_directory(self.agents)
+                sync_directory(workspace)
+            try:
+                self.check_update_file(captured, before)
+            except Conflict:
+                if not os.path.lexists(path):
+                    os.link(captured, path, follow_symlinks=False)
+                    sync_directory(self.agents)
+                raise Conflict("Role changed during capture; original retained/restored, pending evidence preserved")
+            if not os.path.lexists(path):
+                os.link(payload, path, follow_symlinks=False)
+                sync_directory(self.agents)
+            if path.is_symlink() or not os.path.samefile(payload, path):
+                raise Conflict("An unowned file appeared during update; preserve both files")
+            self.check_update_file(path, target)
+            self.check_update_file(captured, before)
+            state["roles"][name] = entry
+            atomic_json(self.state_file, state)
+        else:
+            self.check_update_file(path, target)
+            self.check_update_file(captured, before)
+        if os.path.lexists(payload):
+            self.check_update_file(payload, target)
+            payload.unlink()
+            sync_directory(workspace)
+        # Retain the captured original, including any future edits through an
+        # already-open editor handle. Never discard that evidence as cleanup.
+        self.journal_file.unlink()
+        sync_directory(self.storage)
+        return "updated"
+
     def recover(self, apply=False):
         pending = self.pending()
         if pending is None or not apply:
@@ -407,6 +686,11 @@ def main(argv=None):
         action = sub.add_parser(operation, help="Preview one personal-role change; --apply writes")
         action.add_argument("expert")
         action.add_argument("--apply", action="store_true")
+    update = sub.add_parser("update", help="Preview one personal-role update, optionally adopting an exact canonical export")
+    update.add_argument("expert")
+    update.add_argument("--adopt", action="store_true", help="Explicitly claim a verified unchanged manual export")
+    update.add_argument("--expect-plan", help="SHA256 of the unchanged update preview, required for apply")
+    update.add_argument("--apply", action="store_true")
     recovery = sub.add_parser("recover", help="Inspect an interrupted operation; --apply resumes it")
     recovery.add_argument("--apply", action="store_true")
     args = parser.parse_args(argv)
@@ -421,6 +705,12 @@ def main(argv=None):
             result.update(manager.status())
         elif args.command == "recover":
             result.update(manager.recover(args.apply))
+        elif args.command == "update":
+            name = manager.name(args.expert)
+            result.update(manager.update_plan(name, adopt=args.adopt))
+            result["applied"] = args.apply
+            if args.apply:
+                result["result"] = manager.apply("update", name, adopt=args.adopt, expected_plan=args.expect_plan)
         else:
             name = manager.name(args.expert)
             result.update({"expert": name, "applied": args.apply,
