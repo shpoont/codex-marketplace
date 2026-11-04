@@ -26,7 +26,7 @@ PACKAGE = Path(__file__).resolve().parents[3]
 PLUGIN = "expert-roles"
 SLUG = re.compile(r"[a-z0-9]+(?:-[a-z0-9]+)*\Z")
 DIGEST = re.compile(r"[0-9a-f]{64}\Z")
-RECOGNIZED_SHA256 = "76e4677ee352c614c2462679cf6fbde20105515d2c036912e74aed66f08f97e4"
+RECOGNIZED_SHA256 = "56efcec8217f6fde73b9b406ecf2ca5d0a476ffc279d21fce652385020133556"
 
 
 class Conflict(Exception):
@@ -143,16 +143,17 @@ class Manager:
         self.license = regular_bytes(self.package / "library/LICENSE")
         if digest(self.license) != self.snapshot["license_sha256"]:
             raise Conflict("Bundled library license failed integrity check")
-        self.recognized = []
         historical = self.package / "library/recognized-releases.json"
-        if os.path.lexists(historical):
+        try:
             data = regular_bytes(historical)
-            if digest(data) != RECOGNIZED_SHA256:
-                raise Conflict("Recognized-release catalog failed integrity check")
-            catalog = json.loads(data)
-            if catalog["schema"] != 1 or catalog["repository"] != self.snapshot["repository"]:
-                raise Conflict("Unrecognized historical library catalog")
-            self.recognized = catalog["releases"]
+        except FileNotFoundError as exc:
+            raise Conflict("Bundled recognized-release catalog is missing") from exc
+        if digest(data) != RECOGNIZED_SHA256:
+            raise Conflict("Recognized-release catalog failed integrity check")
+        catalog = json.loads(data)
+        if catalog["schema"] != 1 or catalog["repository"] != self.snapshot["repository"]:
+            raise Conflict("Unrecognized historical library catalog")
+        self.recognized = catalog["releases"]
 
     def name(self, value):
         name = value if value.startswith("expert-") else f"expert-{value}"

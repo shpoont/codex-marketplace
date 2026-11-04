@@ -2,10 +2,10 @@
 
 ## Purpose
 
-Browse a reviewed collection of 72 expert roles and manage selected personal
+Browse a reviewed collection of 74 expert roles and manage selected personal
 native agents in Codex while preserving manual files and local edits. Canonical
 role content comes unchanged from the
-[Expert Roles v1.4.2 library](https://github.com/shpoont/expert-roles/tree/f42ee11b903e4edb248f3ed7dd19b43b25475473).
+[Expert Roles v1.5.0 library](https://github.com/shpoont/expert-roles/tree/308483aec6627c6fd50616f27822b48af92ad181).
 
 ## Rationale
 

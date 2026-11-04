@@ -10,6 +10,14 @@ released or updated.
 Users should be able to understand capabilities, compatibility, setup and data
 effects from the distributed documentation.
 
+## 0.2.1 — 2026-11-04
+
+- Add Von Glitschka and Yukio Miyamoto from canonical library
+  v1.5.0 (74 bundled experts). Existing personal roles are preserved; plugin upgrades do not install
+  or update roles automatically.
+- Preserve exact historical recognition hashes as the catalogue grows. Refuse
+  an incomplete package whose required recognition catalogue is missing.
+
 ## 0.2.0 — 2026-11-03
 
 - Add one-expert update previews with a frozen plan hash required for apply.
