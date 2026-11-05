@@ -1,13 +1,15 @@
 ---
 name: agents-md-maintenance
-description: Manage scheduled AGENTS.md improvements. Use when adding projects to recurring instruction reviews, listing managed projects, auditing schedules, or migrating and synchronizing their plugin references.
+description: Manage scheduled AGENTS.md improvements and explicitly owned sections. Use when adopting a managed section, reconciling its manual edits, adding projects to recurring reviews, listing managed projects, auditing schedules, or synchronizing their plugin references.
 ---
 
-# AGENTS.md review schedule management
+# AGENTS.md reviewers and managed sections
 
-Manage the review tasks, not the projects' implementation or outstanding work.
-The execution entry point is [agents-md-review](../agents-md-review/SKILL.md).
-The shared policy remains in [assets/review.md](assets/review.md), with version
+Use [agents-md-review](../agents-md-review/SKILL.md) for ordinary reviews,
+[managed-section operations](references/managed-sections.md) for explicit
+adoption or reconciliation, and the sections below for registry and scheduling
+work. These operations do not resume the project's implementation or outstanding
+requests. The shared policy remains in [assets/review.md](assets/review.md), with version
 in `assets/template.json`. Read these before creating or migrating a reviewer.
 Saved tasks contain a stable entry-point reference, job data and fixed authority;
 never embed the review policy or a versioned plugin/cache path in a task.
@@ -41,12 +43,25 @@ Resolve an existing reviewer by exact scope and source history, not name alone.
 Adopt it by registering its existing ID; do not create a duplicate. A task that
 merely reads AGENTS.md while doing other work is not an instruction reviewer.
 
+## Managed-section adoption and compaction
+
+Read [managed-section operations](references/managed-sections.md) for explicit
+adoption, reconciliation or a requested compaction. There is one managed block
+per root file; outside content stays human-maintained. Existing text has no
+inferred plugin ownership. The helper prepares/checks candidates read-only;
+applying one needs the corresponding human authority and complete-file
+budget/loading checks. Ordinary reviews can update/compact an already adopted,
+checksum-valid body, but cannot adopt or reconcile it. An unmarked guide blocks
+writes under policy 3.0.0; plan explicit opt-in before deploying that policy to
+existing review targets. Do not change schedules to conceal an adoption blocker.
+
 ## Audit (read-only)
 
 Run `scripts/manage.py audit --registry <path> --automations-dir <directory>`.
 This compares the complete reference wrapper, job configuration and destination
-with saved state. `migration-required` identifies old copied-policy prompts and retired-plugin
-reference wrappers. The retired marker is recognized for migration discovery
+with saved state. `migration-required` identifies old copied-policy prompts, retired-plugin
+reference wrappers and exact recognized catalog-veto wrappers. Unknown manual
+prompt changes remain `outdated` and need inspection. The retired marker is recognized for migration discovery
 only; runtime selection requires `agent-instructions`.
 Changes to the shared review policy do not stale an unchanged reference wrapper;
 reviewers load the enabled installation at each run. The audit is a configuration
@@ -81,9 +96,13 @@ helper renders and audits only; never edit automation TOML or app databases.
   explicitly authorized in-place AGENTS.md review, preserving concurrent edits.
 - Before enabling or migrating a reviewer, verify exactly one installed, enabled
   copy of this plugin provides `agents-md-review` in the inventory-selected cache.
-  Follow the execution skill's live inventory/cache resolution contract; an older
-  task catalog is not authoritative. Verify installed manifest and resources,
-  keeping unrelated copies disabled. Do not migrate to an undeployed entry point.
+  Follow the execution skill's live inventory/cache resolution contract in the
+  actual caller directory with a verified default profile and no configuration
+  overrides. Named or unknown profiles block; do not discard them. Retained chat discovery text is diagnostic, not a
+  selection or veto. Verify actual task access to the current manifest, entrypoint
+  and resources, keeping unrelated copies disabled. Access grants no new tool or
+  connector permission. Do not migrate to an undeployed entrypoint. Earlier
+  catalog-veto wrappers require an explicitly authorized prompt synchronization.
 - Render with `scripts/manage.py render --registry <path> --project <key>`.
   For an existing task, review the old policy and preserve project-specific
   exceptions in `extra_boundaries`, not copied policy or ad-hoc prompt patches.

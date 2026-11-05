@@ -10,6 +10,35 @@ must take when installing or updating it.
 Users should be able to understand how a release affects capabilities,
 compatibility, setup, data and safe use without reading development records.
 
+## 0.5.1 — 2026-11-05
+
+### Fixed
+
+- Resolves review policy through live inventory in the verified caller directory with
+  a verified default profile and no configuration overrides. Named or unknown
+  profiles block because the validated CLI does not support them for inventory. An older chat skill list is diagnostic rather than a veto;
+  the task must read and execute the selected current entrypoint and policy.
+- Records hashes of the manifest, entrypoint, helper and policy resources, and
+  rechecks inventory/resources before returning the policy. Missing, disabled,
+  ambiguous, unreadable, incompatible or changing resources still block review.
+- Preserves fixed job authority, managed-section policy 3.0.0 and exact no-op
+  behavior. Existing catalog-veto task wrappers need an explicitly authorized
+  prompt migration; installing the plugin does not rewrite schedules.
+
+## 0.5.0 — 2026-11-04
+
+- Adds one explicit, checksum-checked managed section in root AGENTS.md.
+  Reviews may update or compact only its body and checksum, preserving every
+  outside byte and necessary meaning, conditions and authority.
+- Adds read-only inspection, marker-only adoption, bounded candidate generation,
+  scope checking and explicitly approved manual-edit reconciliation.
+- Policy 3.0.0 blocks writes to unmarked legacy guides until human opt-in. It
+  rejects malformed/ambiguous markers, manual body edits and stale baselines.
+  Existing saved plugin references and job contracts remain unchanged.
+- Keeps complete-file instruction-budget checks and actual host-loading proof
+  separate from section checks. No automatic legacy adoption, schedule changes,
+  host-limit increase or release is performed.
+
 ## 0.4.5 — 2026-11-03
 
 ### Fixed

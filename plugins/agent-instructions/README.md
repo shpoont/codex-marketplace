@@ -1,11 +1,17 @@
 # Agent Instructions
 
+Version 0.5.1 refreshes review instructions from the enabled installation rather
+than relying on a chat's older skill list. Managed sections introduced in 0.5.0
+remain required; earlier 0.4.5 provides budget checks without managed-section
+ownership limits.
+
 ## Purpose
 
 Keep AI agent instructions clear, useful and current. Maintain project AGENTS.md
 guidance through recurring reviews, or find and apply selected refactoring
-changes in instruction files. Scheduled reviews update only the selected root
-AGENTS.md. Manual refactoring requires your selection from preceding discovery
+changes in instruction files. Scheduled reviews update only an explicitly
+adopted managed body and its checksum in the selected root AGENTS.md, preserving
+human-maintained text outside it. Manual refactoring requires your selection from preceding discovery
 in the same task.
 
 ## Quick start
@@ -31,10 +37,11 @@ codex plugin marketplace add shpoont/codex-marketplace --ref main
 codex plugin add agent-instructions@b2a48b --json
 ```
 
-Skip marketplace setup when it is already configured. Start a fresh task after
-installation. If an older marketplace copy is installed, keep only the new
-copy enabled, explicitly migrate existing review schedules, and verify their
-settings and executing task's skill catalog before removing older copies.
+Skip marketplace setup when it is already configured. Verify the current
+installation and its readable entrypoint after installing. If an older
+marketplace copy is installed, keep only the intended copy enabled, explicitly
+migrate affected review schedules, and verify their saved settings and actual
+current-policy execution before removing older copies.
 Agent Instructions Improvement and Agent Instructions Refactoring share skill
 names with this plugin; disable competing providers during a supported switch.
 Pause affected reviews through Codex before disabling their selected provider,
@@ -56,8 +63,10 @@ outdated, missing, misbound or duplicate schedules without changing them.
 | Audit AGENTS.md schedules | Compare the external project registry with saved review tasks. Audit is read-only. |
 | Add review schedules | Register a verified project and create one Codex scheduled review after explicit authorization. |
 | Migrate saved tasks | Replace copied review policy with a stable plugin reference while preserving the task's ID, recurrence and destination. |
-| Run bounded reviews | Read approved source tasks and update only the selected project's root AGENTS.md when evidence supports a useful change. |
-| Pause or remove schedules | Change only the selected registered review after reading back the saved result. |
+| Adopt a managed section | Wrap the exact human-selected legacy range without changing its text; no inferred ownership. |
+| Run bounded reviews | Read approved source tasks and update or compact only the adopted section when evidence supports a useful change. |
+| Reconcile manual edits | Stop on a body checksum mismatch; accept the exact edited body only after an explicit human decision. |
+| Pause or remove schedules | Change only the selected registered review, then read back the saved result. |
 | Find instruction problems | Inspect the selected agent instructions for duplication, conflicts and stale guidance without changing them or executing their workflows. |
 | Apply selected refactors | Apply only findings explicitly selected from preceding discovery in the same task, preserving intended behavior and useful context. |
 
@@ -88,17 +97,44 @@ Migrate my existing AGENTS.md review tasks to the current plugin policy.
 
 Migration preserves schedule IDs, recurrence, destinations, notifications and
 project-specific boundaries. Reference-based tasks load the enabled plugin's
-current policy on each invocation when the executing task's skill catalog agrees
-with the selected installation. Compatible policy-only updates keep saved
-prompts unchanged; they still require that catalog agreement. A plugin identity
-or entrypoint change requires an explicit migration.
+current policy on each invocation through live inventory and validated current
+resources in the verified caller directory. This release supports a verified
+default profile with no configuration overrides; named or unknown profiles stop
+before review because the validated CLI cannot reproduce them for inventory. A chat's older skill list is diagnostic and cannot select an old copy
+or prevent a verified current load. Compatible policy-only updates retain the
+saved reference. A plugin identity, entrypoint or loader-contract change needs
+an explicit migration. Earlier wrappers that stop on catalog disagreement need
+one authorized prompt update; installation alone does not change those tasks.
 
 The management skill owns registry and schedule work. The review skill executes
 one supplied `plugin-reference/v1` job. A review reads only approved source
-tasks and may edit only the selected project's root AGENTS.md. It cannot resume
+tasks and may edit only the adopted body and checksum in the selected project's
+root AGENTS.md. It cannot resume
 implementation work, change schedules, commit, push, publish or perform paid
 operations. When evidence does not support an improvement, AGENTS.md stays
 byte-for-byte unchanged.
+
+### Managed ownership
+
+Select the exact section before adoption:
+
+```text
+Let Agent Instructions manage only this AGENTS.md section; preserve the rest.
+```
+
+The maintenance skill prepares marker-only adoption, then verifies the complete
+file's budget and actual host loading. Its [managed-section operations](skills/agents-md-maintenance/references/managed-sections.md)
+define the marker format, read-only helper commands and manual-edit recovery.
+Reviews may compact only the adopted body; they preserve useful meaning and
+cannot absorb human-maintained text. A body checksum mismatch stops review until
+explicit reconciliation. The checksum is not proof of human approval.
+
+Policy 3.0.0 requires explicit adoption before any write to an unmarked legacy
+guide. Managed ownership does not itself change saved references, but the
+0.5.1 catalog-veto wrapper migration described above is separate. Review targets
+need this opt-in before the new policy can write. No schedule changes happen during
+adoption. A current over-budget or shadowed guide still blocks an ordinary review
+and needs a separately authorized correction.
 
 ### Instruction budget checks
 
@@ -210,31 +246,34 @@ codex plugin remove agent-instructions@b2a48b
 ```
 
 Keep only one marketplace copy enabled. Pause affected reviews while changing
-providers, preserve their saved inputs and authority, and start a fresh task
-after installing or updating. Audit the saved references and verify the
-executing task's catalog agrees with the selected installation before resuming
-reviews. Changed job bindings or task authority require an authorized schedule
-update.
+providers and preserve their saved inputs and authority. Audit the saved
+references, then verify that the actual task selects the current installation,
+reads its entrypoint and policy, and records their resource hashes before
+resuming reviews. Changed job bindings, authority or loader contracts need an
+authorized schedule update with saved-state readback.
 
-A continuing Codex desktop chat can retain an older skill catalog after an
-update. In macOS desktop testing, fully quitting and reopening Codex refreshed
-that chat's catalog; the same unchanged saved job then loaded the new policy
-and made only its authorized AGENTS.md change. If a chat reports an
-inventory/catalog mismatch, keep the affected review paused, fully quit and
-reopen Codex, then verify agreement in that same chat before invoking the saved
-job again. If it still disagrees, stop and report the blocker. Automatic
-adoption without a restart has not been verified. A restart does not guarantee
-compatibility or authorize broader work, and no cache, source or copied-policy
-fallback is permitted.
+A continuing chat may retain an older skill list. That list is diagnostic;
+current live inventory in the intended directory/profile selects the package.
+The task must be able to read and use its current resources through permitted
+tools. A path in a skill list or on disk grants no permission. Missing, disabled,
+ambiguous, unreadable or incompatible resources stop the review; an old cache,
+source checkout or remembered policy is never a fallback. A successful helper
+command alone does not prove that a continuing task used the current policy.
+A restart is not a required recovery step for this loader contract.
+
+Existing schedules with the earlier catalog-veto wrapper still need an explicit
+prompt migration before using this contract. Prepare and inspect the complete
+before/after change, preserving IDs, inputs, authority, recurrence, destinations,
+status and notifications; apply it through Codex and read back the saved result.
+Do not recreate schedules or adopt legacy guides as part of the migration.
 
 Removing the plugin does not remove schedules. Reference-based reviews stop
 without editing until a valid copy is enabled again; legacy copied-policy tasks
 remain self-contained. Pause or remove schedules through Codex when intended,
-then verify the saved state before deleting registry records. For a broken
-installation, reinstall from `b2a48b`, disable competing copies and
-audit before creating any replacement task. If the executing task still exposes
-an older skill catalog, stop before review and report the mismatch. A successful
-helper command alone does not prove that an existing task adopted the update.
+then verify saved state before deleting registry records. For a broken
+installation, reinstall from `b2a48b`, disable competing copies and audit before
+creating any replacement task. If current policy cannot be accessed or used
+safely, keep the review blocked and report the specific missing capability.
 
 ## Support
 
@@ -246,7 +285,7 @@ credentials, private instructions, personal data or raw traces.
 
 ## Version and license
 
-Current version: `0.4.5`. See the [changelog](CHANGELOG.md) for released
+Current version: `0.5.1`. See the [changelog](CHANGELOG.md) for released
 changes and required user actions. Distributed under the [MIT License](LICENSE).
 Python and Codex are prerequisites with their own terms; no third-party runtime
 libraries are vendored.
