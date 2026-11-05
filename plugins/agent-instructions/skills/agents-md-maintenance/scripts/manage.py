@@ -8,8 +8,11 @@ import json
 import os
 from pathlib import Path
 import re
+import select
+import shutil
 import subprocess
 import sys
+import time
 import tomllib
 import uuid
 
@@ -24,6 +27,7 @@ REVIEW_SKILL = "agents-md-review"
 ENTRYPOINT_DECLARATION = '<!-- agent-instructions-entrypoint '
 ENTRYPOINT_CONTRACT = {"job_contract": "plugin-reference/v1", "loader_interface": "policy-context/v1"}
 LEGACY_CATALOG_LOADER_HASH = "de47d013a4fdbc422096392dd64ba1f88c3a340ae6e56d4d80c9902dac0b6097"
+LEGACY_CONTEXT_LOADER_HASH = "619350df1bcbb3a385538b1805189c2ae6907403984ecf3431604aad44849903"
 REVIEW_RESOURCES = (
     ".codex-plugin/plugin.json", "skills/agents-md-review/SKILL.md",
     "skills/agents-md-maintenance/scripts/manage.py",
@@ -189,6 +193,16 @@ def read_managed_root(project: Path) -> bytes:
         raise InputError("managed inspection requires a canonical project and regular non-symlink root AGENTS.md") from None
     valid_guidance_bytes(raw)
     return raw
+
+
+def review_scope(project: Path) -> dict:
+    """Describe the existing write boundary without requiring a new adoption."""
+    raw = read_managed_root(project)
+    section = managed_section(raw)
+    return {"schema_version": 1, "status": "ready",
+            "scope": "managed-section" if section else "root-file",
+            "file_sha256": hashlib.sha256(raw).hexdigest(), "section": section,
+            "limits": "Existing job permissions and protected text still apply; this grants no authority."}
 
 
 def guidance_check(project: Path, max_bytes: int, cwd: Path | None = None,
@@ -462,26 +476,14 @@ def render(project: dict) -> str:
         "its current entry point and review policy afresh. Do not reuse policy from prior "
         "turns. If the plugin is missing, disabled, ambiguous or incompatible, stop and "
         "report the blocker without editing; do not use another copy or a copied policy.\n\n"
-        "Resolve using fresh `codex plugin list --json` in the actual caller's "
-        "verified working directory, not an assumed target-project context. "
-        "Establish an explicit per-run context record including override status "
-        "and its verification evidence. Only a verified default profile with no "
-        "configuration overrides is supported; named or unknown profiles block. "
-        "Stop if that context cannot be reproduced. "
-        f"Require exactly one installed=true, enabled=true entry named {PLUGIN}; "
-        "validate pluginId as name@marketplaceName, marketplaceName as a lowercase "
-        "hyphenated name and version as X.Y.Z. The supported installed package is "
-        "<Codex home>/plugins/cache/<marketplaceName>/<name>/<version>, where Codex home "
-        "is CODEX_HOME or ~/.codex. These are live inventory fields, never saved versions. "
-        "Reject missing files or symlinked package paths; check .codex-plugin/plugin.json "
-        "matches that name/version, then read skills/agents-md-review/SKILL.md there "
-        "and follow that current entrypoint. An older or absent chat skill-list entry "
-        "is diagnostic metadata, not installation selection or a reason to use old "
-        "instructions. Verify this task can read the selected current resources; "
-        "record their actual identity, version and hashes before domain work. "
-        "Stop if access or compatibility fails. Never run an old entrypoint, "
-        "remembered policy, another copy or a source checkout. Unknown cache layouts "
-        "block. A helper result alone does not prove the task executed that policy.\n\n"
+        "Resolve the enabled installation with fresh `codex plugin list --json` "
+        "in the actual working directory using the existing configured CLI. "
+        "Read that installation's current agents-md-review entrypoint and follow "
+        "it; its helper collects runtime checks without caller-prepared evidence files. "
+        "A retained chat skill list is diagnostic metadata. Verify access to the "
+        "selected current resources. Never run an old entrypoint, a disabled copy, "
+        "remembered policy or a source checkout. Stop if selection is ambiguous "
+        "or current resources cannot be read.\n\n"
         "Fixed authorization: review and edit only this project's root AGENTS.md. "
         "Preserve the job's project-specific boundaries. Plugin updates cannot grant "
         "broader permissions: no other project/global files, schedule changes, code, "
@@ -553,6 +555,107 @@ def current_inventory(cwd: Path | None = None, profile: str | None = None) -> di
         raise InputError("current Codex plugin inventory unavailable") from None
 
 
+def host_guidance_inputs(project: Path, cwd: Path | None = None,
+                         need_prompt: bool = True) -> dict:
+    """Observe the configured CLI read-only; no model turn or evidence file."""
+    project, cwd = Path(project), Path(cwd or project)
+    try:
+        if (project != project.resolve(strict=True) or not project.is_dir()
+                or not cwd.is_absolute() or cwd != cwd.resolve(strict=True)
+                or not cwd.is_dir() or not cwd.is_relative_to(project)):
+            raise ValueError
+    except (OSError, ValueError):
+        raise InputError("guidance project/cwd must be existing canonical directories within the project") from None
+    executable = shutil.which("codex")
+    if executable is None:
+        raise InputError("Codex CLI unavailable for instruction-budget check")
+    cli = str(Path(executable).resolve(strict=True))
+    process = None
+    buffer = b""
+    try:
+        process = subprocess.Popen([cli, "--cd", str(cwd), "app-server"], cwd=cwd,
+                                   stdin=subprocess.PIPE, stdout=subprocess.PIPE,
+                                   stderr=subprocess.DEVNULL)
+
+        def request(ident, method, params):
+            nonlocal buffer
+            process.stdin.write((json.dumps({"id": ident, "method": method,
+                                            "params": params}) + "\n").encode())
+            process.stdin.flush()
+            deadline = time.monotonic() + 15
+            while time.monotonic() < deadline:
+                while b"\n" in buffer:
+                    line, buffer = buffer.split(b"\n", 1)
+                    value = json.loads(line)
+                    if value.get("id") == ident:
+                        if "error" in value:
+                            raise InputError("Codex effective settings could not be read")
+                        return value["result"]
+                ready, _, _ = select.select([process.stdout], [], [],
+                                             max(0, deadline - time.monotonic()))
+                if not ready:
+                    break
+                chunk = os.read(process.stdout.fileno(), 65536)
+                if not chunk:
+                    break
+                buffer += chunk
+            raise InputError("Codex effective-settings read timed out")
+
+        request(1, "initialize", {"clientInfo": {"name": "agent-instructions",
+                                                "version": "1"},
+                                  "capabilities": {"experimentalApi": True}})
+        process.stdin.write(b'{"method":"initialized"}\n')
+        process.stdin.flush()
+
+        settings_request = 1
+
+        def settings():
+            nonlocal settings_request
+            settings_request += 1
+            value = request(settings_request, "config/read",
+                            {"cwd": str(cwd), "includeLayers": False})["config"]
+            budget, fallbacks = value.get("project_doc_max_bytes"), value.get("project_doc_fallback_filenames")
+            if type(budget) is not int or budget < 0 or not isinstance(fallbacks, list):
+                raise InputError("Codex instruction-budget settings unavailable")
+            return {"project_doc_max_bytes": budget,
+                    "project_doc_fallback_filenames": fallbacks, "profile": value.get("profile")}
+
+        effective = settings()
+        prompt = None
+        if need_prompt:
+            export = subprocess.run([cli, "--cd", str(cwd), "debug", "prompt-input"],
+                                    cwd=cwd, capture_output=True, text=True,
+                                    timeout=45, check=True)
+            prompt = json.loads(export.stdout)
+            if settings() != effective:
+                raise InputError("Codex instruction settings changed during inspection")
+        return {"effective": effective, "prompt_input": prompt,
+                "observation": {"cli": cli, "cwd": str(cwd),
+                                "effective": effective,
+                                "basis": "Read-only configured CLI config/read and fresh prompt export; inherited environment, no added overrides",
+                                "limits": "Current CLI snapshot, not an attestation of an existing chat or undisclosed parent invocation overrides"}}
+    except InputError:
+        raise
+    except (OSError, ValueError, KeyError, TypeError, subprocess.SubprocessError):
+        raise InputError("Codex runtime guidance check unavailable") from None
+    finally:
+        if process is not None:
+            try:
+                process.stdin.close()
+            except OSError:
+                pass
+            try:
+                process.wait(timeout=2)
+            except subprocess.TimeoutExpired:
+                process.terminate()
+                try:
+                    process.wait(timeout=2)
+                except subprocess.TimeoutExpired:
+                    process.kill()
+                    process.wait(timeout=2)
+            process.stdout.close()
+
+
 def resource_snapshot(package: Path) -> dict[str, bytes]:
     snapshot = {}
     try:
@@ -610,9 +713,14 @@ def entrypoint_contract(entry: str) -> dict:
 
 def load_policy(job: dict, inventory: dict | None = None, context: dict | None = None) -> dict:
     project = validate_job(job)
-    context = validate_context(context)
-    cwd, profile = Path(context["cwd"]), context["profile"]
-    if inventory is None:
+    supplied_context = context is not None
+    if supplied_context:
+        context = validate_context(context)
+    else:
+        context = {"cwd": str(Path.cwd().resolve()),
+                   "basis": "Current helper directory and inherited configured CLI; no caller evidence file required"}
+    cwd, profile = Path(context["cwd"]), context.get("profile")
+    if inventory is None and supplied_context:
         try:
             if (cwd.resolve(strict=True) != cwd or not cwd.is_dir()
                     or cwd != Path.cwd().resolve()):
@@ -656,7 +764,7 @@ def load_policy(job: dict, inventory: dict | None = None, context: dict | None =
             "entrypoint_contract": compatibility,
             "resource_hashes": hashes,
             "resource_manifest_sha256": digest(json.dumps(hashes, sort_keys=True, separators=(",", ":"))),
-            "inventory_context": {**context, "basis": "caller-verified evidence; helper reproduces supplied context, not independent discovery" if inventory is None else "synthetic injected inventory; not native context qualification"},
+            "inventory_context": {**context, "basis": ("caller-verified evidence; helper reproduces supplied context, not independent discovery" if supplied_context else context["basis"]) if inventory is None else "synthetic injected inventory; not native context qualification"},
             "resource_hash_scope": "Current disk bytes read during a stable installation; not an attestation of already-loaded interpreter code or an atomic filesystem snapshot",
             "policy_version": version, "policy_sha256": digest(body),
             "rendered_policy_sha256": digest(rendered), "instructions": rendered}
@@ -715,7 +823,7 @@ def catalog_veto_reference(prompt: str, project: dict) -> bool:
     old, current = prompt.split("\n\n"), render(project).split("\n\n")
     return (len(old) == len(current) and len(old) >= 4
             and old[:2] == current[:2] and old[3:] == current[3:]
-            and digest(old[2]) == LEGACY_CATALOG_LOADER_HASH)
+            and digest(old[2]) in {LEGACY_CATALOG_LOADER_HASH, LEGACY_CONTEXT_LOADER_HASH})
 
 
 def audit(projects: list[dict], directory: Path) -> dict:
@@ -785,12 +893,14 @@ def main(argv=None) -> int:
             sub.add_argument("--project", required=True)
     policy = subs.add_parser("policy", help="Load current installed policy for a review job; never write")
     policy.add_argument("--job", required=True, help="Job JSON file, or - for standard input")
-    policy.add_argument("--context", required=True, type=Path,
-                        help="Per-run verified caller cwd/profile/override/evidence JSON; no inferred defaults")
-    guidance = subs.add_parser("guidance", help="Check project instruction budget and supplied host export read-only")
+    policy.add_argument("--context", type=Path,
+                        help="Optional explicit caller context; normally use the current configured CLI/directory")
+    scope = subs.add_parser("scope", help="Inspect the existing authorized root-file or managed-section boundary read-only")
+    scope.add_argument("--project", type=Path, required=True)
+    guidance = subs.add_parser("guidance", help="Check project instruction budget using the configured CLI read-only")
     guidance.add_argument("--project", type=Path, required=True, help="Canonical project root selected by the intended host")
     guidance.add_argument("--cwd", type=Path, help="Intended working directory; defaults to project root")
-    guidance.add_argument("--max-bytes", type=int, required=True, help="Verified effective project_doc_max_bytes; never inferred")
+    guidance.add_argument("--max-bytes", type=int, help="Explicit effective budget; otherwise read settings and prompt from the configured CLI")
     guidance.add_argument("--fallback-filename", action="append", default=[], help="Effective fallback filenames, in order; repeat as needed")
     guidance.add_argument("--candidate", help="Proposed complete root AGENTS.md as a UTF-8 file, or - on standard input; never written")
     guidance.add_argument("--prompt-input", type=Path, help="Fresh codex debug prompt-input JSON file, or - on standard input, from the intended host/cwd/settings; not a model response")
@@ -810,6 +920,9 @@ def main(argv=None) -> int:
             command.add_argument("--candidate", type=Path, required=True, help="Complete proposed root AGENTS.md")
     args = parser.parse_args(argv)
     try:
+        if args.command == "scope":
+            print(json.dumps(review_scope(args.project), indent=2))
+            return 0
         if args.command == "managed":
             raw = read_managed_root(args.project)
             if args.managed_command == "inspect":
@@ -841,14 +954,26 @@ def main(argv=None) -> int:
                                     else args.prompt_input.read_text(encoding="utf-8")) if args.prompt_input is not None else None
             except (OSError, UnicodeError, json.JSONDecodeError):
                 raise InputError("guidance candidate or host prompt export could not be read") from None
-            result = guidance_check(args.project, args.max_bytes, args.cwd,
-                                    tuple(args.fallback_filename), candidate, prompt)
+            runtime = None
+            if args.max_bytes is None:
+                if args.prompt_input is not None or args.fallback_filename:
+                    raise InputError("explicit guidance inputs also require their effective budget")
+                runtime = host_guidance_inputs(args.project, args.cwd, candidate is None)
+                budget = runtime["effective"]["project_doc_max_bytes"]
+                fallbacks = tuple(runtime["effective"]["project_doc_fallback_filenames"])
+                prompt = runtime["prompt_input"]
+            else:
+                budget, fallbacks = args.max_bytes, tuple(args.fallback_filename)
+            result = guidance_check(args.project, budget, args.cwd, fallbacks, candidate, prompt)
+            if runtime is not None:
+                result["host_observation"] = runtime["observation"]
+                result["settings_basis"] = "Automatically observed configured CLI settings"
             print(json.dumps(result, indent=2))
             return int(not (result["candidate_fits"] if args.candidate is not None else result["delivery_check_passed"]))
         if args.command == "policy":
             try:
                 job = json.loads(sys.stdin.read() if args.job == "-" else Path(args.job).read_text(encoding="utf-8"))
-                context = json.loads(args.context.read_text(encoding="utf-8"))
+                context = json.loads(args.context.read_text(encoding="utf-8")) if args.context is not None else None
             except (OSError, UnicodeError, json.JSONDecodeError):
                 raise InputError("review job could not be read as JSON") from None
             print(json.dumps(load_policy(job, context=context), indent=2))

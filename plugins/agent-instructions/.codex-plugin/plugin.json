@@ -1,6 +1,6 @@
 {
   "name": "agent-instructions",
-  "version": "0.5.1",
+  "version": "0.5.2",
   "description": "Maintain project AGENTS.md guidance and find or apply selected refactoring changes in AI agent instructions.",
   "author": {
     "name": "Leon.id Komarovsky"
@@ -9,7 +9,7 @@
   "interface": {
     "displayName": "Agent Instructions",
     "shortDescription": "Improve AI agent instructions",
-    "longDescription": "Keep AI agent instructions clear, useful and current.\n\nMaintain recurring AGENTS.md reviews, audit their schedules, and update project guidance from approved source tasks. Find refactoring opportunities in agent instructions, then apply only the changes you select in the same task.\n\nScheduled reviews change only a section you explicitly approve in the root AGENTS.md. Scheduling needs Codex desktop and accessible source chats; manual refactoring needs access to the instruction files.",
+    "longDescription": "Keep AI agent instructions clear, useful and current.\n\nMaintain recurring AGENTS.md reviews, audit their schedules, and update project guidance from approved source tasks. Find refactoring opportunities in agent instructions, then apply only the changes you select in the same task.\n\nScheduled reviews edit only the authorized root AGENTS.md and preserve any protected sections. Scheduling needs Codex desktop and accessible source chats; manual refactoring needs access to the instruction files.",
     "developerName": "Leon.id Komarovsky",
     "category": "Productivity",
     "capabilities": [

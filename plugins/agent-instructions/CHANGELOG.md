@@ -10,6 +10,15 @@ must take when installing or updating it.
 Users should be able to understand how a release affects capabilities,
 compatibility, setup, data and safe use without reading development records.
 
+## 0.5.2 — 2026-11-05
+
+- Restore ordinary authorized reviews of existing unmarked root AGENTS.md files;
+  managed sections are optional, and existing protected sections remain protected.
+- Collect runtime settings and instruction-loading checks through the configured
+  CLI instead of requiring users to assemble context/evidence files.
+- Preserve current-policy loading, instruction-budget checks, fixed permissions
+  and no-op behavior. Existing 0.5.1 task wrappers need a prompt-only refresh.
+
 ## 0.5.1 — 2026-11-05
 
 ### Fixed

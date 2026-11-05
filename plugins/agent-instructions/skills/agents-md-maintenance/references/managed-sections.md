@@ -1,6 +1,10 @@
 # Managed sections
 
-Use one explicitly adopted section in the root AGENTS.md. Its contents are
+Managed sections are optional. Ordinary authorized reviews of unmarked guides
+need no adoption or markers. Use this procedure only when the user selects a
+narrower managed scope or asks to reconcile an existing marked section.
+
+Use one explicitly selected section in the root AGENTS.md. Its contents are
 maintained by Agent Instructions; every byte outside it remains human-maintained
 and is read-only context for a review. Ownership does not expand the caller's
 authority or allow a project permission to be weakened.
@@ -22,8 +26,9 @@ not been reconciled. It is not proof of human consent or semantic preservation.
 Keep the explicit human selection and accepted whole-file/body hashes in the
 existing review/adoption evidence outside the project, not a new in-file log.
 
-Only one pair is supported. Missing, duplicate, nested, malformed or unsupported
-markers block updates. Marker examples inside fenced code do not claim
+Only one pair is supported. Duplicate, nested, malformed or unsupported
+markers block updates; missing markers block managed-section operations, not
+ordinary root-file reviews. Marker examples inside fenced code do not claim
 ownership. Reserve `agent-instructions:managed` outside fenced examples for the
 actual markers. Unacknowledged body edits fail the checksum; outside edits do
 not transfer ownership and must remain intact. A changed whole-file baseline
@@ -64,8 +69,10 @@ post-write checks visible; never overwrite concurrent work with a stale backup.
 
 The stable `agents-md-review` entry point loads current installed policy; tasks
 keep their existing data and fixed authority rather than a copy of this policy.
-Confirm explicit adoption from the human request or verified prior run evidence.
-Run `managed inspect --project /workspace/project` and the policy's complete
+Preserve the existing narrower boundary under the current review authorization;
+do not demand a new adoption record merely to continue that review. Creating or
+expanding a section still requires the user's selection.
+Run `managed inspect --project /workspace/project` and the policy's automatic
 pre-review host check. Read the entire guide as context and the relevant source
 history, then change only the selected body when evidence supports improvement.
 

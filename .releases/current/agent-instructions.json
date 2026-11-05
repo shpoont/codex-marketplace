@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "plugin": "agent-instructions",
-  "version": "0.5.1",
-  "digest": "14c561caa09f504ef9ca6418a2f96ac93fa09ba032ca94ceefe66ff224f1f189",
+  "version": "0.5.2",
+  "digest": "1f28fa5997d5d08912f459a152f0e9592c001f1b4b43363d8542eefa7c77c706",
   "action": "release"
 }

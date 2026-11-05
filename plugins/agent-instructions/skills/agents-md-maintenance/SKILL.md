@@ -51,9 +51,9 @@ per root file; outside content stays human-maintained. Existing text has no
 inferred plugin ownership. The helper prepares/checks candidates read-only;
 applying one needs the corresponding human authority and complete-file
 budget/loading checks. Ordinary reviews can update/compact an already adopted,
-checksum-valid body, but cannot adopt or reconcile it. An unmarked guide blocks
-writes under policy 3.0.0; plan explicit opt-in before deploying that policy to
-existing review targets. Do not change schedules to conceal an adoption blocker.
+checksum-valid body, but cannot adopt or reconcile it. Managed sections are optional. Ordinary authorized reviews of unmarked guides
+continue without adoption; existing protected sections remain protected. Do not
+change schedules to conceal a real scope or evidence blocker.
 
 ## Audit (read-only)
 
@@ -97,9 +97,10 @@ helper renders and audits only; never edit automation TOML or app databases.
 - Before enabling or migrating a reviewer, verify exactly one installed, enabled
   copy of this plugin provides `agents-md-review` in the inventory-selected cache.
   Follow the execution skill's live inventory/cache resolution contract in the
-  actual caller directory with a verified default profile and no configuration
-  overrides. Named or unknown profiles block; do not discard them. Retained chat discovery text is diagnostic, not a
-  selection or veto. Verify actual task access to the current manifest, entrypoint
+  actual working directory using the existing configured CLI. The helper collects
+  runtime checks; ordinary use needs no caller-prepared context/evidence files.
+  Preserve explicit invocation overrides. Retained chat discovery text is diagnostic,
+  not a selection or veto. Verify actual task access to the current manifest, entrypoint
   and resources, keeping unrelated copies disabled. Access grants no new tool or
   connector permission. Do not migrate to an undeployed entrypoint. Earlier
   catalog-veto wrappers require an explicitly authorized prompt synchronization.

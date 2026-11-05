@@ -1,17 +1,16 @@
 # Agent Instructions
 
-Version 0.5.1 refreshes review instructions from the enabled installation rather
-than relying on a chat's older skill list. Managed sections introduced in 0.5.0
-remain required; earlier 0.4.5 provides budget checks without managed-section
-ownership limits.
+Version 0.5.2 restores ordinary authorized reviews of existing AGENTS.md files.
+Managed sections are optional, existing protected sections remain protected, and
+the helper collects runtime checks without caller-prepared evidence files.
 
 ## Purpose
 
 Keep AI agent instructions clear, useful and current. Maintain project AGENTS.md
 guidance through recurring reviews, or find and apply selected refactoring
-changes in instruction files. Scheduled reviews update only an explicitly
-adopted managed body and its checksum in the selected root AGENTS.md, preserving
-human-maintained text outside it. Manual refactoring requires your selection from preceding discovery
+changes in instruction files. Scheduled reviews edit only the authorized root AGENTS.md and preserve
+existing protected sections. An existing managed block restricts edits to its
+body and checksum; an unmarked guide needs no new adoption. Manual refactoring requires your selection from preceding discovery
 in the same task.
 
 ## Quick start
@@ -64,7 +63,7 @@ outdated, missing, misbound or duplicate schedules without changing them.
 | Add review schedules | Register a verified project and create one Codex scheduled review after explicit authorization. |
 | Migrate saved tasks | Replace copied review policy with a stable plugin reference while preserving the task's ID, recurrence and destination. |
 | Adopt a managed section | Wrap the exact human-selected legacy range without changing its text; no inferred ownership. |
-| Run bounded reviews | Read approved source tasks and update or compact only the adopted section when evidence supports a useful change. |
+| Run bounded reviews | Read approved source tasks and improve the authorized root guide, preserving protected sections and making no change when none is useful. |
 | Reconcile manual edits | Stop on a body checksum mismatch; accept the exact edited body only after an explicit human decision. |
 | Pause or remove schedules | Change only the selected registered review, then read back the saved result. |
 | Find instruction problems | Inspect the selected agent instructions for duplication, conflicts and stale guidance without changing them or executing their workflows. |
@@ -97,24 +96,24 @@ Migrate my existing AGENTS.md review tasks to the current plugin policy.
 
 Migration preserves schedule IDs, recurrence, destinations, notifications and
 project-specific boundaries. Reference-based tasks load the enabled plugin's
-current policy on each invocation through live inventory and validated current
-resources in the verified caller directory. This release supports a verified
-default profile with no configuration overrides; named or unknown profiles stop
-before review because the validated CLI cannot reproduce them for inventory. A chat's older skill list is diagnostic and cannot select an old copy
-or prevent a verified current load. Compatible policy-only updates retain the
-saved reference. A plugin identity, entrypoint or loader-contract change needs
-an explicit migration. Earlier wrappers that stop on catalog disagreement need
-one authorized prompt update; installation alone does not change those tasks.
+current policy on each invocation through fresh inventory and validated current
+resources. The existing configured CLI and actual working directory supply
+ordinary runtime context; users do not assemble context JSON or CLI fingerprints.
+The helper collects effective settings and fresh instruction-loading evidence
+read-only. Explicit invocation overrides must be preserved. A retained chat skill
+list is diagnostic and cannot select an old copy or block accessible current
+instructions. Earlier wrappers requiring a context dossier need one authorized
+prompt-only update; future compatible policy updates need no prompt rewrite.
 
 The management skill owns registry and schedule work. The review skill executes
 one supplied `plugin-reference/v1` job. A review reads only approved source
-tasks and may edit only the adopted body and checksum in the selected project's
-root AGENTS.md. It cannot resume
+tasks and may edit only the selected project's root AGENTS.md within its existing
+authorization and protected sections. It cannot resume
 implementation work, change schedules, commit, push, publish or perform paid
 operations. When evidence does not support an improvement, AGENTS.md stays
 byte-for-byte unchanged.
 
-### Managed ownership
+### Optional protected sections
 
 Select the exact section before adoption:
 
@@ -129,23 +128,21 @@ Reviews may compact only the adopted body; they preserve useful meaning and
 cannot absorb human-maintained text. A body checksum mismatch stops review until
 explicit reconciliation. The checksum is not proof of human approval.
 
-Policy 3.0.0 requires explicit adoption before any write to an unmarked legacy
-guide. Managed ownership does not itself change saved references, but the
-0.5.1 catalog-veto wrapper migration described above is separate. Review targets
-need this opt-in before the new policy can write. No schedule changes happen during
-adoption. A current over-budget or shadowed guide still blocks an ordinary review
-and needs a separately authorized correction.
+Ordinary reviews of an unmarked guide continue under their existing root-file
+authorization. Do not add markers or rewrite the guide merely to satisfy the
+plugin. Deliberately protected text remains protected. Existing marked guides
+keep their narrower body/checksum boundary; malformed or manually edited blocks
+still need the actual conflict resolved before writes.
 
 ### Instruction budget checks
 
-Reviews require verified effective host settings and a complete project
-instruction chain. The read-only helper's `guidance --help` describes its inputs.
-Supply the intended host's project root, working directory,
-`project_doc_max_bytes`, ordered fallback filenames and a fresh
-`codex debug prompt-input` JSON export from that same host/context. Account for
-active profiles and invocation overrides; reading one configuration file alone
-does not establish the effective settings. If they or the export are unavailable,
-the review stops. No default budget is silently assumed.
+The helper checks effective settings and the complete project instruction chain
+through the existing configured Codex CLI. Run `guidance --project <project-root>`;
+it obtains settings and a fresh prompt export automatically without changing
+configuration or writing evidence files. No default byte limit is guessed.
+Over-budget, shadowed or incompletely loaded guidance still blocks delivery.
+Advanced callers may supply explicit settings and a prompt export when needed;
+those must describe the same intended invocation.
 
 `--prompt-input -` accepts the export on standard input, so raw instructions need
 not be saved to disk. Use `--candidate -` separately for a draft projection;
@@ -285,7 +282,7 @@ credentials, private instructions, personal data or raw traces.
 
 ## Version and license
 
-Current version: `0.5.1`. See the [changelog](CHANGELOG.md) for released
+Current version: `0.5.2`. See the [changelog](CHANGELOG.md) for released
 changes and required user actions. Distributed under the [MIT License](LICENSE).
 Python and Codex are prerequisites with their own terms; no third-party runtime
 libraries are vendored.
