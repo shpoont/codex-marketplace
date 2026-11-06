@@ -228,15 +228,18 @@ class YouTubeTransport:
             if stale:
                 cid = videos[stale[0]]['channel_id']
                 channel = next(c for c in observation['channels'] if c['id'] == cid)
+                source = next((c for c in self.config['channels'] if c['id'] == cid), {'id': cid, 'name': cid})
+                name = source.get('name') or cid
                 try:
-                    refreshed = self.call('refreshCatalog', {'id': cid, 'name': cid}, channel,
+                    refreshed = self.call('refreshCatalog', {'id': cid, 'name': name}, channel,
                                           [v for v in stale if videos[v]['channel_id'] == cid])
                 except TransportError as error:
                     if error.details.get('code') != 'catalog_inconsistent' or error.details.get('channel_id') != cid:
                         raise
                     channel.update(complete=False, catalog_unavailable=True, warnings=[{
-                        'code': 'catalog_unavailable', 'channel_id': cid, 'reason': error.details.get('reason'),
-                        'message': 'Channel discovery failed; its additions and retention changes are paused for this run.'}])
+                        'code': 'catalog_unavailable', 'channel_id': cid, 'channel_name': name,
+                        'reason': error.details.get('reason'),
+                        'message': name + ': channel discovery failed; its additions and retention changes are paused for this run.'}])
                     continue
                 if refreshed.get('page_index') and refreshed.get('scanned_at'):
                     cache.checkpoint([{'type': 'catalog', 'catalog': refreshed}])

@@ -94,6 +94,15 @@
       entry.channel_id = metadata.channel_id;
     }
     const channels = [];
+    const pauseCatalog = (channel, prior, error) => {
+      // Account, session, rate-limit and request-contract failures stay strict.
+      if (error.details?.code !== 'catalog_inconsistent' || error.details.channel_id !== channel.id) throw error;
+      const name = channel.name || channel.id;
+      return {id: channel.id, complete: false, catalog_unavailable: true, pages: 0,
+        videos: (prior?.videos || []).map(v => ({...v, listing_fresh: false, listing_unavailable: true})),
+        warnings: [{code: 'catalog_unavailable', channel_id: channel.id, channel_name: name, reason: error.details.reason,
+          message: name + ': channel discovery failed; its additions and retention changes are paused for this run.'}]};
+    };
     const readChannels = [...config.channels];
     const configuredIds = new Set(readChannels.map(c => c.id));
     const needsListing = e => e.percent < 100 && e.playable !== false &&
@@ -118,13 +127,7 @@
       try {
         catalog = await q.channel(channel, needed, prior, millis(settings.catalog_max_age));
       } catch (error) {
-        // Only a scoped catalog contract failure is recoverable here. Account,
-        // session, rate-limit and request-contract failures still stop the run.
-        if (error.details?.code !== 'catalog_inconsistent' || error.details.channel_id !== channel.id) throw error;
-        catalog = {id: channel.id, complete: false, catalog_unavailable: true, pages: 0,
-          videos: (prior?.videos || []).map(v => ({...v, listing_fresh: false, listing_unavailable: true})),
-          warnings: [{code: 'catalog_unavailable', channel_id: channel.id, reason: error.details.reason,
-            message: 'Channel discovery failed; its additions and retention changes are paused for this run.'}]};
+        catalog = pauseCatalog(channel, prior, error);
       }
       if (catalog.complete && !catalog.scope && Array.isArray(catalog.page_index))
         checkpoints.push({type: 'catalog', catalog: JSON.parse(JSON.stringify(catalog))});
@@ -134,18 +137,27 @@
       }
       channels.push(catalog);
     }
+    const unavailableChannels = new Set(channels.filter(c => c.catalog_unavailable).map(c => c.id));
+    const normalIds = new Set(channels.flatMap(c => c.videos).map(v => v.id)), exclusions = {};
+    for (const channel of readChannels) {
+      if (unavailableChannels.has(channel.id)) continue;
+      const needed = new Set(before.entries.filter(e => e.channel_id === channel.id && needsListing(e) && !normalIds.has(e.id)).map(e => e.id));
+      if (!needed.size) continue;
+      try {
+        Object.assign(exclusions, await q.exclusions(channel, needed));
+      } catch (error) {
+        // A source can disappear between its Videos and Shorts/Live reads.
+        const catalog = channels.find(c => c.id === channel.id);
+        const pages = catalog.pages; // Keep metrics for reads already completed.
+        Object.assign(catalog, pauseCatalog(channel, catalog, error), {pages});
+        unavailableChannels.add(channel.id);
+      }
+    }
     changes.catalog_pages_read = channels.reduce((n, c) => n + c.pages, 0);
     changes.catalogs_full = channels.filter(c => c.scan === 'full').length;
     changes.catalogs_incremental = channels.filter(c => c.scan === 'incremental').length;
     changes.catalogs_skipped = channels.filter(c => c.pages === 0).length;
-    const unavailableChannels = new Set(channels.filter(c => c.catalog_unavailable).map(c => c.id));
     const videos = channels.flatMap(c => c.videos);
-    const normalIds = new Set(videos.map(v => v.id)), exclusions = {};
-    for (const channel of readChannels) {
-      if (unavailableChannels.has(channel.id)) continue;
-      const needed = new Set(before.entries.filter(e => e.channel_id === channel.id && needsListing(e) && !normalIds.has(e.id)).map(e => e.id));
-      if (needed.size) Object.assign(exclusions, await q.exclusions(channel, needed));
-    }
     const current = new Map(before.entries.map(e => [e.id, e]));
     const deferredIds = [], ageSkippedIds = [];
     let index = 0, completed = 0;

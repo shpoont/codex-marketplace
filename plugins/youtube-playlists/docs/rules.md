@@ -23,6 +23,13 @@ Uncertain writes require journal/effect readback and are never replayed blindly.
 A saved, separately approved plan can continue through partial progress only
 when its actions still match; changed actions require a fresh preview.
 
+If a source channel disappears or its catalog cannot be verified, that channel's
+additions and retention changes pause with a warning naming the channel. Its
+known videos, history and queued entries are preserved; fully watched cleanup
+can still run. Other channels continue, and a later refresh checks the source
+again. This also applies when the source disappears midway through collection.
+Account, playlist, sign-in and request failures still stop the refresh.
+
 An explicitly identified upcoming premiere is deferred until a later refresh.
 It uses no automatic channel slot, and other additions and watched-video cleanup
 continue. An existing queued premiere stays in place. Upcoming status is checked

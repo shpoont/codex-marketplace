@@ -45,6 +45,16 @@
         ...(cmd.browseEndpoint.params ? {params: cmd.browseEndpoint.params} : {})});
   const catalogFailure = (channel, reason, extra = {}) => attention('Uncertain channel catalog: ' + channel.name + ' (' + reason + ')',
     {code: 'catalog_inconsistent', channel_id: channel.id, reason, ...extra});
+  const requireSourceIdentity = (data, channel) => {
+    const owner = data.metadata?.channelMetadataRenderer?.externalId;
+    if (owner === channel.id) return;
+    // A source can disappear without changing the signed-in account or target.
+    // Do not accept its response as an empty catalog or discard its known IDs.
+    const unavailable = !owner && data.alerts?.some(a => a.alertRenderer?.type === 'ERROR' &&
+      text(a.alertRenderer.text) === 'This channel does not exist.');
+    throw catalogFailure(channel, owner ? 'response_owner_mismatch' :
+      unavailable ? 'channel_unavailable' : 'channel_identity_missing');
+  };
   const catalogRows = (data, channel) => {
     const owner = data.metadata?.channelMetadataRenderer?.externalId;
     if (owner && owner !== channel.id) throw catalogFailure(channel, 'response_owner_mismatch');
@@ -82,7 +92,7 @@
   const scanChannel = async (channel, needed = null, previous = null, maxAgeMs = 0) => {
     if (needed && !needed.size) return {id: channel.id, complete: true, pages: 0, videos: [], scope: 'manual_entries_only'};
     const d = await request(browse(channel.id));
-    if (d.metadata?.channelMetadataRenderer?.externalId !== channel.id) throw Error('Channel identity mismatch');
+    requireSourceIdentity(d, channel);
     const tabs = d.contents?.twoColumnBrowseResultsRenderer?.tabs?.map(t => t.tabRenderer).filter(Boolean);
     if (!tabs?.length) throw catalogFailure(channel, 'unknown_channel_tabs');
     const tab = tabs.find(t => t.title === 'Videos');
@@ -214,9 +224,9 @@
   };
   q.exclusions = async (channel, needed) => {
     const root = await request(browse(channel.id));
-    if (root.metadata?.channelMetadataRenderer?.externalId !== channel.id) throw Error('Exclusion channel identity mismatch');
+    requireSourceIdentity(root, channel);
     const tabs = root.contents?.twoColumnBrowseResultsRenderer?.tabs?.map(t => t.tabRenderer).filter(Boolean);
-    if (!tabs) throw Error('Unknown exclusion tabs');
+    if (!tabs?.length) throw catalogFailure(channel, 'unknown_channel_tabs');
     const found = {};
     for (const tab of tabs.filter(t => ['Shorts', 'Live'].includes(t.title))) {
       await pages(await request(tab.endpoint), rs => rs.forEach(r => walk(r, x => {

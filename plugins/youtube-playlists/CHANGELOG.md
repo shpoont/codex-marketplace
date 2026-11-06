@@ -2,6 +2,13 @@
 
 User-visible changes to YouTube Playlists and any action required when installing or updating it.
 
+## 0.3.12 — 2026-11-06
+
+- Pause an unavailable source channel instead of stopping the whole refresh,
+  including when it disappears during collection. Warnings name the channel;
+  other channels continue. Preserve existing entries and history, and check the
+  source again on a later run. Account, playlist and request checks stay strict.
+
 ## 0.3.11 — 2026-10-30
 
 - Choose newest-first or oldest-first viewing order for all unpinned videos

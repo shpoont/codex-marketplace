@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "plugin": "youtube-playlists",
-  "version": "0.3.11",
-  "digest": "7481eed99da740dab6cc8f2e405ed7296835f0043cc119fac7e44136183805a9",
+  "version": "0.3.12",
+  "digest": "0ee169f6d370ecbb5a50dd04869c8eabb5decefc8cec69ead609a2094a8350ac",
   "action": "release"
 }
