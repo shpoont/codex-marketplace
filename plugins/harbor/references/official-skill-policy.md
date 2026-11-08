@@ -11,11 +11,11 @@ protocol. These are conditional routes, not a chain of required reads:
 
 | Current concern | Methodology to consult |
 | --- | --- |
-| Evaluation design or review, or an unclear evaluation question | [Methodology entrypoint](../skills/harbor-evaluate-agent-behavior/SKILL.md) |
-| Incident reproduction, controlled comparisons, access boundaries or stateful trials | Relevant section of [experiment design](../skills/harbor-evaluate-agent-behavior/references/experiment-design.md) |
-| Grading, collection, calibration or grader integrity | Relevant section of [verifier assurance](../skills/harbor-evaluate-agent-behavior/references/verifier-assurance.md) |
-| Recorded scores, denominators, regrading or Analyze | Relevant section of [result interpretation](../skills/harbor-evaluate-agent-behavior/references/result-interpretation.md) |
-| Resuming or bounding an investigation | Relevant section of [evaluation workflow](../skills/harbor-evaluate-agent-behavior/references/evaluation-workflow.md) |
+| Evaluation design or review, or an unclear evaluation question | [Methodology entrypoint](../skills/harbor-agent-testing/SKILL.md) |
+| Incident reproduction, controlled comparisons, access boundaries or stateful trials | Relevant section of [experiment design](../skills/harbor-agent-testing/references/experiment-design.md) |
+| Grading, collection, calibration or grader integrity | Relevant section of [verifier assurance](../skills/harbor-agent-testing/references/verifier-assurance.md) |
+| Recorded scores, denominators, regrading or Analyze | Relevant section of [result interpretation](../skills/harbor-agent-testing/references/result-interpretation.md) |
+| Resuming or bounding an investigation | Relevant section of [evaluation workflow](../skills/harbor-agent-testing/references/evaluation-workflow.md) |
 
 Pure Exec operations or Hub/Hugging Face preparation use this policy and their
 selected operational guide. Add a methodology section when its concern arises;
@@ -23,8 +23,8 @@ do not turn every reference link into another mandatory read.
 
 ## Scope, versions and cost
 
-- Keep the user's current question, evidence, deliverable, attempt limit and
-  stopping condition explicit. Separate authoring, calibration, execution,
+- Keep the user's current question, evidence, deliverable, any explicit limits
+  and stopping condition explicit. Separate authoring, calibration, execution,
   interpretation and publication; a request for one does not authorize all.
 - Check the actual selected executable and installed version, relevant help,
   configuration schema and backend capabilities before version-sensitive use.
@@ -41,14 +41,14 @@ do not turn every reference link into another mandatory read.
 - Preserve the user's selected backend. Prefer local Docker for a new local
   evaluation. Cloud defaults in upstream guides do not authorize uploading
   project data, selecting a provider or spending on its account.
-- Before inference, recommend and agree exact models, reasoning settings,
-  authentication route and a cumulative attempt budget for every evaluated,
-  judge (including calibration), map, reduce, simulated-user, model-audit,
-  Analyze and auxiliary model role. Explain quality, latency and usage
+- Before inference, recommend and agree models, reasoning settings and the
+  authentication route for the evaluated, judge, map, reduce, simulated-user
+  and other model-backed roles actually needed. Explain quality, latency and usage
   tradeoffs. Do not inherit settings from the current chat, client defaults,
   UI suggestions or unrelated runs. An outer test model's approval
   does not approve those roles. Inspect Oracle/verifier paths for hidden model
-  use. Reuse existing valid agreements; do not ask again for authorized actions.
+  use. Reuse existing valid agreements across applicable roles and routine
+  retests; do not ask again for authorized actions.
   If a choice is missing or changes, ask and wait before the affected model
   calls; continue authorized preparation and checks without inference. Verify
   the selected agent/provider supports the agreed model and effort. When
@@ -56,6 +56,13 @@ do not turn every reference link into another mandatory read.
   effort is inapplicable; never invent an effort level or silently use a
   default. Record settings separately for each role. Do not substitute another
   model or effort without agreement.
+- Do not require a numerical attempt, time or usage budget or a separate budget
+  approval before authorized tests, increments or routine debugging. Choose
+  proportionate execution settings and report actual usage. Internal estimates
+  are planning aids, not permission limits. Honor limits the user explicitly
+  sets; ask before exceeding them or materially changing scope, cost or access.
+  Reassess repeated failures rather than retrying indefinitely or adding another
+  approval mechanism.
 - Missing runtime, credentials, capabilities or required evidence stop the
   affected action. Explain the blocker; do not invent a substitute or fallback.
 

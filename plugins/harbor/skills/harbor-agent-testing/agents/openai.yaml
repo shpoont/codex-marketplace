@@ -1,0 +1,7 @@
+interface:
+  display_name: "Harbor Agent Testing"
+  short_description: "Create, run and review repeatable agent tests"
+  default_prompt: "Use $harbor-agent-testing to create, run and review repeatable Harbor tests against this project's acceptance criteria."
+
+policy:
+  allow_implicit_invocation: true

@@ -4,7 +4,7 @@ Design trustworthy agent evaluations with Harbor. Turn a project question into
 representative cases, check that the verifier measures the intended behavior,
 and interpret results with clear evidence limits.
 
-This independent package combines our `harbor-evaluate-agent-behavior` methodology with
+This independent package combines our **Harbor Agent Testing** workflow with
 six officially sourced Harbor workflows. It uses Harbor's official logo;
 Harbor Framework does not publish or endorse this plugin. “Official” identifies
 the origin of the bundled guides, whose exact revision and hashes appear in
@@ -12,7 +12,7 @@ the origin of the bundled guides, whose exact revision and hashes appear in
 
 | Skill | Use it for |
 | --- | --- |
-| `harbor-evaluate-agent-behavior` | Evaluation design, calibration and evidence review |
+| `harbor-agent-testing` | Create, run and review repeatable tests of agent behavior |
 | `official-create-task` | Authoring a Harbor task |
 | `official-rewardkit` | Building a task verifier with Reward Kit |
 | `official-harbor-exec` | Planning Exec map and reduce jobs and artifacts |
@@ -33,10 +33,14 @@ our evaluation safeguards remain authoritative over upstream examples.
   Docker is preferred for local evaluations.
 
 Installation does not install Harbor, Docker, models or other tools. The package
-includes instructions and one optional Python helper described below. Design
+includes instructions, an optional parity helper and an archive of validated
+Docker/Codex recipes. The [recipe guide](skills/harbor-agent-testing/references/validated-recipes.md)
+states the pinned runtime, supported forms and limits. Extract recipes into
+project staging; installation does not execute them. Design
 and review work need no separate plugin account.
 Evaluation runs can consume model usage and create containers, files and logs.
-Agree on models, reasoning settings and usage limits before starting them.
+Agree on models, reasoning settings and authentication before starting them.
+Routine tests need no separate budget approval; explicit user limits still apply.
 
 ## Install
 
@@ -52,13 +56,14 @@ that all seven skills above are available. If a standalone copy of the
 same skill is installed, select the intended copy explicitly and preserve a
 recovery copy before changing its installation.
 
-## Upgrade from 0.2.0
+## Upgrade to 0.4.0
 
-The methodology skill is now **Harbor Evaluate Agent Behavior**, with slug
-`harbor-evaluate-agent-behavior`. Replace saved `$harbor-agent-tests` invocations
-and old methodology resource paths with this slug. The retired slug is not an
-alias or an eighth skill. Open a fresh conversation after updating; the plugin
-ID, six official skill names and Harbor CLI commands are unchanged.
+The main skill is now **Harbor Agent Testing**, with slug `harbor-agent-testing`.
+Replace saved `$harbor-evaluate-agent-behavior` invocations and resource paths
+with `$harbor-agent-testing`. Users upgrading from 0.2.0 should also replace
+`$harbor-agent-tests`. The retired slugs are not aliases or extra skills.
+Open a fresh conversation after updating; the plugin ID, six official skill
+names and Harbor CLI commands are unchanged.
 
 ## Use
 

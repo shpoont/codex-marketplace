@@ -9,6 +9,24 @@ Record changes that affect Harbor users and any required update actions.
 Users should understand evaluation capabilities, prerequisites and safe use
 from the installed package.
 
+## 0.4.0 — 2026-11-08
+
+- Rename the main skill to **Harbor Agent Testing**, slug `harbor-agent-testing`.
+  Replace saved `$harbor-evaluate-agent-behavior` invocations and resource paths;
+  older `$harbor-agent-tests` invocations also migrate to the new slug. Open a
+  fresh conversation after updating. The plugin ID and six Official skills
+  remain unchanged; retired slugs are not aliases.
+- Remove mandatory numerical budget approvals for authorized testing and routine
+  debugging. Model, reasoning and authentication agreements, explicit user limits,
+  installed-version checks and execution safeguards remain authoritative.
+- Route repeatable Docker/Codex/ChatGPT subscription evaluations to a packaged
+  archive of validated recipes, with explicit qualification and unsupported
+  combinations. Preserve canonical project cases and grading, installed-version
+  authority and safeguards. Recover a failed policy read before other references.
+- Add optional native developer-instruction delivery with exact UTF-8 input
+  hashes, including mixed line endings. Keep project migration evidence separate
+  from installed-package or production claims.
+
 ## 0.3.2 — 2026-10-29
 
 ### Changed

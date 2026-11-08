@@ -16,7 +16,7 @@ Include:
 - the current stage and the case's success rule;
 - valid evidence, its tested revisions, and unresolved findings;
 - the next action, why it is necessary, and its completion condition;
-- remaining time, attempt or usage bounds, and the stopping condition.
+- any explicit user limits, useful execution estimates and the stopping condition.
 
 Distinguish preparation, evaluator calibration, execution-path qualification,
 completed agent work, and demonstrated repair. Hundreds of component checks

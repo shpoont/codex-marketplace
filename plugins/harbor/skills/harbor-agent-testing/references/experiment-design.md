@@ -164,8 +164,8 @@ defined completion rule. Inspect step errors as well as trial errors.
 ### Simulated users
 
 Treat the simulated user as an experimental component with its own agreed
-model and effort, persona, task knowledge, bridge instructions, turn or resource
-budget, and stopping rule. Preserve those conditions across target-agent
+model and effort, persona, task knowledge, bridge instructions, operator-selected
+execution bounds and stopping rule. Preserve those conditions across target-agent
 comparisons unless the experiment deliberately varies them. Apply the shared
 model agreements before user-model calls, including calibration runs.
 
@@ -187,13 +187,13 @@ judge samples, simulated users or reducers, and analysis. Distinguish these
 sources of usage rather than treating every invocation as another observation
 of agent reliability. Apply model-setting agreements to every model-backed role.
 
-Define when to stop or reassess before increasing execution: exhausted usage
-bounds, repeated infrastructure failures, or invalid evidence that prevents the
-intended comparison. Preserve partial results and explain the blocker. Do not
-silently increase retries, timeouts, judge samples, or scope in response to
-unfavorable results. Obtain agreement for material changes to the experiment or
-its constraints; do not introduce extra approval steps for choices already
-authorized.
+Define when to stop or reassess: an explicit user limit, repeated infrastructure
+failures, or invalid evidence that prevents the intended comparison. Preserve
+partial results and explain the blocker. Record changes to retries, timeouts or
+judge samples; do not change the experiment to erase unfavorable results.
+Internal estimates can be adjusted within the authorized route without a new
+budget approval. Obtain agreement before exceeding a user limit or materially
+changing the experiment's scope, cost or access.
 
 For setup and repair decisions, assess
 [cumulative effort and blockers](evaluation-workflow.md#cumulative-effort-and-blockers)

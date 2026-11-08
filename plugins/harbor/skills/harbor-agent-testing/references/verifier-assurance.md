@@ -193,8 +193,9 @@ injection flags are descriptive or affect the score before examining results.
 A guard can help detect interference; it does not establish that a judge is
 immune or accurate. Preserve flags and their underlying evidence.
 
-Use repeated judge samples when disagreement could change the decision and the
-planned budget permits it. Retain sample results and agreement measures;
+Use repeated judge samples when disagreement could change the decision and
+the additional evidence justifies the usage. Honor explicit user limits.
+Retain sample results and agreement measures;
 agreement alone does not prove correctness. Do not increase samples after
 seeing an inconvenient result without recording the changed protocol.
 
