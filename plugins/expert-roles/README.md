@@ -5,7 +5,7 @@
 Browse a reviewed collection of 74 expert roles and manage selected personal
 native agents in Codex while preserving manual files and local edits. Canonical
 role content comes unchanged from the
-[Expert Roles v1.5.0 library](https://github.com/shpoont/expert-roles/tree/308483aec6627c6fd50616f27822b48af92ad181).
+[Expert Roles v2.0.0 library](https://github.com/shpoont/expert-roles/tree/9479fe9f519060e44e469438a9da29b25359b2e1).
 
 ## Rationale
 
@@ -113,7 +113,7 @@ version and ownership; the manager does not replace them during a plugin upgrade
 
 Preview a managed update with `update EXPERT_ID`. For a manual role, use
 `update EXPERT_ID --adopt` only when adopting that selected role is authorized.
-Recognition uses exact reviewed release hashes, including v1.4.0 and v1.4.1;
+Recognition uses exact reviewed release hashes for v1.4.0, v1.4.1, v1.4.2 and v1.5.0;
 filenames or version comments alone are insufficient. Unknown edits, aliases,
 conflicting definitions and downgrades are refused.
 

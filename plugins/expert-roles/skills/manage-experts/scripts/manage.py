@@ -26,7 +26,7 @@ PACKAGE = Path(__file__).resolve().parents[3]
 PLUGIN = "expert-roles"
 SLUG = re.compile(r"[a-z0-9]+(?:-[a-z0-9]+)*\Z")
 DIGEST = re.compile(r"[0-9a-f]{64}\Z")
-RECOGNIZED_SHA256 = "56efcec8217f6fde73b9b406ecf2ca5d0a476ffc279d21fce652385020133556"
+RECOGNIZED_SHA256 = "c0e7021d64d28011ff3dcf8d82a60f796e22d6af41f2b9d6d1101a823d20bd88"
 
 
 class Conflict(Exception):

@@ -1,6 +1,6 @@
 {
   "name": "expert-roles",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "Choose expert perspectives for Codex and manage their personal installations while preserving existing roles and local edits.",
   "license": "MIT",
   "skills": "./skills/",

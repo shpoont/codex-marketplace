@@ -10,6 +10,15 @@ released or updated.
 Users should be able to understand capabilities, compatibility, setup and data
 effects from the distributed documentation.
 
+## 0.2.2 — 2026-11-09
+
+- Bundle the 74 experts from published canonical library v2.0.0. Expert IDs,
+  descriptions, nicknames and instructions are unchanged from v1.5.0; only the
+  library version comments change in the role files.
+- Recognize exact v1.5.0 exports alongside the reviewed earlier releases.
+  Existing personal roles, ownership and backups are preserved. A plugin upgrade
+  does not install, update or adopt personal roles automatically.
+
 ## 0.2.1 — 2026-11-04
 
 - Add Von Glitschka and Yukio Miyamoto from canonical library
