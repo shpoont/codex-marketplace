@@ -1,6 +1,6 @@
 {
   "name": "expert-roles",
-  "version": "0.2.2",
+  "version": "0.3.0",
   "description": "Choose expert perspectives for Codex and manage their personal installations while preserving existing roles and local edits.",
   "license": "MIT",
   "skills": "./skills/",
@@ -10,7 +10,7 @@
   "interface": {
     "displayName": "Expert Roles",
     "shortDescription": "Manage personal expert roles",
-    "longDescription": "Choose expert perspectives for your work in Codex. Browse the reviewed collection, inspect installed versions, and install, update, explicitly adopt or remove one personal expert at a time.\n\nUpdates preserve verified original backups and require a frozen preview. Manual edits and unrelated roles are preserved. Requires Python 3.12 or newer on macOS or Linux. Project writes and automatic invocation are not included.",
+    "longDescription": "Choose expert perspectives for your work in Codex. Browse the reviewed collection, inspect installed versions, and install, update, explicitly adopt or remove one personal expert at a time.\n\nUpdates require a frozen preview and keep recovery files only until completion. Manual edits and unrelated roles are preserved. Requires Python 3.12 or newer on macOS or Linux. Project writes and automatic invocation are not included.",
     "developerName": "Leon.id Komarovsky",
     "category": "Productivity",
     "websiteURL": "https://github.com/shpoont/codex-marketplace/tree/main/plugins/expert-roles",

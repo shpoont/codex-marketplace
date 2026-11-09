@@ -15,8 +15,8 @@ your local edits as files it must protect.
 
 ## Install and start
 
-Version `0.2.0` supports selected updates and explicit adoption of verified
-canonical exports. Install
+Version `0.3.0` supports selected updates and explicit adoption of verified
+canonical exports without retaining backups after success. Install
 `expert-roles@b2a48b` from the existing marketplace in your Codex plugin browser.
 For the CLI:
 
@@ -71,8 +71,9 @@ resolve in this order:
 Native files go under that directory's `agents/`. Ownership, the library license,
 an operation lock and recovery files go under `expert-roles/`, outside agent
 discovery. Ownership records contain relative role paths, library version,
-commit, digest, and update/adoption history with relative backup paths. No author-machine
-path or fixed username is used. Relative or empty configured homes are rejected.
+commit, digest, and update/adoption history. Older history can contain backup
+paths from earlier plugin versions. No author-machine path or fixed username is
+used. Relative or empty configured homes are rejected.
 
 For direct use, locate the installed `manage-experts` skill and set `SKILL_DIR`
 to its actual absolute directory. Run with an available Python 3.12+ interpreter:
@@ -99,9 +100,9 @@ working directory and its ancestor `.codex` directories are inspected.
 matching-manual and conflicting definitions. `manual-match` means an exact match
 to bundled bytes, with no plugin ownership. Install and remove never adopt an
 unmanaged file. Explicit `update --adopt` can replace a verified canonical
-manual export and take ownership of the new file while retaining the original.
-A modified managed
-file retains its recorded library version, but that version no longer verifies
+manual export and take ownership of the new file. The original is kept only
+until the update completes. A modified managed file retains its recorded
+library version, but that version no longer verifies
 its current contents.
 
 After a bundle upgrade, an older manual role can appear as `unmanaged` instead
@@ -118,7 +119,7 @@ filenames or version comments alone are insufficient. Unknown edits, aliases,
 conflicting definitions and downgrades are refused.
 
 The preview discloses current/target provenance and hashes, ownership before and
-after, the backup path and `plan_sha256`. Apply only that frozen preview:
+after, `backup: null` and `plan_sha256`. Apply only that frozen preview:
 
 ```sh
 python "$SKILL_DIR/scripts/manage.py" update steve-jobs --adopt
@@ -127,11 +128,12 @@ python "$SKILL_DIR/scripts/manage.py" update steve-jobs --adopt --expect-plan "$
 
 Set `PLAN_SHA256` to the exact preview value. Omit `--adopt` for an already
 managed role. Apply rechecks the preview under the operation lock and refuses
-intervening changes. Originals are backed up read-only under
-`expert-roles/backups/`, with provenance; the transaction also retains its
-captured source under `expert-roles/updates/`. The new canonical file preserves
-the prior mode. Ownership is recorded after publication and byte checks; a
-failure can leave a published file awaiting explicit recovery.
+intervening changes. Updates do not create permanent backups. A temporary
+captured original under `expert-roles/updates/` supports interrupted-operation
+recovery. After the new canonical file and ownership are verified, the original
+and transaction directory are removed. Version and hash history remain, without
+a rollback copy. The new file preserves the prior mode. A failure can leave
+a published file or temporary data awaiting explicit recovery.
 An unchanged current managed role is a no-op. Each command selects one expert;
 no operation implicitly updates all installed or bundled roles.
 
@@ -180,15 +182,18 @@ target provenance. Keep the initiating version available until recovery is clear
 The pending update retains its approved preview, including its original home and
 project context. Recovery checks the preview hash and recorded transition before
 writing; it resolves destinations from the currently selected Codex home.
-Captured originals are retained even after success so edits through an old
-editor handle are not discarded. Do not delete backups or transaction evidence
-to force an operation to proceed.
+Successful updates remove their captured originals and transaction directories.
+Observed edits during an update stop cleanup and remain available for review.
+Do not delete pending transaction evidence to force an operation to proceed.
+Complete a pending update from an older plugin with its initiating helper
+before upgrading. Backups retained by older versions are not automatically
+deleted; their cleanup is separate from a role update.
 
 Remove managed experts before uninstalling the plugin. Uninstalling the bundle
 alone leaves installed native files and management records. Reinstalling the
 manager can inspect those records. Upgrading the plugin does not update installed
 roles; each selected update or adoption remains explicit. Removing a managed
-role preserves its backups and captured originals.
+role does not clean up historical backups from older plugin versions.
 
 ## Support, version and license
 

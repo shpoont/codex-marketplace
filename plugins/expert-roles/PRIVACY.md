@@ -21,17 +21,19 @@ network requests does not mean that your Codex conversation stays on the device.
 
 An explicit apply operation can create, update or remove one selected personal
 role. Adopting a manual role requires explicit authorization and exact bytes
-from a recognized canonical release. Updates retain an original backup and
-captured source; unknown manual edits are preserved. The helper never edits
-Codex configuration or unrelated roles.
+from a recognized canonical release. Updates keep a temporary captured source
+only until successful completion; unknown manual edits are preserved. The helper
+never edits Codex configuration or unrelated roles.
 
 Ownership records, the library license, an operation lock and any recovery
 files live in `expert-roles/` under the selected Codex home. Records use relative
 role destinations and library version, commit and digest provenance. A failed
 operation can retain staged or captured role contents for explicit recovery.
-Updates also retain read-only original backups and provenance under `backups/`,
-captured originals under `updates/`, and adoption/update history in ownership
-records. These files remain even after successful updates or role removal.
+Successful updates create no permanent backup and remove their captured
+originals and transaction directories under `updates/`. Version/hash and
+adoption history remain in ownership records, without copies of old role
+contents. Backups and captured originals retained by older plugin versions
+are not automatically deleted. Old history can still mention those paths.
 While an update is pending, its journal also retains the approved preview with
 the then-current home/project paths. This context is removed with the journal
 after successful recovery or completion; it is not a write destination override.

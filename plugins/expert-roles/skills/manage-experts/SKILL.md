@@ -76,8 +76,8 @@ python "$SKILL_DIR/scripts/manage.py" update steve-jobs --adopt
 ```
 
 These are read-only previews. Report current and target versions/hashes, the
-ownership change, and the retained backup path. A request to update an existing
-manual expert must explicitly authorize adoption before applying it. For an
+ownership change, and that successful updates retain no original backup. A request
+to update an existing manual expert must explicitly authorize adoption before applying it. For an
 authorized update, take `plan_sha256` from that preview and pass it unchanged:
 
 ```sh
@@ -88,7 +88,8 @@ Omit `--adopt` for a managed role. Changed bytes, modes, provenance, destination
 or project context invalidate the preview. Do not silently substitute a new
 preview hash after an apply refusal. Each command changes only its selected role;
 update a requested set only by selecting those IDs, never all bundled experts.
-Backups and captured originals remain outside discovery, including after removal.
+Updates keep a captured original outside discovery only while pending. Successful
+completion removes it; version/hash history remains without a rollback copy.
 
 ## Recovery and limits
 
@@ -98,7 +99,8 @@ the recorded operation after checking ownership, bytes and conflicts. Use it
 only when resuming that operation is authorized. Changed or ambiguous recovery
 files are preserved for a user decision; never discard them to force progress.
 
-Project writes, multi-expert commands and automatic cleanup are deferred.
+Project writes, multi-expert commands and cleanup of older retained backups are
+deferred. Successful updates automatically remove their own temporary files.
 Complete pending updates with the helper that started them before changing the
 bundle; another version may require the original reviewed snapshot.
 Remove managed roles before uninstalling the plugin; uninstalling the package

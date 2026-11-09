@@ -470,7 +470,7 @@ class Manager:
                 "current": dict(source, mode=mode), "target": target,
                 "ownership": {"before": "managed" if existing else "unmanaged", "after": "managed", "adopt": not bool(existing)},
                 "ownership_record_sha256": digest(json.dumps(existing, sort_keys=True).encode()),
-                "backup": f"expert-roles/backups/{name}/{source['sha256']}.toml" if outcome == "ready" else None}
+                "backup": None}
         plan["plan_sha256"] = digest(json.dumps(plan, sort_keys=True).encode())
         return plan
 
@@ -516,13 +516,14 @@ class Manager:
         name, before = pending["name"], pending.get("before")
         entry = pending["entry"]
         self.validate_entry(name, entry)
+        if pending.get("backup") is not None:
+            raise Conflict("Complete this pending update with its initiating helper before upgrading")
         if (not isinstance(before, dict) or not DIGEST.fullmatch(str(before.get("sha256", "")))
                 or before.get("repository") != self.snapshot["repository"]
                 or not re.fullmatch(r"[0-9a-f]{40}", str(before.get("revision", "")))
                 or type(before.get("mode")) is not int or not 0 <= before["mode"] <= 0o7777
                 or not re.fullmatch(r"[0-9a-f]{32}", str(pending.get("transaction", "")))
-                or not DIGEST.fullmatch(str(pending.get("plan_sha256", "")))
-                or pending.get("backup") != f"expert-roles/backups/{name}/{before['sha256']}.toml"):
+                or not DIGEST.fullmatch(str(pending.get("plan_sha256", "")))):
             raise Conflict("Invalid update recovery record; preserve it for review")
         version_tuple(before.get("version"))
         if before.get("entry") is not None:
@@ -570,28 +571,6 @@ class Manager:
             raise Conflict("Update bytes or mode changed; preserve the role and recovery files")
         return data
 
-    def update_backup(self, pending, source):
-        before = pending["before"]
-        backup = self.home / pending["backup"]
-        check_directory(backup.parent)
-        durable_directory(backup.parent)
-        if not os.path.lexists(backup):
-            self.exclusive_write(backup, self.check_update_file(source, before))
-            backup.chmod(0o400)
-            sync_directory(backup.parent)
-        data, mode = regular_file(backup)
-        if digest(data) != before["sha256"] or mode != 0o400:
-            raise Conflict("Original backup changed; preserve it for review")
-        metadata = {key: before[key] for key in ("repository", "version", "revision", "sha256", "mode")}
-        metadata_path = backup.with_suffix(".json")
-        if not os.path.lexists(metadata_path):
-            self.exclusive_write(metadata_path, (json.dumps(metadata, sort_keys=True) + "\n").encode())
-            metadata_path.chmod(0o400)
-            sync_directory(backup.parent)
-        data, mode = regular_file(metadata_path)
-        if json.loads(data) != metadata or mode != 0o400:
-            raise Conflict("Backup provenance changed; preserve it for review")
-
     def finish_update(self, pending):
         name, entry, before = pending["name"], pending["entry"], pending["before"]
         path = self.agents / (name + ".toml")
@@ -605,10 +584,13 @@ class Manager:
             raise Conflict("Resolve competing definitions or inspection issues before update recovery")
         workspace = self.storage / "updates" / pending["transaction"]
         check_directory(workspace)
-        durable_directory(workspace)
-        if self.agents.stat().st_dev != workspace.stat().st_dev:
-            raise Conflict("Update requires staging and personal agents on the same filesystem")
-        if any(p.name not in ("payload", "captured") for p in workspace.iterdir()):
+        # Once ownership is committed, recovery can finish cleanup even if the
+        # original or the whole workspace was already removed before a crash.
+        if existing != entry:
+            durable_directory(workspace)
+            if self.agents.stat().st_dev != workspace.stat().st_dev:
+                raise Conflict("Update requires staging and personal agents on the same filesystem")
+        if workspace.exists() and any(p.name not in ("payload", "captured") for p in workspace.iterdir()):
             raise Conflict("Unrecognized update transaction file; preserve it for review")
         payload, captured = workspace / "payload", workspace / "captured"
         target = dict(entry, mode=before["mode"])
@@ -623,8 +605,6 @@ class Manager:
                 payload.chmod(before["mode"])
                 sync_directory(workspace)
             self.check_update_file(payload, target)
-        source = captured if os.path.lexists(captured) else path
-        self.update_backup(pending, source)
         license_path = self.storage / "library-LICENSE"
         if os.path.lexists(license_path):
             if regular_bytes(license_path) != self.license:
@@ -657,13 +637,23 @@ class Manager:
             atomic_json(self.state_file, state)
         else:
             self.check_update_file(path, target)
+            if os.path.lexists(captured):
+                self.check_update_file(captured, before)
+        # Keep originals only while an update is pending. Recheck before each
+        # deletion so observed edits remain available for an explicit decision.
+        if os.path.lexists(captured):
             self.check_update_file(captured, before)
         if os.path.lexists(payload):
             self.check_update_file(payload, target)
             payload.unlink()
             sync_directory(workspace)
-        # Retain the captured original, including any future edits through an
-        # already-open editor handle. Never discard that evidence as cleanup.
+        if os.path.lexists(captured):
+            self.check_update_file(captured, before)
+            captured.unlink()
+            sync_directory(workspace)
+        if workspace.exists():
+            workspace.rmdir()
+            sync_directory(workspace.parent)
         self.journal_file.unlink()
         sync_directory(self.storage)
         return "updated"

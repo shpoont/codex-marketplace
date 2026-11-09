@@ -10,6 +10,18 @@ released or updated.
 Users should be able to understand capabilities, compatibility, setup and data
 effects from the distributed documentation.
 
+## 0.3.0 — 2026-11-09
+
+- Stop creating permanent original-file backups during role updates and adoption.
+  Remove temporary captured originals and transaction directories after verified
+  success; keep version/hash history without a rollback copy.
+- Preserve temporary recovery data when an update is interrupted or an edit is
+  detected. Recovery can finish cleanup after ownership has already committed.
+- Existing backups from older versions are not removed automatically. Complete
+  any pending operation with the helper that started it before upgrading.
+- Continue bundling unchanged library v2.0.0. Plugin upgrades do not install new
+  experts or update personal roles automatically.
+
 ## 0.2.2 — 2026-11-09
 
 - Bundle the 74 experts from published canonical library v2.0.0. Expert IDs,

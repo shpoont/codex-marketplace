@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "plugin": "expert-roles",
-  "version": "0.2.2",
-  "digest": "1a63c7601f8c413e658488514ff3abfeb549425cb7e92873135dff61c86e29ed",
+  "version": "0.3.0",
+  "digest": "1c79b3b9cf645be355f36468e67fd243d860b2675a6ed08c1ef50448bd8414bc",
   "action": "release"
 }
