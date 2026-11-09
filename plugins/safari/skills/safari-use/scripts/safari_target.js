@@ -28,11 +28,16 @@ var SafariTarget = (function () {
     }
     function probeCode(state) {
         return '(function(){return JSON.stringify({marker:window[' + JSON.stringify(MARKER) +
-            '],url:location.href,ready:document.readyState});})()';
+            '],claimed:Object.prototype.hasOwnProperty.call(window,' + JSON.stringify(MARKER) +
+            '),url:location.href,ready:document.readyState});})()';
     }
     function stampCode(state) {
+        var startup = state.binding_kind !== 'reuse' && state.binding_pending &&
+            state.created_windows.indexOf(state.window_id) !== -1;
         return '(function(){if(location.href!==' + JSON.stringify(state.expected_url) +
-            ')return JSON.stringify({status:"context-mismatch",dispatched:false});' +
+            '){if(' + JSON.stringify(startup) + '&&location.href==="about:blank")' +
+            'return JSON.stringify({status:"loading",dispatched:false,reason:"initial-navigation"});' +
+            'return JSON.stringify({status:"context-mismatch",dispatched:false,reason:"unexpected-page"});}' +
             'if(document.readyState==="loading")return JSON.stringify({status:"loading",dispatched:false});' +
             'if(Object.prototype.hasOwnProperty.call(window,' + JSON.stringify(MARKER) +
             '))return JSON.stringify({status:"already-bound",dispatched:false});' +
@@ -61,9 +66,19 @@ var SafariTarget = (function () {
         }
         return result;
     }
+    function observe(browser, address, state) {
+        var result = parsed(browser, address, probeCode(state));
+        if (typeof result.url !== 'string' || typeof result.claimed !== 'boolean' ||
+            ['loading', 'interactive', 'complete'].indexOf(result.ready) === -1 ||
+            (result.marker !== undefined && typeof result.marker !== 'string')) {
+            throw new Error('Malformed probe observation');
+        }
+        return result;
+    }
     function bind(browser, state, address, save) {
         state.window_id = address.window_id;
         state.binding_pending = true;
+        state.binding_kind = 'initial';
         save(state); // Keep the marker token even if its installation reply is lost.
         var result;
         try { result = parsed(browser, address, stampCode(state)); }
@@ -76,40 +91,43 @@ var SafariTarget = (function () {
     }
     function inspect(browser, state, save, expectedUrl) {
         validate(state);
-        if (state.creation_pending) return reply('creation-outcome-unknown');
+        if (state.creation_pending) return creationUnknown(state);
         var addresses;
         try { addresses = browser.tabs(state.window_id); }
         catch (_) { return reply('unreadable'); }
         if (addresses === null || addresses.length === 0) return reply('missing');
-        var matches = [], unreadable = 0;
+        var matches = [], unreadable = 0, observations = [];
         addresses.forEach(function (address) {
             try {
-                var observation = parsed(browser, address, probeCode(state));
-                if (typeof observation.url !== 'string' ||
-                    ['loading', 'interactive', 'complete'].indexOf(observation.ready) === -1 ||
-                    (observation.marker !== undefined && typeof observation.marker !== 'string')) {
-                    throw new Error('Malformed probe observation');
-                }
+                var observation = observe(browser, address, state);
+                observations.push({tab_index: address.tab_index,
+                    page: observation.url === state.expected_url ? 'expected' :
+                        observation.url === 'about:blank' ? 'blank' : 'other',
+                    ready: observation.ready, marker: observation.marker === state.marker ?
+                        'matching' : observation.claimed ? 'other' : 'absent'});
                 if (observation.marker === state.marker) matches.push({address: address, observation: observation});
             } catch (_) { unreadable += 1; }
         });
-        if (matches.length > 1) return reply('ambiguous', {match_count: matches.length});
+        var details = {window_id: state.window_id, tab_count: addresses.length, observations: observations};
+        if (matches.length > 1) return reply('ambiguous', Object.assign(details, {match_count: matches.length}));
         // An unreadable tab could be a second copy. Do not pick a visible winner.
-        if (unreadable) return reply('unreadable');
+        if (unreadable) return reply('unreadable', Object.assign(details, {unreadable_count: unreadable}));
         if (matches.length === 0) {
             if (state.binding_pending) {
                 // Finish initial installation only in the sole tab of the new
                 // dedicated window. This is not repair of a lost established marker.
-                if (state.created_windows.indexOf(state.window_id) !== -1 && addresses.length === 1) {
+                if (state.binding_kind !== 'reuse' &&
+                    state.created_windows.indexOf(state.window_id) !== -1 && addresses.length === 1) {
                     return bind(browser, state, addresses[0], save);
                 }
-                return reply('unbound');
+                return reply('unbound', Object.assign(details, {reason: state.binding_kind === 'reuse' ?
+                    'explicit-reuse-verification-required' : 'multiple-tabs-before-binding'}));
             }
-            return reply('missing');
+            return reply('missing', details);
         }
         var match = matches[0];
-        if (match.observation.url !== (expectedUrl === undefined ? state.expected_url : expectedUrl)) return reply('context-mismatch');
-        if (match.observation.ready === 'loading') return reply('loading');
+        if (match.observation.url !== (expectedUrl === undefined ? state.expected_url : expectedUrl)) return reply('context-mismatch', details);
+        if (match.observation.ready === 'loading') return reply('loading', details);
         state.binding = {tab_index: match.address.tab_index};
         state.binding_pending = false;
         save(state);
@@ -122,7 +140,8 @@ var SafariTarget = (function () {
         if (target.status !== 'ready') return target;
         var operation = null;
         if (effect === 'write') {
-            operation = {id: nonce(), state: 'dispatch-unknown'};
+            operation = {id: nonce(), state: 'dispatch-unknown', context: {
+                window_id: state.window_id, generation: state.generation, expected_url: state.expected_url}};
             state.pending = operation;
             save(state); // Before any possibly mutating AppleEvent.
         }
@@ -154,26 +173,152 @@ var SafariTarget = (function () {
         save(state); // Retain pending effects, recovery budget and original recipe.
         return reply('transitioned', {generation: state.generation});
     }
+    function creationUnknown(state) {
+        return reply('creation-outcome-unknown', {reason: state.creation_pending.reason ||
+            'creation-not-reconciled', stage: state.creation_pending.stage || 'unknown',
+            candidate_window_ids: state.creation_pending.candidate_window_ids || []});
+    }
+    function creationReason(error) {
+        var allowed = ['multiple-new-windows', 'no-new-window', 'window-inspection-failed'];
+        if (error && allowed.indexOf(error.creationReason) !== -1) return error.creationReason;
+        return error && error.number === -1743 ? 'automation-denied' : 'creation-event-failed';
+    }
     function open(browser, state, save) {
+        if (state.pending) return reply('pending-outcome');
+        if (state.creation_pending) return creationUnknown(state);
         // Persist intent before creation. A lost creation reply is never replayed.
-        state.creation_pending = {generation: state.generation};
+        state.creation_pending = {generation: state.generation, stage: 'intent-recorded'};
         save(state);
         var address;
-        try { address = browser.createWindow(state.expected_url); }
-        catch (_) { return reply('creation-outcome-unknown'); }
+        try {
+            address = browser.createWindow(state.expected_url, function (progress) {
+                Object.assign(state.creation_pending, progress);
+                save(state);
+            });
+        } catch (error) {
+            state.creation_pending.reason = creationReason(error);
+            save(state);
+            if (!Number.isInteger(state.creation_pending.window_id)) return creationUnknown(state);
+            // The window is identified even if its tab inspection failed.
+            state.window_id = state.creation_pending.window_id;
+            if (state.created_windows.indexOf(state.window_id) === -1) state.created_windows.push(state.window_id);
+            state.last_creation = state.creation_pending;
+            state.creation_pending = null;
+            state.binding_pending = true;
+            state.binding_kind = 'initial';
+            save(state);
+            return reply('unreadable', {window_id: state.window_id, reason: 'window-inspection-failed'});
+        }
         state.window_id = address.window_id;
-        state.created_windows.push(address.window_id);
+        if (state.created_windows.indexOf(address.window_id) === -1) state.created_windows.push(address.window_id);
+        state.last_creation = state.creation_pending;
         state.creation_pending = null;
+        state.binding_pending = true;
+        state.binding_kind = 'initial';
         save(state);
+        var addresses;
+        try { addresses = browser.tabs(state.window_id); }
+        catch (_) {
+            state.last_creation.reason = 'window-inspection-failed';
+            save(state);
+            return reply('unreadable', {window_id: state.window_id, reason: 'window-inspection-failed'});
+        }
+        if (!addresses || addresses.length !== 1) return reply('unbound', {window_id: state.window_id,
+            tab_count: addresses ? addresses.length : 0, reason: addresses && addresses.length ?
+                'multiple-tabs-before-binding' : 'empty-created-window'});
         return bind(browser, state, address, save);
     }
-    function recover(browser, state, save) {
+    function reuse(browser, state, address, expectedUrl, guard, save) {
+        validate(state);
+        if (state.creation_pending) return creationUnknown(state);
+        if (address.window_id !== state.window_id) return reply('outside-task-window');
+        var addresses, matching = [], unreadable = false, candidate = null, sameUrl = 0;
+        try { addresses = browser.tabs(state.window_id); }
+        catch (_) { return reply('unreadable'); }
+        if (!addresses || !addresses.length) return reply('missing');
+        addresses.forEach(function (a) {
+            try {
+                var p = observe(browser, a, state);
+                if (p.marker === state.marker) matching.push(a);
+                if (p.url === expectedUrl) sameUrl += 1;
+                if (a.tab_index === address.tab_index) candidate = p;
+            } catch (_) { unreadable = true; }
+        });
+        if (matching.length > 1) return reply('ambiguous', {match_count: matching.length});
+        if (unreadable) return reply('unreadable');
+        if (!candidate) return reply('missing');
+        if (matching.length && matching[0].tab_index !== address.tab_index)
+            return reply('target-still-present', {address: matching[0]});
+        if (candidate.url !== expectedUrl) return reply('context-mismatch');
+        if (candidate.ready === 'loading') return reply('loading');
+        if (candidate.claimed && candidate.marker !== state.marker) return reply('already-bound');
+        if (!matching.length && sameUrl > 1) return reply('ambiguous', {match_count: sameUrl});
+        if (matching.length) {
+            var checked = Object.assign({}, state, {expected_url: expectedUrl}), retained;
+            try { retained = parsed(browser, address, guardedCode(checked, 'return true;', guard)); }
+            catch (_) { return reply('unreadable'); }
+            if (retained.status !== 'ok') return retained;
+            state.expected_url = expectedUrl;
+            state.binding = {tab_index: address.tab_index};
+            state.binding_pending = false;
+            save(state);
+            return reply('reused', {window_id: state.window_id, generation: state.generation});
+        }
+        var previous = JSON.parse(JSON.stringify(state));
+        var continuing = state.binding_pending && state.binding_kind === 'reuse' &&
+            state.binding && state.binding.tab_index === address.tab_index && state.expected_url === expectedUrl;
+        if (!continuing) state.generation += 1;
+        state.marker = state.id + ':' + state.generation;
+        state.expected_url = expectedUrl;
+        state.binding = {tab_index: address.tab_index};
+        state.binding_pending = true;
+        state.binding_kind = 'reuse';
+        save(state); // Record the new binding token BEFORE its possibly lost reply.
+        var code = '(function(){"use strict";const reject=(status)=>JSON.stringify({status,dispatched:false});' +
+            'if(location.href!==' + JSON.stringify(expectedUrl) + ')return reject("context-mismatch");' +
+            'if(document.readyState==="loading")return reject("loading");' +
+            'if(Object.prototype.hasOwnProperty.call(window,' + JSON.stringify(MARKER) + '))return reject("already-bound");' +
+            'try{if((function(){\n' + guard + '\n})()!==true)return reject("guard-failed");}' +
+            'catch(e){return reject("guard-error");}' +
+            'Object.defineProperty(window,' + JSON.stringify(MARKER) + ',{value:' + JSON.stringify(state.marker) +
+            ',writable:false,configurable:false});return JSON.stringify({status:"reused",dispatched:false});})()';
+        var result;
+        try { result = parsed(browser, address, code); }
+        catch (_) { return reply('binding-outcome-unknown', {window_id: state.window_id, generation: state.generation}); }
+        if (result.status !== 'reused') {
+            Object.keys(state).forEach(function (key) { delete state[key]; });
+            Object.assign(state, previous);
+            save(state);
+            return result;
+        }
+        state.binding_pending = false;
+        save(state);
+        return reply('reused', {window_id: state.window_id, generation: state.generation});
+    }
+    function recover(browser, state, save, options) {
+        options = options || {};
         validate(state);
         if (state.pending) return reply('pending-outcome');
-        if (state.creation_pending) return reply('creation-outcome-unknown');
-        if (!state.recovery.enabled) return reply('recovery-not-authorized');
+        if (state.creation_pending) return creationUnknown(state);
         var target = inspect(browser, state, save);
         if (target.status !== 'missing') return target;
+        if (options.guard) {
+            var addresses, candidates = [], unreadable = false;
+            try { addresses = browser.tabs(state.window_id) || []; }
+            catch (_) { return reply('unreadable'); }
+            addresses.forEach(function (address) {
+                try {
+                    var p = observe(browser, address, state);
+                    if (p.url === state.expected_url) candidates.push(address);
+                } catch (_) { unreadable = true; }
+            });
+            if (unreadable) return reply('unreadable');
+            if (candidates.length > 1) return reply('ambiguous', {match_count: candidates.length});
+            if (candidates.length === 1) return reuse(browser, state, candidates[0], state.expected_url, options.guard, save);
+        }
+        if (!options.allowNewWindow) return reply(state.recovery.enabled ? 'reuse-required' : 'recovery-not-authorized',
+            {window_id: state.window_id, reason: 'inspect-existing-task-contexts-first'});
+        if (!state.recovery.enabled) return reply('recovery-not-authorized');
         if (state.recovery.attempts >= state.recovery.limit) return reply('recovery-exhausted');
         state.recovery.attempts += 1;
         state.generation += 1;
@@ -195,9 +340,41 @@ var SafariTarget = (function () {
         return reply('resolved');
     }
     return {newState: newState, validate: validate, bind: bind, inspect: inspect,
-        evaluate: evaluate, transition: transition, open: open, recover: recover, resolve: resolve,
+        evaluate: evaluate, transition: transition, open: open, reuse: reuse, recover: recover, resolve: resolve,
         guardedCode: guardedCode, stampCode: stampCode, markerKey: MARKER};
 }());
+
+function safariBrowser(app) {
+    return {
+        tabs: function (windowId) {
+            var found = app.windows().filter(function (w) { return w.id() === windowId; });
+            if (found.length !== 1) return null;
+            var count = found[0].tabs.length, addresses = [];
+            for (var index = 0; index < count; index += 1) addresses.push({window_id: windowId, tab_index: index + 1});
+            return addresses;
+        },
+        execute: function (target, code) {
+            return app.doJavaScript(code, {in: app.windows.byId(target.window_id).tabs[target.tab_index - 1]});
+        },
+        createWindow: function (url, progress) {
+            var before = app.windows().map(function (w) { return w.id(); });
+            progress({stage: 'before-event', before_window_ids: before});
+            app.Document({url: url}).make();
+            var added = app.windows().filter(function (w) { return before.indexOf(w.id()) === -1; });
+            var ids = added.map(function (w) { return w.id(); });
+            progress({stage: 'after-event', candidate_window_ids: ids});
+            if (added.length !== 1) {
+                var error = new Error('Creation identification requires reconciliation');
+                error.creationReason = added.length ? 'multiple-new-windows' : 'no-new-window';
+                throw error;
+            }
+            var id = added[0].id();
+            progress({stage: 'window-identified', window_id: id});
+            // Extra tabs affect binding, not whether this window was identified.
+            return {window_id: id, tab_index: 1};
+        }
+    };
+}
 
 function run(argv) {
     'use strict';
@@ -211,7 +388,7 @@ function run(argv) {
     var options = {}, command = argv[0];
     for (var i = 1; i < argv.length; i += 1) {
         var key = argv[i];
-        if (key === '--recover-readonly') { options[key] = true; continue; }
+        if (key === '--recover-readonly' || key === '--allow-new-window') { options[key] = true; continue; }
         if (key.slice(0, 2) !== '--' || i + 1 >= argv.length || options[key] !== undefined) {
             throw new Error('Invalid or duplicate option');
         }
@@ -219,7 +396,7 @@ function run(argv) {
     }
     var accepted = ['--target-file', '--url', '--recover-readonly', '--recovery-limit',
         '--window-id', '--tab-index', '--expect-url', '--js-file', '--guard-file',
-        '--effect', '--operation-id', '--evidence'];
+        '--effect', '--operation-id', '--evidence', '--allow-new-window'];
     Object.keys(options).forEach(function (key) {
         if (accepted.indexOf(key) === -1) throw new Error('Unknown option');
     });
@@ -254,48 +431,33 @@ function run(argv) {
         if (!options['--expect-url'] || !options['--guard-file']) throw new Error('transition requires expected URL and guard');
         guard = read(options['--guard-file']);
     }
-    if (command === 'bind') {
-        address = {window_id: Number(options['--window-id']), tab_index: Number(options['--tab-index'])};
+    if (command === 'reuse') {
+        if (!options['--expect-url'] || !options['--guard-file']) throw new Error('reuse requires exact URL and a context/work-state guard');
+        guard = read(options['--guard-file']);
+    }
+    if (command === 'recover' && options['--guard-file']) guard = read(options['--guard-file']);
+    if (command === 'bind' || command === 'reuse') {
+        address = {window_id: options['--window-id'] === undefined && state ? state.window_id : Number(options['--window-id']),
+            tab_index: Number(options['--tab-index'])};
         if (!Number.isInteger(address.window_id) || address.window_id <= 0 ||
             !Number.isInteger(address.tab_index) || address.tab_index <= 0) throw new Error('Positive window ID and initial tab index required');
     }
-    if (['open', 'bind', 'inspect', 'eval', 'transition', 'recover', 'resolve'].indexOf(command) === -1) throw new Error('Unknown command');
+    if (['open', 'bind', 'inspect', 'eval', 'transition', 'reuse', 'recover', 'resolve'].indexOf(command) === -1) throw new Error('Unknown command');
+    if (options['--allow-new-window'] && command !== 'recover') throw new Error('--allow-new-window applies only to recover');
     if (command === 'resolve') return JSON.stringify(SafariTarget.resolve(state,
         options['--operation-id'] || '', options['--evidence'] || '', save));
     var app = Application('com.apple.Safari');
     if (!app.running()) throw new Error('Safari is not running');
-    var browser = {
-        tabs: function (windowId) {
-            var windows = app.windows();
-            var found = windows.filter(function (w) { return w.id() === windowId; });
-            if (found.length !== 1) return null;
-            var count = found[0].tabs.length, addresses = [];
-            // Safari can retain a zero-tab object after close. Its element-list
-            // get may fail although the count is zero; normalize without probing.
-            for (var index = 0; index < count; index += 1) {
-                addresses.push({window_id: windowId, tab_index: index + 1});
-            }
-            return addresses;
-        },
-        execute: function (target, code) {
-            return app.doJavaScript(code, {in: app.windows.byId(target.window_id).tabs[target.tab_index - 1]});
-        },
-        createWindow: function (url) {
-            var before = app.windows().map(function (w) { return w.id(); });
-            app.Document({url: url}).make();
-            var added = app.windows().filter(function (w) { return before.indexOf(w.id()) === -1; });
-            if (added.length !== 1 || added[0].tabs.length !== 1) throw new Error('Ambiguous new window');
-            return {window_id: added[0].id(), tab_index: 1};
-        }
-    };
+    var browser = safariBrowser(app);
     var result;
     if (command === 'open') result = SafariTarget.open(browser, state, save);
     else if (command === 'bind') result = SafariTarget.bind(browser, state, address, save);
     else if (command === 'inspect') result = SafariTarget.inspect(browser, state, save);
     else if (command === 'eval') result = SafariTarget.evaluate(browser, state, body, guard, options['--effect'], save, nonce);
     else if (command === 'transition') result = SafariTarget.transition(browser, state, options['--expect-url'], guard, save);
-    else result = SafariTarget.recover(browser, state, save);
+    else if (command === 'reuse') result = SafariTarget.reuse(browser, state, address, options['--expect-url'], guard, save);
+    else result = SafariTarget.recover(browser, state, save, {guard: guard, allowNewWindow: !!options['--allow-new-window']});
     return JSON.stringify(result);
 }
 
-if (typeof module !== 'undefined') module.exports = SafariTarget;
+if (typeof module !== 'undefined') { module.exports = SafariTarget; module.exports.safariBrowser = safariBrowser; }

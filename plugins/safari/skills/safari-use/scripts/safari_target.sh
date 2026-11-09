@@ -2,13 +2,15 @@
 set -euo pipefail
 
 usage() {
-  printf '%s\n' 'Usage: safari_target.sh <open|bind|inspect|eval|transition|recover|resolve> --target-file <path> [options]' \
+  printf '%s\n' 'Usage: safari_target.sh <open|bind|inspect|eval|transition|reuse|recover|resolve> --target-file <path> [options]' \
     '  open     --url <url> [--recover-readonly] [--recovery-limit <0..3>]' \
     '  bind     --window-id <id> --tab-index <index> --expect-url <url>' \
     '  inspect  Reconcile the marked tab inside the tracked window.' \
     '  eval     --js-file <body.js> --guard-file <predicate.js> --effect <read|write>' \
     '  transition --expect-url <observed-authorized-url> --guard-file <predicate.js>' \
-    '  recover  Create a replacement reader only if explicitly enabled at open.' \
+    '  reuse    --tab-index <fresh-index> --expect-url <exact-url> --guard-file <context-and-work-state.js>' \
+    '  recover  [--guard-file <context-and-work-state.js>] [--allow-new-window]' \
+    '           Prefer verified existing context; new windows require the explicit flag AND reader opt-in.' \
     '  resolve  --operation-id <id> --evidence <sanitized outcome evidence>' \
     'JS files contain synchronous function bodies with explicit return statements.' \
     'A tab index is used only for initial binding or fresh dispatch, never as identity.'

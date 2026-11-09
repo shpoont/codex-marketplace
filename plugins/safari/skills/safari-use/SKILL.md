@@ -8,10 +8,33 @@ description: Operate Safari's existing session through Apple Events and guarded 
 Assume the person and other agents are using Safari concurrently. A selected tab,
 front window, remembered index, URL or title is not ownership. Use explicit
 `window id` targeting with the task handle below; never restore focus to repair
-targeting. A dedicated Safari window is the default. Reuse an existing window
-only when the user explicitly asks. Do not intentionally bring Safari forward
-without approval; window creation itself may change focus, so respect the host's
-browser-control rules and required authorization.
+targeting. Prefer verified existing task-owned windows and their original handles.
+A new conversation, review or retry does not require a new Safari window. Creating
+a window may change focus; respect the host's browser-control rules. Do not
+intentionally bring Safari forward without authorization.
+
+## Preserve the task workspace
+
+Keep a small task-local record of each authorized context: its original handle,
+purpose, current work stage and unresolved action/result. Reuse these contexts
+within existing task authority; an unrelated existing window needs explicit scope.
+Window IDs bound the search area, not ownership. A window may acquire human or
+other-agent tabs, and a former task page may be repurposed.
+
+Before reuse, freshly verify the intended account/object/page and ongoing work.
+Keep running reviews, unsaved drafts, uploads, unread results and pending actions
+intact. Retrieve completed work before starting the next conversation in that
+context. Do not navigate, clear a composer, cancel work or replay a submission
+to make a context available. If suitable contexts are busy, queue dependent work
+and continue independent authorized work.
+
+On setup failure, inspect and reconcile the same handle first. Loading,
+`unbound`, an extra tab or a lost reply is not a reason to call `open` with a new
+file. For recovery, prefer a freshly verified existing task context using its
+original handle. Create another window only for an actual task need after
+checking available contexts and unresolved actions; never use fresh handles to
+escape uncertainty or reset a recovery budget. These are execution choices within
+existing authority, not reasons to request repeated approval for routine fixes.
 
 ## Task-bound control
 
@@ -22,7 +45,10 @@ commands, function-body format and result handling.
 
 - Record one logical target in a task-local `--target-file`. The helper records
   its window ID, page-local marker, binding generation and optional recovery
-  budget. This is not a native tab ID: markers can disappear or be copied.
+  budget and pending operations. Agents sharing one logical target must use the
+  same handle and lock; independent targets keep separate handles. A URL match
+  does not let one agent borrow another's context. This is not a native tab ID:
+  markers can disappear or be copied.
 - Resolve the marked tab afresh inside the tracked window. Tab indexes are
   temporary dispatch addresses, never identity. Normal selection changes,
   reordering and unrelated tab churn need no approval or focus restoration.
@@ -33,19 +59,24 @@ commands, function-body format and result handling.
   block the action.
 - Follow observe → act → observe. One payload does one intended synchronous
   operation. Verify its actual result before claiming completion.
-- For ordinary disposable reading/search only, explicitly enable bounded
-  recovery at `open`. If the marked target disappears, `recover` can create a
-  new dedicated reader from its checkpoint without moving or overwriting the
-  old tab. A replacement is new, not proof the original tab survived. Repeated
-  loss exhausts the saved budget and yields; never start an endless contest.
+- `recover --guard-file` can reuse a uniquely verified page in the tracked
+  window. Recovery creates no window by default. New-window recovery also needs
+  `--allow-new-window`, saved `--recover-readonly` opt-in and remaining budget;
+  use it only for disposable reading/search, after checking existing contexts.
+  A replacement is new, not proof the original survived. Do not reset the saved
+  budget or start a contest with other users.
 - A moved tab is outside the original window's binding. This first version
-  does not follow it into another existing window. Reconstruct an authorized
-  disposable context or stop only the affected stateful action.
+  does not follow it into another existing window. Preserve moved content;
+  inspect another already established task context through its original handle
+  or stop only the affected action.
 - After navigation/reload, re-observe. Do not repair a lost established marker
   by writing the desired marker and immediately acting. Saved-object rebinding,
-  unsaved drafts and uploads require their material context/state to be verified;
-  this version does not automatically rebind them. Do not silently broaden a
-  guard's URL or erase a conflicting value to make it pass.
+  unsaved drafts and uploads require fresh material context/work-state evidence.
+  Explicit `reuse` checks the exact observed URL and a read-only context and
+  work-state guard before retaining/installing a marker. It never navigates,
+  clears work or dispatches the business action. Rebinding preserves pending
+  outcomes and the budget; it does not authorize replay. Do not silently broaden
+  a guard's URL or erase a conflicting value to make it pass.
 - For an expected same-document navigation that retains its marker, use
   `transition` with the exact observed authorized URL and a read-only context
   guard. This explicit verification updates the expected URL; it does not clear
@@ -56,9 +87,10 @@ commands, function-body format and result handling.
 - A write's pending operation is stored before dispatch, separately from the
   tab binding. Even an `ok` JavaScript return needs effect verification. Resolve
   the recorded operation only with observed outcome evidence. An uncertain
-  result survives restart and blocks write replay and automatic reconstruction;
-  independent reads can continue. The local file lock coordinates this handle,
-  not the person or tools that bypass it.
+  result survives restart and blocks write replay and recovery. Explicit verified
+  reuse may restore independent reads while retaining that pending record and
+  its original context. Reconcile the original effect before resolution. The
+  local file lock coordinates this handle, not the person or tools that bypass it.
 
 ## Other helpers
 

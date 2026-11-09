@@ -33,9 +33,10 @@ fresh task after installation.
 Use Safari to inspect this webpage and summarize its visible content.
 ```
 
-Expected result: the task creates and records a dedicated Safari window and
-task-bound tab handle, summarizes the requested page and keeps later browser
-work tied to that target without intentionally bringing Safari forward.
+Expected result: the task uses a verified context within its authorized scope,
+summarizes the requested page and keeps later work tied to its task-bound handle
+without intentionally bringing Safari forward. It creates a dedicated window
+when the task needs one, rather than for each conversation or retry.
 
 ## Capabilities
 
@@ -50,10 +51,12 @@ work tied to that target without intentionally bringing Safari forward.
 
 ## Use the plugin
 
-For a normal task, Safari creates a dedicated Safari window, lists all
-windows, records the new window ID and keeps every later operation pinned to it.
-It observes the page, performs one requested action and observes again before
-claiming success.
+Safari assumes people and other agents are using the browser concurrently.
+It prefers freshly verified existing task-owned windows and their original
+handles, preserving running work, drafts, uploads, unread results and pending
+actions. It observes the page, performs one requested action and observes again
+before claiming success. Selection changes, reordered tabs and unrelated tab
+churn do not require restoring focus.
 
 You can explicitly ask it to reuse an existing Safari window:
 
@@ -61,10 +64,11 @@ You can explicitly ask it to reuse an existing Safari window:
 Use my Safari session to check this signed-in page without bringing Safari forward.
 ```
 
-Because an existing window may contain signed-in or private state, identify the
-intended window and approve reuse explicitly. If the requested work would need
-another existing window or would require Safari to steal focus, the plugin stops
-and asks instead of switching silently.
+Identify the intended existing context when granting task scope. Reusing that
+verified context within the same authority does not require repeated approval.
+Unrelated existing windows and intentional focus changes require authorization.
+If setup fails, the agent reconciles the same handle rather than opening another
+window reflexively. Busy contexts can wait while independent work continues.
 
 For an end-to-end browser task:
 
@@ -100,10 +104,13 @@ sensitive page content in its output.
 ## Limitations
 
 - Page markers are not durable native tab IDs or authenticated ownership.
-  Navigation can erase them and page scripts can copy them. Automatic recovery
-  applies only to explicitly disposable reading contexts; stateful rebinding
-  and following a moved tab into another existing window are not automatic.
-  A pending write requires observed outcome evidence before replay or recovery.
+  Navigation can erase them and page scripts can copy them. Guarded reuse
+  requires fresh context and work-state verification; it does not navigate or
+  clear work. Recovery creates no window by default. A new reader requires
+  explicit selection, saved disposable-reader opt-in and remaining budget.
+  Moved tabs are not followed into other windows automatically. Pending writes
+  survive rebinding and require observed outcome evidence before replay.
+  The per-handle lock coordinates cooperating agents, not human activity.
 
 - Safari only; other browsers and non-macOS platforms are outside the supported
   scope.
@@ -155,7 +162,7 @@ credentials, personal page data, private instructions or raw traces.
 
 ## Version and license
 
-Current version: `0.1.11`. See the [public changelog](CHANGELOG.md) for
+Current version: `0.1.12`. See the [public changelog](CHANGELOG.md) for
 user-visible changes and required actions.
 
 Copyright © 2026 b2a48b. Plugin code and documentation are distributed under

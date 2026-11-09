@@ -10,6 +10,26 @@ updating it.
 Users should be able to understand changes to Safari automation, compatibility,
 data access and safe-use boundaries without reading private development records.
 
+## 0.1.12 — 2026-11-09
+
+### Changed
+
+- Prefer verified existing task contexts and their original handles for shared
+  human and multi-agent Safari use. Preserve running work, drafts, uploads,
+  unread results and pending actions instead of opening a window for each retry.
+- Recovery creates no window by default. Guarded existing-context reuse keeps
+  pending operations and the saved recovery budget. New-reader recovery requires
+  `--allow-new-window` as well as the original disposable-reader opt-in.
+- Initial blank-page loading and extra tabs during setup retain the known window
+  and produce more useful, sanitized diagnostics rather than losing its ID.
+
+### Required action
+
+- Start a fresh task after updating. Keep original handle files. Use explicit
+  `reuse` with a context/work-state guard after marker loss; inspect uncertain
+  creation or submission outcomes before proceeding. Existing handles remain
+  readable; reader opt-in alone no longer creates replacement windows.
+
 ## 0.1.11 — 2026-10-13
 
 ### Added
