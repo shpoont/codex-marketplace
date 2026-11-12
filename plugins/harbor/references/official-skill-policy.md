@@ -26,6 +26,14 @@ do not turn every reference link into another mandatory read.
 - Keep the user's current question, evidence, deliverable, any explicit limits
   and stopping condition explicit. Separate authoring, calibration, execution,
   interpretation and publication; a request for one does not authorize all.
+- Recommend restrictions for a concrete requirement or risk and explain their
+  practical effects. An approved agent proposal binds its agreed scope; it does
+  not establish a permanent preference or prove the restriction was necessary.
+  Continue authorized preparation, ordinary debugging and affected retests.
+  Ask only for a missing decision, an actual constraint change or a material
+  change to scope, access, cost or risk. Apply the
+  [recovery rules](../skills/harbor-agent-testing/references/evaluation-workflow.md#constraints-and-recovery)
+  when a failure makes the next action unclear.
 - Check the actual selected executable and installed version, relevant help,
   configuration schema and backend capabilities before version-sensitive use.
   Apply the same check to Reward Kit and its required APIs. Upstream `uvx harbor`
@@ -45,8 +53,9 @@ do not turn every reference link into another mandatory read.
   authentication route for the evaluated, judge, map, reduce, simulated-user
   and other model-backed roles actually needed. Explain quality, latency and usage
   tradeoffs. Do not inherit settings from the current chat, client defaults,
-  UI suggestions or unrelated runs. An outer test model's approval
-  does not approve those roles. Inspect Oracle/verifier paths for hidden model
+  UI suggestions or unrelated runs. The user's approval of the model running
+  an outer test does not approve additional model-backed roles inside that test.
+  Inspect Oracle/verifier paths for hidden model
   use. Reuse existing valid agreements across applicable roles and routine
   retests; do not ask again for authorized actions.
   If a choice is missing or changes, ask and wait before the affected model

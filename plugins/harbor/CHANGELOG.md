@@ -9,6 +9,25 @@ Record changes that affect Harbor users and any required update actions.
 Users should understand evaluation capabilities, prerequisites and safe use
 from the installed package.
 
+## 0.5.0 — 2026-11-12
+
+- Clarify authorized recovery, current user limits, early complete-path testing
+  and usable-result reporting. Internal estimates do not create approval gates.
+- Guard the qualified Codex judge's fully rendered input before backend startup;
+  preserve SDK retry defaults and audit optional case-specific attempt bounds.
+  Run the separate judge as UID 1000, with transient subscription credentials.
+- Correct judge summaries for project grading flags and later workflow steps.
+  Label SDK-normalized usage separately from observed native counters.
+- **Update action:** generators that pin the recipe archive must review and adopt
+  the new archive and manifest identities and explicitly select verifier UID
+  1000. Preserve project cases and grading. Updating the plugin does not migrate
+  project launchers or authorize changing their requirements. Keep the selected
+  installed Harbor runtime; the qualified profile remains Harbor 0.25.0, guest
+  Codex 0.167.0 and RewardKit 0.2.4.
+- Selected operator comparisons were appropriate in both versions. Improved
+  completion, lower owner effort and broad behavioral prevention remain unproven.
+  Start a fresh conversation after updating when testing discovery or routing.
+
 ## 0.4.0 — 2026-11-08
 
 - Rename the main skill to **Harbor Agent Testing**, slug `harbor-agent-testing`.

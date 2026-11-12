@@ -45,7 +45,10 @@ Make a project-local generator adapter if the existing generator does not
 emit this recipe's contract: user `node`/UID 1000, pinned agent and separate
 verifier images, declared artifacts and a verifier `checks.json` recording the
 qualified checks for absent agent credentials in the verifier. Preserve project
-grading semantics. For a harness that injects a developer instruction, pass its
+grading semantics. The subscription judge also requires explicit verifier UID
+1000; its I11 README covers the rendered-input guard, optional case-specific
+attempt bound and native-call audit. Keep project evidence/citation policies in
+their existing adapters. For a harness that injects a developer instruction, pass its
 complete rendered file with `--developer-instructions`; the runner uses native
 Codex configuration and records its hash. Do not move it into a user prompt.
 The runner's ordinary

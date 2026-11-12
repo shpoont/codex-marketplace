@@ -25,6 +25,10 @@ official skills supply general operational mechanics.
    results before proposing changes. Preserve intentional customizations; update
    canonical sources rather than generated copies.
 
+Carry authorized work to a usable result, including ordinary harness corrections
+and affected checks. Apply the [recovery rules](references/evaluation-workflow.md#constraints-and-recovery)
+when something fails; preserve actual user limits and valid failures.
+
 ## Load the methodology that answers the question
 
 For repeatable project tests with Docker, Codex and the owner's ChatGPT
@@ -71,7 +75,8 @@ Operational-only requests can start directly with the appropriate official skill
 ## Return a disposition
 
 Explain what the evidence supports, what remains uncertain, and the next action
-or reason to stop. Distinguish preparation, calibration, agent behavior and
+or reason to stop. State the usable result and unfinished work separately from
+component-test totals. Distinguish preparation, calibration, agent behavior and
 demonstrated repair. Follow [results and closeout](references/evaluation-workflow.md#results-and-closeout)
 for reproducible reporting; do not extend the investigation after its decision
 or stopping condition is met. Report unavailable prerequisites explicitly.
