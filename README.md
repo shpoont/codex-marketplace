@@ -4,7 +4,10 @@ Marketplace for b2a48b Codex plugins.
 
 ## Catalog
 
-[marketplace.json](.agents/plugins/marketplace.json) lists available plugins.
+Browse this marketplace in Codex’s **Plugins** page, or view the
+[current catalog](.agents/plugins/marketplace.json) for the available plugins.
+The catalog is the source of truth; this README does not duplicate its plugin list.
+
 The marketplace identity is `b2a48b`; its display name is **b2a48b**.
 Each catalog entry points to a complete installable package under
 `plugins/<plugin-id>/`. Everything an end user needs to understand, install,
@@ -53,16 +56,10 @@ codex plugin remove PLUGIN_ID@b2a48b
 
 ## Replaced plugins
 
-| Previous plugin ID | Current plugin ID |
-| --- | --- |
-| `agent-instructions-improvement` | [`agent-instructions`](plugins/agent-instructions/README.md) |
-| `agent-instructions-refactoring` | [`agent-instructions`](plugins/agent-instructions/README.md) |
-| `refactor-agentic-instructions` | [`agent-instructions`](plugins/agent-instructions/README.md) |
-| `maintain-agent-guidance` | [`agent-instructions`](plugins/agent-instructions/README.md) |
-
 Agent Instructions combines recurring guidance reviews and selected instruction
 refactoring. The separate Improvement and Refactoring catalog entries are
-retired. Its README explains how to move existing review tasks safely.
+retired. The [Agent Instructions README](plugins/agent-instructions/README.md)
+explains how to move existing review tasks safely.
 For an older installation, follow the current plugin README to install and
 select its replacement. Verify the new copy before removing the old one.
 The replacement uses a new plugin ID; updating the old copy does not rename it.
