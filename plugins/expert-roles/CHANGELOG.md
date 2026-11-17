@@ -10,6 +10,16 @@ released or updated.
 Users should be able to understand capabilities, compatibility, setup and data
 effects from the distributed documentation.
 
+## 0.3.1 — 2026-11-17
+
+- Add Colin Ware, Ruth Rosenholtz and Tamara Munzner from published canonical
+  library v2.1.0, bringing the bundled collection to 77 experts.
+- Preserve existing expert definitions apart from library version comments and
+  retain exact recognition of reviewed v2.0.0 and earlier exports.
+- Plugin upgrades do not install, update or adopt personal roles automatically.
+  Existing personal files, ownership, recovery data and historical backups remain
+  unchanged. Successful selected updates continue to retain no original backup.
+
 ## 0.3.0 — 2026-11-09
 
 - Stop creating permanent original-file backups during role updates and adoption.
