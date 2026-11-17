@@ -10,6 +10,17 @@ released or updated.
 Users should be able to understand capabilities, compatibility, setup and data
 effects from the distributed documentation.
 
+## 0.3.2 — 2026-11-17
+
+- Bundle the unchanged native exports from published canonical library v2.1.1.
+  All 77 expert definitions retain their wording, descriptions and nicknames;
+  only their library version comments and snapshot provenance advance.
+- Add exact recognition of published v2.1.0 exports while retaining every
+  previously reviewed release catalog.
+- Plugin upgrades leave personal roles, ownership, recovery data and historical
+  backups unchanged. Selected updates and explicit adoption remain separate
+  operations; successful updates continue to retain no original backup.
+
 ## 0.3.1 — 2026-11-17
 
 - Add Colin Ware, Ruth Rosenholtz and Tamara Munzner from published canonical
